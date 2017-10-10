@@ -31,7 +31,7 @@ public class DirectionFinder {
     private String origin;
     private String destination;
 
-    public DirectionFinder(DirectionFinderListener listener, String origin, String destination) {
+    public DirectionFinder(String origin, String destination, DirectionFinderListener listener) {
         this.listener = listener;
         this.origin = origin;
         this.destination = destination;
