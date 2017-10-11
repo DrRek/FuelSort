@@ -6,35 +6,36 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 /**
+ * Da riempire
  * Created by luca on 08/10/17.
  */
 
-public class DBhelper extends SQLiteOpenHelper{
+class DBhelper extends SQLiteOpenHelper{
 
-    public static final String DB_NAME = "stradaalrisparmio";
-    public static final String TBL_DISTRIBUTORI = "Anagrafica";
-    public static final String FIELD_ID = "Id";
-    public static final String FIELD_GESTORE = "Gestore";
-    public static final String FIELD_BANDIERA = "Bandiera";
-    public static final String FIELD_TIPO_IMPIANTO = "TipoImpianto";
-    public static final String FIELD_NOME = "NOME";
-    public static final String FIELD_INDIRIZZO = "Indirizzo";
-    public static final String FIELD_COMUNE = "Comune";
-    public static final String FIELD_PROVINCIA = "Provincia";
-    public static final String FIELD_LAT = "Lat";
-    public static final String FIELD_LON = "Lon";
-    public static final String TBL_PREZZI = "Prezzi";
-    public static final String FIELD_CARBURANTE = "Carburante";
-    public static final String FIELD_PREZZO = "Prezzo";
-    public static final String FIELD_IS_SELF = "IsSelf";
-    public static final String FIELD_LATEST_UPDATE = "LatestUpdate";
-    public static final String TBL_LATEST = "Latest";
-    public static final String FIELD_DATA = "Dato";
+    private static final String DB_NAME = "stradaalrisparmio";
+    static final String TBL_DISTRIBUTORI = "Anagrafica";
+    static final String FIELD_ID = "Id";
+    private static final String FIELD_GESTORE = "Gestore";
+    private static final String FIELD_BANDIERA = "Bandiera";
+    private static final String FIELD_TIPO_IMPIANTO = "TipoImpianto";
+    private static final String FIELD_NOME = "NOME";
+    private static final String FIELD_INDIRIZZO = "Indirizzo";
+    private static final String FIELD_COMUNE = "Comune";
+    private static final String FIELD_PROVINCIA = "Provincia";
+    static final String FIELD_LAT = "Lat";
+    static final String FIELD_LON = "Lon";
+    static final String TBL_PREZZI = "Prezzi";
+    private static final String FIELD_CARBURANTE = "Carburante";
+    private static final String FIELD_PREZZO = "Prezzo";
+    private static final String FIELD_IS_SELF = "IsSelf";
+    static final String FIELD_LATEST_UPDATE = "LatestUpdate";
+    static final String TBL_LATEST = "Latest";
+    static final String FIELD_DATA = "Dato";
 
-    public static final String CMP_DISTIBUTORI = "distributori";
-    public static final String CMP_POMPE = "pompe";
+    static final String CMP_DISTIBUTORI = "distributori";
+    static final String CMP_POMPE = "pompe";
 
-    public DBhelper(Context context) {
+    DBhelper(Context context) {
         super(context, DB_NAME, null, 8);
     }
 

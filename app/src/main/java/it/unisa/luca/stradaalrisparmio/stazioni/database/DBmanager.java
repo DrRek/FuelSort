@@ -3,26 +3,39 @@ package it.unisa.luca.stradaalrisparmio.stazioni.database;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+<<<<<<< Updated upstream
 import java.util.ArrayList;
 
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.support.Loading;
+=======
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+>>>>>>> Stashed changes
 
 /**
  * Created by luca on 08/10/17.
+ * Da continuare
  */
 
 public class DBmanager extends Thread{
     private DBhelper dbhelper;
-    private SQLiteDatabase wr;
+    private String distributoriNewData, pompeNewData;
 
+<<<<<<< Updated upstream
     public DBmanager(Context ctx){
+=======
+    public DBmanager(Context ctx) {
+>>>>>>> Stashed changes
         dbhelper=new DBhelper(ctx);
     }
 
@@ -32,55 +45,162 @@ public class DBmanager extends Thread{
         updateData();
     }
 
-    public void updateData(){
+    private void updateData(){
         DataImporter browser = new DataImporter();
 
-        DataOrganizer updatedData = new DataOrganizer(browser.retrieve(DataImporter.DISTRIBUTORI_PATH), browser.retrieve(DataImporter.POMPE_PATH));
-        int whatToUpdate = updatedData.isToUse(this);
-        if(whatToUpdate != 0){
-            Log.d("Database", "E' necessario aggiornare. cod:"+ whatToUpdate);
-            wr = dbhelper.getWritableDatabase();
-            if(whatToUpdate == 1 || whatToUpdate == 2){
-                updatedData.retrieveUpdatedDistributori(wr);
-            }
-            if(whatToUpdate == 1 || whatToUpdate == 3){
-                updatedData.retrieveUpdatedPompe(wr);
-            }
-            wr.close();
-        } else{
-            Log.d("Database", "Non è necessario aggiornare.");
+        distributoriNewData = browser.retrieve(DataImporter.DISTRIBUTORI_PATH);
+        pompeNewData = browser.retrieve(DataImporter.POMPE_PATH);
+
+        if(isToUpdateDistributori()){
+            retrieveUpdatedDistributori();
         }
+        if(isToUpdatePompe()){
+            retrieveUpdatedPompe();
+        }
+        Log.d("Database", "End managing updates");
     }
 
-    public String getDistributoriCurrentVersion(){
+    private boolean isToUpdateDistributori(){
+        String distributoriLatestVersion = distributoriNewData.substring(0, distributoriNewData.indexOf("\n"));
+        return !getDistributoriCurrentVersion().equalsIgnoreCase(distributoriLatestVersion);
+    }
+
+    private boolean isToUpdatePompe(){
+        String pompeLatestVersion = pompeNewData.substring(0, pompeNewData.indexOf("\n"));
+        return !getPompeCurrentVersion().equalsIgnoreCase(pompeLatestVersion);
+    }
+
+    private String getDistributoriCurrentVersion(){
         SQLiteDatabase readableDatabase = dbhelper.getReadableDatabase();
         String query = "select * from "+DBhelper.TBL_LATEST+" where "+DBhelper.FIELD_DATA+" = ?;";
         String[] parameters = new String[] {
                 DBhelper.CMP_DISTIBUTORI
         };
         Cursor results = readableDatabase.rawQuery(query, parameters);
-        while(results.moveToNext()){
-            return results.getString(results.getColumnIndex(DBhelper.FIELD_LATEST_UPDATE));
+        if(results.moveToNext()){
+            String response = results.getString(results.getColumnIndex(DBhelper.FIELD_LATEST_UPDATE));
+            results.close();
+            return response;
         }
+        results.close();
         return "";
     }
 
-    public String getPompeCurrentVersion(){
-        SQLiteDatabase readableDatabase = dbhelper.getReadableDatabase();
+    private String getPompeCurrentVersion(){
+        SQLiteDatabase rd = dbhelper.getReadableDatabase();
         String query = "select * from "+DBhelper.TBL_LATEST+" where "+DBhelper.FIELD_DATA+" = ?;";
         String[] parameters = new String[] {
                 DBhelper.CMP_POMPE
         };
-        Cursor results = readableDatabase.rawQuery(query, parameters);
-        while(results.moveToNext()){
-            return results.getString(results.getColumnIndex(DBhelper.FIELD_LATEST_UPDATE));
+        Cursor results = rd.rawQuery(query, parameters);
+        if(results.moveToNext()) {
+            String response = results.getString(results.getColumnIndex(DBhelper.FIELD_LATEST_UPDATE));
+            results.close();
+            return response;
         }
-        readableDatabase.close();
+        results.close();
+        rd.close();
         return "";
     }
 
+<<<<<<< Updated upstream
     public ArrayList<Distributore> getDistributoriInRange(double minLat, double maxLat, double minLng, double maxLng){
         ArrayList<Distributore> risultati = new ArrayList<Distributore>();
+=======
+    private void retrieveUpdatedDistributori(){
+        Log.d("Database", "Start: Insert distributori.");
+
+        SQLiteDatabase wr = dbhelper.getWritableDatabase();
+
+        wr.delete(DBhelper.TBL_DISTRIBUTORI, DBhelper.FIELD_ID+">0", null);
+
+        String tmpDistributoriData = distributoriNewData;
+        String version = tmpDistributoriData.substring(0, tmpDistributoriData.indexOf("\n"));
+        wr.delete(DBhelper.TBL_LATEST, DBhelper.FIELD_DATA+"='"+DBhelper.CMP_DISTIBUTORI+"'", null);
+        wr.execSQL("insert into "+DBhelper.TBL_LATEST+" values ('"+DBhelper.CMP_DISTIBUTORI+"','"+version+"')");
+        tmpDistributoriData = tmpDistributoriData.substring(tmpDistributoriData.indexOf("\n")+1);
+        tmpDistributoriData = tmpDistributoriData.substring(tmpDistributoriData.indexOf("\n")+1);
+
+        InputStream is = new ByteArrayInputStream(tmpDistributoriData.getBytes());
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+        String sql = "insert into "+ DBhelper.TBL_DISTRIBUTORI+" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        wr.beginTransaction();
+        SQLiteStatement stmt = wr.compileStatement(sql);
+
+        String line;
+        try {
+            while((line = br.readLine()) != null){
+                String[] str = line.split(";");
+                stmt.bindLong(1, Integer.parseInt(str[0]));
+                stmt.bindString(2, str[1]);
+                stmt.bindString(3, str[2]);
+                stmt.bindString(4, str[3]);
+                stmt.bindString(5, str[4]);
+                stmt.bindString(6, str[5]);
+                stmt.bindString(7, str[6]);
+                stmt.bindString(8, str[7]);
+                stmt.bindDouble(9, Double.parseDouble(str[8]));
+                stmt.bindDouble(10, Double.parseDouble(str[9]));
+                stmt.executeInsert();
+                stmt.clearBindings();
+            }
+            wr.setTransactionSuccessful();
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            wr.endTransaction();
+        }
+        wr.close();
+        Log.d("Database", "End: Insert distributori.");
+    }
+
+    private void retrieveUpdatedPompe(){
+        Log.d("Database", "Start: Insert pompe.");
+
+        SQLiteDatabase wr = dbhelper.getWritableDatabase();
+
+        wr.delete(DBhelper.TBL_PREZZI, DBhelper.FIELD_ID+">0", null);
+
+        String tmpPompeData = pompeNewData;
+        String version = tmpPompeData.substring(0, tmpPompeData.indexOf("\n"));
+        wr.delete(DBhelper.TBL_LATEST, DBhelper.FIELD_DATA+"='"+DBhelper.CMP_POMPE+"'", null);
+        wr.execSQL("insert into "+DBhelper.TBL_LATEST+" values ('"+DBhelper.CMP_POMPE+"','"+version+"')");
+        tmpPompeData = tmpPompeData.substring(tmpPompeData.indexOf("\n")+1);
+        tmpPompeData = tmpPompeData.substring(tmpPompeData.indexOf("\n")+1);
+
+        InputStream is = new ByteArrayInputStream(tmpPompeData.getBytes());
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+        String sql = "insert into "+ DBhelper.TBL_PREZZI+" values (?, ?, ?, ?, ?);";
+        wr.beginTransaction();
+        SQLiteStatement stmt = wr.compileStatement(sql);
+
+        String line;
+        try {
+            while((line = br.readLine()) != null){
+                String[] str = line.split(";");
+                stmt.bindLong(1, Integer.parseInt(str[0]));
+                stmt.bindString(2, str[1]);
+                stmt.bindDouble(3, Double.parseDouble(str[2]));
+                stmt.bindLong(4, Integer.parseInt(str[3]));
+                stmt.bindString(5, str[4]);
+                stmt.executeInsert();
+                stmt.clearBindings();
+            }
+            wr.setTransactionSuccessful();
+        } catch (Exception e){
+            e.printStackTrace();
+        } finally {
+            wr.endTransaction();
+        }
+        wr.close();
+        Log.d("Database", "End: Insert pompe.");
+    }
+
+    public void setPin(GoogleMap map, double minLat, double maxLat, double minLng, double maxLng){
+        map.clear();
+>>>>>>> Stashed changes
         SQLiteDatabase rd = dbhelper.getReadableDatabase();
         String sql = "SELECT * FROM "+DBhelper.TBL_DISTRIBUTORI+" where " +
                 DBhelper.FIELD_LAT + " >= " + minLat + " and " +
@@ -109,6 +229,7 @@ public class DBmanager extends Thread{
                     )
             );
         }
+        c.close();
         rd.close();
         return risultati;
     }

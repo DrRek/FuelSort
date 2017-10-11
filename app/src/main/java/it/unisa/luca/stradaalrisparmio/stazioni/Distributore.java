@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import com.google.android.gms.maps.model.LatLng;
 
 /**
+ * Da riempire
  * Created by luca on 08/10/17.
  */
 
