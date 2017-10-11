@@ -6,21 +6,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
-<<<<<<< Updated upstream
 import java.util.ArrayList;
 
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
-import it.unisa.luca.stradaalrisparmio.support.Loading;
-=======
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
->>>>>>> Stashed changes
 
 /**
  * Created by luca on 08/10/17.
@@ -31,11 +23,7 @@ public class DBmanager extends Thread{
     private DBhelper dbhelper;
     private String distributoriNewData, pompeNewData;
 
-<<<<<<< Updated upstream
-    public DBmanager(Context ctx){
-=======
     public DBmanager(Context ctx) {
->>>>>>> Stashed changes
         dbhelper=new DBhelper(ctx);
     }
 
@@ -103,10 +91,6 @@ public class DBmanager extends Thread{
         return "";
     }
 
-<<<<<<< Updated upstream
-    public ArrayList<Distributore> getDistributoriInRange(double minLat, double maxLat, double minLng, double maxLng){
-        ArrayList<Distributore> risultati = new ArrayList<Distributore>();
-=======
     private void retrieveUpdatedDistributori(){
         Log.d("Database", "Start: Insert distributori.");
 
@@ -198,9 +182,8 @@ public class DBmanager extends Thread{
         Log.d("Database", "End: Insert pompe.");
     }
 
-    public void setPin(GoogleMap map, double minLat, double maxLat, double minLng, double maxLng){
-        map.clear();
->>>>>>> Stashed changes
+    public ArrayList<Distributore> getDistributoriInRange(double minLat, double maxLat, double minLng, double maxLng){
+        ArrayList<Distributore> risultati = new ArrayList<Distributore>();
         SQLiteDatabase rd = dbhelper.getReadableDatabase();
         String sql = "SELECT * FROM "+DBhelper.TBL_DISTRIBUTORI+" where " +
                 DBhelper.FIELD_LAT + " >= " + minLat + " and " +
