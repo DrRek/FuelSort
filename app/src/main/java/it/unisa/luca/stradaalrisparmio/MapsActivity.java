@@ -1,5 +1,7 @@
 package it.unisa.luca.stradaalrisparmio;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -30,6 +32,7 @@ import it.unisa.luca.stradaalrisparmio.api.strada.DirectionFinderListener;
 import it.unisa.luca.stradaalrisparmio.api.strada.Route;
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanager;
+import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanagerListener;
 import it.unisa.luca.stradaalrisparmio.support.Loading;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -38,11 +41,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private EditText to, from;
     private DBmanager manager;
     private ArrayList<Distributore> distributoriMostrati;
+    private Loading loaderView;
+    private Bitmap icon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        loaderView = new Loading(this);
+        loaderView.add("Starting app...");
 
         manager = new DBmanager(this);
         manager.start();
@@ -55,6 +63,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         from = (EditText) findViewById(R.id.from);
         to = (EditText) findViewById(R.id.to);
 
+        loaderView.remove("Starting app...");
+
         to.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -63,7 +73,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     new DirectionFinder(from.getText().toString(), to.getText().toString(), new DirectionFinderListener() {
                         @Override
                         public void onDirectionFinderStart() {
-                            return;
+                            loaderView.add("Searching path");
                         }
 
                         @Override
@@ -86,12 +96,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     mMap.addPolyline(plo);
                                 }
                             }
+                            loaderView.remove("Searching path");
                         }
                     }).execute();
                 } catch (Exception e){
                     e.printStackTrace();
                 }
-                return true;
+                return false;
             }
         });
     }
@@ -109,10 +120,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        //LatLng unisa = new LatLng(40.769817,14.7900013);
-        //mMap.addMarker(new MarkerOptions().position(unisa).title("UniSa"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(unisa));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 5.0f));
+        this.icon = resizeMapIcons("pomp_icon", 120, 120);
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
@@ -134,16 +143,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         if(maxLat-minLat<=0.3 && maxLng-minLng<=0.3) {
+            loaderView.add("Fetching data...");
             mMap.clear();
             distributoriMostrati = manager.getDistributoriInRange(minLat, maxLat, minLng, maxLng);
             for(Distributore dist : distributoriMostrati){
                 mMap.addMarker(
-                        new MarkerOptions().title(dist.getId()+"").draggable(false).visible(true).position(dist.getPosizione())
+                        new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(this.icon)).title(dist.getId()+"").draggable(false).visible(true).alpha(0.9f).position(dist.getPosizione())
                 );
             }
+            loaderView.remove("Fetching data...");
         }
         else{
             mMap.clear();
         }
+    }
+
+    public Bitmap resizeMapIcons(String iconName, int width, int height){
+        Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(),getResources().getIdentifier(iconName, "drawable", getPackageName()));
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
+        return resizedBitmap;
     }
 }
