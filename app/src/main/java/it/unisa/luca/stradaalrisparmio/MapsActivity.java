@@ -49,7 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        loaderView = new Loading(this);
+        loaderView = Loading.getLoader(this);
         loaderView.add("Starting app...");
 
         manager = new DBmanager(this);
@@ -62,8 +62,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Roba dei campi d'input
         from = (EditText) findViewById(R.id.from);
         to = (EditText) findViewById(R.id.to);
-
-        loaderView.remove("Starting app...");
 
         to.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -105,6 +103,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return false;
             }
         });
+        loaderView.remove("Starting app...");
     }
 
 

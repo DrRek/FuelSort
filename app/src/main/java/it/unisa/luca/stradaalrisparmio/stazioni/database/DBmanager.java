@@ -1,5 +1,6 @@
 package it.unisa.luca.stradaalrisparmio.stazioni.database;
 
+import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -9,6 +10,8 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
+import it.unisa.luca.stradaalrisparmio.support.Loading;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -21,9 +24,11 @@ import java.io.InputStreamReader;
 
 public class DBmanager extends Thread{
     private DBhelper dbhelper;
+    private Activity activity;
     private String distributoriNewData, pompeNewData;
 
     public DBmanager(Context ctx) {
+        activity = (Activity) ctx;
         dbhelper=new DBhelper(ctx);
     }
 
@@ -34,16 +39,21 @@ public class DBmanager extends Thread{
     }
 
     private void updateData(){
+        final Loading loaderView = Loading.getLoader(activity);
         DataImporter browser = new DataImporter();
 
         distributoriNewData = browser.retrieve(DataImporter.DISTRIBUTORI_PATH);
         pompeNewData = browser.retrieve(DataImporter.POMPE_PATH);
 
         if(isToUpdateDistributori()){
+            loaderView.add("Updating station data...");
             retrieveUpdatedDistributori();
+            loaderView.remove("Updating station data...");
         }
         if(isToUpdatePompe()){
+            loaderView.add("Updating price data...");
             retrieveUpdatedPompe();
+            loaderView.remove("Updating price data...");
         }
         Log.d("Database", "End managing updates");
     }
