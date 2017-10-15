@@ -7,8 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 
+import it.unisa.luca.stradaalrisparmio.api.strada.Route;
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.support.Loading;
 
@@ -225,5 +228,50 @@ public class DBmanager extends Thread{
         c.close();
         rd.close();
         return risultati;
+    }
+
+    public ArrayList<Distributore> getZoneStation(Route r){
+        ArrayList<Distributore> results = new ArrayList<Distributore>();
+        Double minLat, maxLat, minLng, maxLng;
+        minLat = r.startLocation.latitude;
+        maxLat = minLat;
+        minLng = r.startLocation.longitude;
+        maxLng = minLng;
+        for(LatLng p : r.points){
+            if(p.latitude < minLat) minLat = p.latitude;
+            if(p.latitude > maxLat) maxLat = p.latitude;
+            if(p.longitude < minLng) minLng = p.longitude;
+            if(p.longitude > maxLng) maxLng = p.longitude;
+        }
+        SQLiteDatabase rd = dbhelper.getReadableDatabase();
+        String sql = "SELECT * FROM "+DBhelper.TBL_DISTRIBUTORI+" where " +
+                DBhelper.FIELD_LAT + " >= " + minLat + " and " +
+                DBhelper.FIELD_LAT + " <= " + maxLat + " and " +
+                DBhelper.FIELD_LON + " >= " + minLng + " and " +
+                DBhelper.FIELD_LON + " <= " + maxLng + ";";
+        Cursor c =rd.rawQuery(sql, null);
+        int id;
+        String gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia;
+        double lat, lon;
+        while(c.moveToNext()){
+            id = c.getInt(c.getColumnIndex(DBhelper.FIELD_ID));
+            gestore = c.getString(c.getColumnIndex(DBhelper.FIELD_GESTORE));
+            bandiera = c.getString(c.getColumnIndex(DBhelper.FIELD_BANDIERA));
+            tipoImpianto = c.getString(c.getColumnIndex(DBhelper.FIELD_TIPO_IMPIANTO));
+            nome = c.getString(c.getColumnIndex(DBhelper.FIELD_NOME));
+            indirizzo = c.getString(c.getColumnIndex(DBhelper.FIELD_INDIRIZZO));
+            comune = c.getString(c.getColumnIndex(DBhelper.FIELD_COMUNE));
+            provincia = c.getString(c.getColumnIndex(DBhelper.FIELD_PROVINCIA));
+            lat = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LAT));
+            lon = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LON));
+            results.add(
+                    new Distributore(
+                            id, gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia, lat, lon
+                    )
+            );
+        }
+        c.close();
+        rd.close();
+        return results;
     }
 }

@@ -1,6 +1,7 @@
 package it.unisa.luca.stradaalrisparmio.api.strada;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -23,7 +24,7 @@ import it.unisa.luca.stradaalrisparmio.R;
 
 public class DirectionFinder {
     private static final String DIRECTION_URL_API = "https://maps.googleapis.com/maps/api/directions/json?";
-    private static final String GOOGLE_API_KEY = "AIzaSyBEG7RmVbSIAaQ3mMA2kGfAK3M-bxoSGIw";
+    private static final String GOOGLE_API_KEY = "AIzaSyD9FDqZVMF6hPeAO-Hk7YV0Slmx00yPojg";
     private DirectionFinderListener listener;
     private String origin;
     private String destination;
@@ -62,6 +63,7 @@ public class DirectionFinder {
                     buffer.append(line + "\n");
                 }
 
+                Log.d("Boh", buffer.toString());
                 return buffer.toString();
 
             } catch (MalformedURLException e) {
@@ -85,7 +87,6 @@ public class DirectionFinder {
     private void parseJSon(String data) throws JSONException {
         if (data == null)
             return;
-
         List<Route> routes = new ArrayList<Route>();
         JSONObject jsonData = new JSONObject(data);
         JSONArray jsonRoutes = jsonData.getJSONArray("routes");

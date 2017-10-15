@@ -3,6 +3,7 @@ package it.unisa.luca.stradaalrisparmio;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -43,6 +44,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ArrayList<Distributore> distributoriMostrati;
     private Loading loaderView;
     private Bitmap icon;
+    private ArrayList<Marker> station;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Roba delle mappe
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        station = new ArrayList<>();
 
         //Roba dei campi d'input
         from = (EditText) findViewById(R.id.from);
@@ -78,21 +81,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         public void onDirectionFinderSuccess(List<Route> routes) {
                             Log.d("DirectionFinderSuccess", "Success");
                             if (!routes.isEmpty()) {
-                                for (Route r : routes) {
-                                    mMap.addMarker(new MarkerOptions().title("Start").position(r.startLocation));
-                                    mMap.addMarker(new MarkerOptions().title("End").position(r.endLocation));
-
-                                    PolylineOptions plo = new PolylineOptions();
-                                    plo.geodesic(true);
-                                    plo.color(Color.BLUE);
-                                    plo.width(10);
-
-                                    for (int i = 0; i < r.points.size(); i++) {
-                                        plo.add(r.points.get(i));
-                                    }
-
-                                    mMap.addPolyline(plo);
+                                Route r = routes.get(0);
+                                mMap.addMarker(new MarkerOptions().title("Start").position(r.startLocation));
+                                mMap.addMarker(new MarkerOptions().title("End").position(r.endLocation));
+                                PolylineOptions plo = new PolylineOptions();
+                                plo.geodesic(true);
+                                plo.color(Color.BLUE);
+                                plo.width(10);
+                                for (int i = 0; i < r.points.size(); i++) {
+                                    plo.add(r.points.get(i));
                                 }
+                                mMap.addPolyline(plo);
+                                ArrayList<Distributore> vicini = manager.getZoneStation(r);
+                                Log.d("Test", "test1");
+                                for(Distributore d : vicini){
+                                    Log.d("Test", "test1");
+                                    Location a = new Location("");//provider name is unnecessary
+                                    a.setLatitude(d.getLat());//your coords of course
+                                    a.setLongitude(d.getLon());
+                                    for(int i=0; i<r.points.size()-1; i++){
+                                        Location b = new Location("");//provider name is unnecessary
+                                        b.setLatitude(r.points.get(i).latitude);//your coords of course
+                                        b.setLongitude(r.points.get(i).longitude);
+                                        Location c = new Location("");//provider name is unnecessary
+                                        c.setLatitude(r.points.get(i+1).latitude);//your coords of course
+                                        c.setLongitude(r.points.get(i+1).longitude);
+                                        if(a.distanceTo(b) * a.distanceTo(c) / b.distanceTo(c) > 1000){
+                                            //vicini.remove(d);
+                                        }else{
+                                            station.add(mMap.addMarker(
+                                                    new MarkerOptions().draggable(false).visible(true).alpha(0.9f).position(d.getPosizione())
+                                            ));
+                                        }
+                                    }
+                                }
+
                             }
                             loaderView.remove("Searching path");
                         }
@@ -124,7 +147,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                setMarkersBasedOnPosition();
+                //setMarkersBasedOnPosition();
             }
         });
     }
@@ -141,19 +164,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             maxLat = view.southwest.longitude;
         }
 
-        if(maxLat-minLat<=0.3 && maxLng-minLng<=0.3) {
+        if(maxLat-minLat<=0.2 && maxLng-minLng<=0.2) {
             loaderView.add("Fetching data...");
-            mMap.clear();
+            for(Marker m : station) m.remove();
             distributoriMostrati = manager.getDistributoriInRange(minLat, maxLat, minLng, maxLng);
             for(Distributore dist : distributoriMostrati){
-                mMap.addMarker(
+                station.add(mMap.addMarker(
                         new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(this.icon)).title(dist.getId()+"").draggable(false).visible(true).alpha(0.9f).position(dist.getPosizione())
-                );
+                ));
             }
             loaderView.remove("Fetching data...");
         }
         else{
-            mMap.clear();
+            for(Marker m : station) m.remove();
         }
     }
 
