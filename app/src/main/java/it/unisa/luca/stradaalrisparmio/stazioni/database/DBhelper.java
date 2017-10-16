@@ -25,9 +25,9 @@ class DBhelper extends SQLiteOpenHelper{
     static final String FIELD_LAT = "Lat";
     static final String FIELD_LON = "Lon";
     static final String TBL_PREZZI = "Prezzi";
-    private static final String FIELD_CARBURANTE = "Carburante";
-    private static final String FIELD_PREZZO = "Prezzo";
-    private static final String FIELD_IS_SELF = "IsSelf";
+    static final String FIELD_CARBURANTE = "Carburante";
+    static final String FIELD_PREZZO = "Prezzo";
+    static final String FIELD_IS_SELF = "IsSelf";
     static final String FIELD_LATEST_UPDATE = "LatestUpdate";
     static final String TBL_LATEST = "Latest";
     static final String FIELD_DATA = "Dato";

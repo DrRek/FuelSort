@@ -13,12 +13,15 @@ import java.util.ArrayList;
 
 import it.unisa.luca.stradaalrisparmio.api.strada.Route;
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
+import it.unisa.luca.stradaalrisparmio.stazioni.Pompa;
 import it.unisa.luca.stradaalrisparmio.support.Loading;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
+import static android.R.attr.id;
 
 /**
  * Created by luca on 08/10/17.
@@ -179,7 +182,7 @@ public class DBmanager extends Thread{
                 String[] str = line.split(";");
                 stmt.bindLong(1, Integer.parseInt(str[0]));
                 stmt.bindString(2, str[1]);
-                stmt.bindDouble(3, Double.parseDouble(str[2]));
+                stmt.bindDouble(3, Float.parseFloat(str[2]));
                 stmt.bindLong(4, Integer.parseInt(str[3]));
                 stmt.bindString(5, str[4]);
                 stmt.executeInsert();
@@ -193,6 +196,15 @@ public class DBmanager extends Thread{
         }
         wr.close();
         Log.d("Database", "End: Insert pompe.");
+
+        SQLiteDatabase rd = dbhelper.getReadableDatabase();sql = "SELECT * FROM "+DBhelper.TBL_PREZZI+";";
+        Log.d("Query", sql);
+        Cursor c =rd.rawQuery(sql, null);
+        while(c.moveToNext()){
+            Log.d("Debug prezzo 1", ""+c.getFloat(c.getColumnIndex(DBhelper.FIELD_PREZZO)));
+        }
+        c.close();
+        rd.close();
     }
 
     public ArrayList<Distributore> getDistributoriInRange(double minLat, double maxLat, double minLng, double maxLng){
@@ -273,5 +285,34 @@ public class DBmanager extends Thread{
         c.close();
         rd.close();
         return results;
+    }
+
+    public void retriveInfoPrices(Distributore d){
+        SQLiteDatabase rd = dbhelper.getReadableDatabase();
+        String sql = "SELECT * FROM "+DBhelper.TBL_PREZZI+";";
+        Log.d("Query", sql);
+        Cursor c =rd.rawQuery(sql, null);
+        String carburante, latestUpdate;
+        boolean isSelf;
+        Float prezzo;
+        ArrayList<Pompa> results = new ArrayList<>();
+        while(c.moveToNext()){
+            Log.d("Debug prezzo 1", d.getId()+" "+c.getFloat(c.getColumnIndex(DBhelper.FIELD_PREZZO)));
+            /*carburante = c.getString(c.getColumnIndex(DBhelper.FIELD_CARBURANTE));
+            prezzo = c.getFloat(c.getColumnIndex(DBhelper.FIELD_PREZZO));
+            if(c.getInt(c.getColumnIndex(DBhelper.FIELD_IS_SELF))==1)
+                isSelf=true;
+            else
+                isSelf=false;
+            latestUpdate = c.getString(c.getColumnIndex(DBhelper.FIELD_LATEST_UPDATE));
+            results.add(
+                    new Pompa(
+                            id, carburante, prezzo, isSelf, latestUpdate
+                    )
+            );*/
+        }
+        c.close();
+        rd.close();
+        d.setPompe(results);
     }
 }

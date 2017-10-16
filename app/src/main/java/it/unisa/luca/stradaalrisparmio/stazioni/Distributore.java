@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
+
 /**
  * Da riempire
  * Created by luca on 08/10/17.
@@ -21,6 +23,7 @@ public class Distributore implements Comparable{
     private String provincia;
     private double lat;
     private double lon;
+    ArrayList<Pompa> pompe;
 
     public Distributore(int id, String gestore, String bandiera, String tipoImpianto, String nome, String indirizzo, String comune, String provincia, double lat, double lon){
         this.id = id;
@@ -33,6 +36,7 @@ public class Distributore implements Comparable{
         this.provincia = provincia;
         this.lat = lat;
         this.lon = lon;
+        this.pompe = null;
     }
 
     public int getId(){return id;}
@@ -46,6 +50,10 @@ public class Distributore implements Comparable{
     public double getLat(){return lat;}
     public double getLon(){return lon;}
 
+    public void setPompe(ArrayList<Pompa> pompe){
+        this.pompe = pompe;
+    }
+
     @Override
     public int compareTo(@NonNull Object o) {
         if(((Distributore)o).getId()>this.id){
@@ -54,6 +62,16 @@ public class Distributore implements Comparable{
             return 1;
         }
         return 0;
+    }
+
+    public Float getDieselLowestPrice(){
+        Float lowest = 10f;
+        for(Pompa p : pompe){
+            if(p.getPrezzo()<lowest){
+                lowest=p.getPrezzo();
+            }
+        }
+        return lowest;
     }
 
     public LatLng getPosizione(){

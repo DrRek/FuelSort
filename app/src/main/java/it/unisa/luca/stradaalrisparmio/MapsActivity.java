@@ -94,7 +94,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 mMap.addPolyline(plo);
                                 ArrayList<Distributore> vicini = manager.getZoneStation(r);
                                 Log.d("Test", "test1");
+                                Distributore economico = null;
+                                Float minPrice = 10f;
                                 for(Distributore d : vicini){
+                                    manager.retriveInfoPrices(d);
                                     Log.d("Test", "test1");
                                     Location a = new Location("");//provider name is unnecessary
                                     a.setLatitude(d.getLat());//your coords of course
@@ -109,11 +112,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         if(a.distanceTo(b) * a.distanceTo(c) / b.distanceTo(c) > 1000){
                                             //vicini.remove(d);
                                         }else{
+                                            if(minPrice>d.getDieselLowestPrice()){
+                                                economico = d;
+                                            }
                                             station.add(mMap.addMarker(
-                                                    new MarkerOptions().draggable(false).visible(true).alpha(0.9f).position(d.getPosizione())
+                                                    new MarkerOptions().title(d.getDieselLowestPrice()+"").draggable(false).visible(true).alpha(0.9f).position(d.getPosizione()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                                             ));
                                         }
                                     }
+                                    station.add(mMap.addMarker(
+                                            new MarkerOptions().title(economico.getDieselLowestPrice()+"").draggable(false).visible(true).alpha(0.9f).position(economico.getPosizione()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                                    ));
                                 }
 
                             }
