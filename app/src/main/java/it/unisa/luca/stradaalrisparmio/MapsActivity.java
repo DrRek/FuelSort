@@ -26,6 +26,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import it.unisa.luca.stradaalrisparmio.api.strada.DirectionFinder;
@@ -41,10 +42,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private EditText to, from;
     private DBmanager manager;
-    private ArrayList<Distributore> distributoriMostrati;
     private Loading loaderView;
     private Bitmap icon;
     private ArrayList<Marker> station;
+    private HashMap<Marker, Distributore> distributoriMarker;
+    Double lastMinLat, lastMaxLat, lastMinLng, lastMaxLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,13 +62,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Roba delle mappe
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
         station = new ArrayList<>();
+        distributoriMarker = new HashMap<>();
 
         //Roba dei campi d'input
         from = (EditText) findViewById(R.id.from);
         to = (EditText) findViewById(R.id.to);
 
-        to.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        /*to.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 Toast.makeText(getApplicationContext(), "Inizio la ricerca!", Toast.LENGTH_SHORT).show();
@@ -97,7 +101,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 Distributore economico = null;
                                 Float minPrice = 10f;
                                 for(Distributore d : vicini){
-                                    manager.retriveInfoPrices(d);
                                     Log.d("Test", "test1");
                                     Location a = new Location("");//provider name is unnecessary
                                     a.setLatitude(d.getLat());//your coords of course
@@ -134,7 +137,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 return false;
             }
-        });
+        });*/
         loaderView.remove("Starting app...");
     }
 
@@ -156,9 +159,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                //setMarkersBasedOnPosition();
+                lastMinLat=90.0;
+                lastMaxLat=-90.0;
+                lastMinLng=180.0;
+                lastMaxLng=-180.0;
+                setMarkersBasedOnPosition();
             }
         });
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                setInfoWindowBasedOnStation(distributoriMarker.get(marker));
+                return false;
+            }
+        });
+    }
+
+    void setInfoWindowBasedOnStation(Distributore d){
+        Log.d("Distributore info", d.toString());
     }
 
     void setMarkersBasedOnPosition(){
@@ -173,20 +191,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             maxLat = view.southwest.longitude;
         }
 
-        if(maxLat-minLat<=0.2 && maxLng-minLng<=0.2) {
-            loaderView.add("Fetching data...");
-            for(Marker m : station) m.remove();
-            distributoriMostrati = manager.getDistributoriInRange(minLat, maxLat, minLng, maxLng);
-            for(Distributore dist : distributoriMostrati){
-                station.add(mMap.addMarker(
-                        new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(this.icon)).title(dist.getId()+"").draggable(false).visible(true).alpha(0.9f).position(dist.getPosizione())
-                ));
+        //Elimino tutti quelli che sono usciti dallo schermo
+        Double minLatC=Math.max(minLat, lastMinLat),
+                maxLatC=Math.min(maxLat, lastMaxLat),
+                minLngC=Math.max(minLng, lastMinLng),
+                maxLngC=Math.min(maxLng, lastMaxLng);
+        LatLng tempPosition;
+        for(int i=0; i<station.size(); i++){
+            tempPosition = station.get(i).getPosition();
+            if(tempPosition.latitude<minLatC || tempPosition.latitude>maxLatC || tempPosition.longitude<minLngC || tempPosition.longitude>maxLngC){
+                station.get(i).remove();
+                distributoriMarker.remove(station.get(i));
+                station.remove(i);
+                i--;
             }
-            loaderView.remove("Fetching data...");
         }
-        else{
-            for(Marker m : station) m.remove();
+        for(Marker m : station){
+            tempPosition = m.getPosition();
+            if(tempPosition.latitude<minLatC || tempPosition.latitude>maxLatC || tempPosition.longitude<minLngC || tempPosition.longitude>maxLngC){
+                m.remove();
+                distributoriMarker.remove(m);
+            }
         }
+
+        //Controllo se devo aggiungere altri marker
+        ArrayList<Distributore> nuovi = new ArrayList<>();
+        if(maxLat-minLat<=0.2 && maxLng-minLng<=0.2) {
+            if(minLat<lastMinLat){
+                nuovi.addAll(manager.getDistributoriInRange(minLat, lastMinLat, minLng, maxLng));
+            }
+            if(maxLat>lastMaxLat){
+                nuovi.addAll(manager.getDistributoriInRange(lastMaxLat, maxLat, minLng, maxLng));
+            }
+            if(minLng<lastMinLng){
+                Double neededMinLat = Math.max(minLat, lastMinLat);
+                Double neededMaxLat = Math.min(maxLat, lastMaxLat);
+                nuovi.addAll(manager.getDistributoriInRange(neededMinLat, neededMaxLat, minLng, lastMinLng));
+            }
+            if(maxLng>lastMaxLng){
+                Double neededMinLat = Math.max(minLat, lastMinLat);
+                Double neededMaxLat = Math.min(maxLat, lastMaxLat);
+                nuovi.addAll(manager.getDistributoriInRange(neededMinLat, neededMaxLat, lastMaxLng, maxLng));
+            }
+            for(Distributore dist : nuovi){
+                Marker temp = mMap.addMarker(
+                        new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(this.icon)).title(dist.getId()+"").draggable(false).visible(true).alpha(0.95f).position(dist.getPosizione())
+                );
+                distributoriMarker.put(temp, dist);
+                station.add(temp);
+            }
+        }
+        Log.d("Numero distributori", station.size()+"");
     }
 
     public Bitmap resizeMapIcons(String iconName, int width, int height){

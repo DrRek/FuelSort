@@ -17,7 +17,6 @@ public class Pompa {
         this.id = id;
         this.carburante = carburante;
         this.prezzo = prezzo;
-        Log.d("Debug prezzo", id+" "+prezzo);
         this.isSelf = isSelf;
         this.latestUpdate = latestUpdate;
     }
@@ -27,4 +26,8 @@ public class Pompa {
     public float getPrezzo(){return prezzo;}
     public boolean isSelf(){return isSelf;}
     public String getLatestUpdate(){return latestUpdate;}
+
+    public String toString(){
+        return "\n\tCarburante: "+carburante+"\n\tPrezzo: "+prezzo+"€\n\tSelf: "+isSelf+"\n\tLatest update: "+latestUpdate;
+    }
 }

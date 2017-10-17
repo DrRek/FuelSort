@@ -74,6 +74,23 @@ public class Distributore implements Comparable{
         return lowest;
     }
 
+    public String toString(){
+        String toString = "\n"+
+                "Id: "+id+"\n"+
+                "Gestore: "+gestore+"\n"+
+                "Bandiera: "+bandiera+"\n"+
+                "TipoImpianto: "+tipoImpianto+"\n"+
+                "Nome: "+nome+"\n"+
+                "Indirizzo: "+indirizzo+"\n"+
+                "Comune: "+comune+"\n"+
+                "Provincia: "+provincia+"\n"+
+                "Lat Lng: "+lat+" "+lon+"\n";
+        for (Pompa p : pompe){
+            toString += "Pompa:" + p.toString() +"\n";
+        }
+        return toString;
+    }
+
     public LatLng getPosizione(){
         return new LatLng(lat,lon);
     }

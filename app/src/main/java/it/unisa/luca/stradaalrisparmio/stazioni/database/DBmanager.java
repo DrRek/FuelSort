@@ -196,15 +196,6 @@ public class DBmanager extends Thread{
         }
         wr.close();
         Log.d("Database", "End: Insert pompe.");
-
-        SQLiteDatabase rd = dbhelper.getReadableDatabase();sql = "SELECT * FROM "+DBhelper.TBL_PREZZI+";";
-        Log.d("Query", sql);
-        Cursor c =rd.rawQuery(sql, null);
-        while(c.moveToNext()){
-            Log.d("Debug prezzo 1", ""+c.getFloat(c.getColumnIndex(DBhelper.FIELD_PREZZO)));
-        }
-        c.close();
-        rd.close();
     }
 
     public ArrayList<Distributore> getDistributoriInRange(double minLat, double maxLat, double minLng, double maxLng){
@@ -220,6 +211,7 @@ public class DBmanager extends Thread{
         int id;
         String gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia;
         double lat, lon;
+        Distributore temp;
         while(c.moveToNext()){
             id = c.getInt(c.getColumnIndex(DBhelper.FIELD_ID));
             gestore = c.getString(c.getColumnIndex(DBhelper.FIELD_GESTORE));
@@ -231,15 +223,40 @@ public class DBmanager extends Thread{
             provincia = c.getString(c.getColumnIndex(DBhelper.FIELD_PROVINCIA));
             lat = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LAT));
             lon = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LON));
-            risultati.add(
-                    new Distributore(
-                            id, gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia, lat, lon
+            temp = new Distributore(id, gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia, lat, lon);
+            setPompeForDistributore(temp);
+            risultati.add(temp);
+        }
+        c.close();
+        rd.close();
+        return risultati;
+    }
+
+    public void setPompeForDistributore(Distributore d){
+        SQLiteDatabase rd = dbhelper.getReadableDatabase();
+        String sql = "SELECT * FROM "+DBhelper.TBL_PREZZI+" where "+DBhelper.FIELD_ID+"="+d.getId()+";";
+        Cursor c =rd.rawQuery(sql, null);
+        String carburante, latestUpdate;
+        boolean isSelf;
+        Float prezzo;
+        ArrayList<Pompa> results = new ArrayList<>();
+        while(c.moveToNext()){
+            carburante = c.getString(c.getColumnIndex(DBhelper.FIELD_CARBURANTE));
+            prezzo = c.getFloat(c.getColumnIndex(DBhelper.FIELD_PREZZO));
+            if(c.getInt(c.getColumnIndex(DBhelper.FIELD_IS_SELF))==1)
+                isSelf=true;
+            else
+                isSelf=false;
+            latestUpdate = c.getString(c.getColumnIndex(DBhelper.FIELD_LATEST_UPDATE));
+            results.add(
+                    new Pompa(
+                            id, carburante, prezzo, isSelf, latestUpdate
                     )
             );
         }
         c.close();
         rd.close();
-        return risultati;
+        d.setPompe(results);
     }
 
     public ArrayList<Distributore> getZoneStation(Route r){
@@ -285,34 +302,5 @@ public class DBmanager extends Thread{
         c.close();
         rd.close();
         return results;
-    }
-
-    public void retriveInfoPrices(Distributore d){
-        SQLiteDatabase rd = dbhelper.getReadableDatabase();
-        String sql = "SELECT * FROM "+DBhelper.TBL_PREZZI+";";
-        Log.d("Query", sql);
-        Cursor c =rd.rawQuery(sql, null);
-        String carburante, latestUpdate;
-        boolean isSelf;
-        Float prezzo;
-        ArrayList<Pompa> results = new ArrayList<>();
-        while(c.moveToNext()){
-            Log.d("Debug prezzo 1", d.getId()+" "+c.getFloat(c.getColumnIndex(DBhelper.FIELD_PREZZO)));
-            /*carburante = c.getString(c.getColumnIndex(DBhelper.FIELD_CARBURANTE));
-            prezzo = c.getFloat(c.getColumnIndex(DBhelper.FIELD_PREZZO));
-            if(c.getInt(c.getColumnIndex(DBhelper.FIELD_IS_SELF))==1)
-                isSelf=true;
-            else
-                isSelf=false;
-            latestUpdate = c.getString(c.getColumnIndex(DBhelper.FIELD_LATEST_UPDATE));
-            results.add(
-                    new Pompa(
-                            id, carburante, prezzo, isSelf, latestUpdate
-                    )
-            );*/
-        }
-        c.close();
-        rd.close();
-        d.setPompe(results);
     }
 }
