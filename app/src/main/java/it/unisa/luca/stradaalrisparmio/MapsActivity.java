@@ -156,13 +156,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 5.0f));
         this.icon = resizeMapIcons("pomp_icon", 120, 120);
+        lastMinLat=90.0;
+        lastMaxLat=-90.0;
+        lastMinLng=180.0;
+        lastMaxLng=-180.0;
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                lastMinLat=90.0;
-                lastMaxLat=-90.0;
-                lastMinLng=180.0;
-                lastMaxLng=-180.0;
                 setMarkersBasedOnPosition();
             }
         });
@@ -190,6 +190,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             minLat = view.northeast.longitude;
             maxLat = view.southwest.longitude;
         }
+
 
         //Elimino tutti quelli che sono usciti dallo schermo
         Double minLatC=Math.max(minLat, lastMinLat),
@@ -241,7 +242,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 station.add(temp);
             }
         }
-        Log.d("Numero distributori", station.size()+"");
+
+        lastMinLat=minLat;
+        lastMaxLat=maxLat;
+        lastMinLng=minLng;
+        lastMaxLng=maxLng;
     }
 
     public Bitmap resizeMapIcons(String iconName, int width, int height){
