@@ -13,21 +13,21 @@ import it.unisa.luca.stradaalrisparmio.R;
  * Created by Luca on 2017-10-10.
  */
 
-public class Loading {
-    public static Loading loader;
+public class LoadingShow {
+    public static LoadingShow loader;
 
-    public static Loading getLoader(Activity activity){
+    public static LoadingShow getLoader(Activity activity){
         if(loader == null){
-            synchronized (Loading.class){
+            synchronized (LoadingShow.class){
                 if(loader == null){
-                    loader = new Loading(activity);
+                    loader = new LoadingShow(activity);
                 }
             }
         }
         return loader;
     }
 
-    public Loading(Activity activity){
+    public LoadingShow(Activity activity){
         this.activity = activity;
         acts = new ArrayList<String>();
     }

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import it.unisa.luca.stradaalrisparmio.api.strada.Route;
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.stazioni.Pompa;
-import it.unisa.luca.stradaalrisparmio.support.Loading;
+import it.unisa.luca.stradaalrisparmio.support.LoadingShow;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -45,7 +45,7 @@ public class DBmanager extends Thread{
     }
 
     private void updateData(){
-        final Loading loaderView = Loading.getLoader(activity);
+        final LoadingShow loaderView = LoadingShow.getLoader(activity);
         DataImporter browser = new DataImporter();
 
         distributoriNewData = browser.retrieve(DataImporter.DISTRIBUTORI_PATH);
