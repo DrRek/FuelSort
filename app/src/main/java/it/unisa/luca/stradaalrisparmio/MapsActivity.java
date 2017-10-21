@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanager;
@@ -47,6 +48,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean prefSelf;
     private int prefKmxl;
 
+    private DBmanager.SearchParams params;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,8 +64,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Roba delle mappe
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        distributoriMarker = new HashMap<>();
 
         //Roba dei campi d'input
         from = (EditText) findViewById(R.id.from);
@@ -146,7 +147,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         prefCarburante = pref.getString("carburante", "diesel");
         prefSelf = pref.getBoolean("self", true);
         prefKmxl = pref.getInt("kmxl", 20);
-        Log.d("Temp debug", prefCarburante +" "+prefSelf+" "+prefKmxl);
+        params = new DBmanager.SearchParams(prefCarburante, prefSelf, prefKmxl);
+
+        old = null; //necessario per aggiornare bene lo schermo quando si ritorna da un'altra attività
+        if(distributoriMarker!=null) {
+            Set<Marker> markers = distributoriMarker.keySet();
+            for (Marker m : markers) {
+                m.remove();
+            }
+        }
+        distributoriMarker = new HashMap<>();
     }
 
     /**
@@ -261,23 +271,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if(isCancelled()) return null;
             ArrayList<Distributore> nuovi = new ArrayList<>();
             if(minLat<lastMinLat){
-                nuovi.addAll(manager.getDistributoriInRange(minLat, lastMinLat, minLng, maxLng));
+                nuovi.addAll(manager.getDistributoriInRange(minLat, lastMinLat, minLng, maxLng, params));
             }
             if(isCancelled()) return null;
             if(maxLat>lastMaxLat){
-                nuovi.addAll(manager.getDistributoriInRange(lastMaxLat, maxLat, minLng, maxLng));
+                nuovi.addAll(manager.getDistributoriInRange(lastMaxLat, maxLat, minLng, maxLng, params));
             }
             if(isCancelled()) return null;
             if(minLng<lastMinLng){
                 Double neededMinLat = Math.max(minLat, lastMinLat);
                 Double neededMaxLat = Math.min(maxLat, lastMaxLat);
-                nuovi.addAll(manager.getDistributoriInRange(neededMinLat, neededMaxLat, minLng, lastMinLng));
+                nuovi.addAll(manager.getDistributoriInRange(neededMinLat, neededMaxLat, minLng, lastMinLng, params));
             }
             if(isCancelled()) return null;
             if(maxLng>lastMaxLng){
                 Double neededMinLat = Math.max(minLat, lastMinLat);
                 Double neededMaxLat = Math.min(maxLat, lastMaxLat);
-                nuovi.addAll(manager.getDistributoriInRange(neededMinLat, neededMaxLat, lastMaxLng, maxLng));
+                nuovi.addAll(manager.getDistributoriInRange(neededMinLat, neededMaxLat, lastMaxLng, maxLng, params));
             }
             return nuovi;
         }

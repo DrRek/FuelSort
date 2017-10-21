@@ -198,7 +198,7 @@ public class DBmanager extends Thread{
         Log.d("Database", "End: Insert pompe.");
     }
 
-    public ArrayList<Distributore> getDistributoriInRange(double minLat, double maxLat, double minLng, double maxLng){
+    public ArrayList<Distributore> getDistributoriInRange(double minLat, double maxLat, double minLng, double maxLng, SearchParams params){
         ArrayList<Distributore> risultati = new ArrayList<Distributore>();
         SQLiteDatabase rd = dbhelper.getReadableDatabase();
         String sql = "SELECT * FROM "+DBhelper.TBL_DISTRIBUTORI+" where " +
@@ -224,15 +224,16 @@ public class DBmanager extends Thread{
             lat = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LAT));
             lon = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LON));
             temp = new Distributore(id, gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia, lat, lon);
-            setPompeForDistributore(temp);
-            risultati.add(temp);
+            if(setPompeForDistributore(temp, params)){
+                risultati.add(temp);
+            }
         }
         c.close();
         rd.close();
         return risultati;
     }
 
-    public void setPompeForDistributore(Distributore d){
+    public boolean setPompeForDistributore(Distributore d, SearchParams params){
         SQLiteDatabase rd = dbhelper.getReadableDatabase();
         String sql = "SELECT * FROM "+DBhelper.TBL_PREZZI+" where "+DBhelper.FIELD_ID+"="+d.getId()+";";
         Cursor c =rd.rawQuery(sql, null);
@@ -240,13 +241,20 @@ public class DBmanager extends Thread{
         boolean isSelf;
         Float prezzo;
         ArrayList<Pompa> results = new ArrayList<>();
+        boolean forNewbie = false;
+        boolean rightPomp = false;
         while(c.moveToNext()){
             carburante = c.getString(c.getColumnIndex(DBhelper.FIELD_CARBURANTE));
+            if(params.checkCarburante(carburante)){
+                rightPomp = true;
+            }
             prezzo = c.getFloat(c.getColumnIndex(DBhelper.FIELD_PREZZO));
             if(c.getInt(c.getColumnIndex(DBhelper.FIELD_IS_SELF))==1)
                 isSelf=true;
-            else
-                isSelf=false;
+            else {
+                forNewbie = true;
+                isSelf = false;
+            }
             latestUpdate = c.getString(c.getColumnIndex(DBhelper.FIELD_LATEST_UPDATE));
             results.add(
                     new Pompa(
@@ -256,7 +264,11 @@ public class DBmanager extends Thread{
         }
         c.close();
         rd.close();
+        if(!rightPomp || (!params.isSelf() && !forNewbie)){
+            return false;
+        }
         d.setPompe(results);
+        return true;
     }
 
     public ArrayList<Distributore> getZoneStation(Route r){
@@ -302,5 +314,33 @@ public class DBmanager extends Thread{
         c.close();
         rd.close();
         return results;
+    }
+
+    /**
+     * carburante may be diesel benzina gpl o metano
+     */
+    public static class SearchParams{
+        private String carburante;
+        private boolean isSelf;
+        private int kmxl;
+        public SearchParams(String carburante, boolean isSelf, int kmxl){
+            this.carburante = carburante;
+            this.isSelf = isSelf;
+            this.kmxl = kmxl;
+        }
+        public String getCarburante(){return carburante;}
+        public boolean isSelf(){return isSelf;}
+        public int getKmxl(){return kmxl;}
+
+        public boolean checkCarburante(String toCheck){
+            toCheck = toCheck.toLowerCase();
+            if(toCheck.contains(carburante.toLowerCase())) return true;
+            else if(carburante.equalsIgnoreCase("diesel")){
+                if(toCheck.contains("diesel") || toCheck.contains("gasolio")) return true;
+            } else if(carburante.equalsIgnoreCase("benzina")){
+                if(toCheck.contains("benzina") || toCheck.contains("super")) return true;
+            }
+            return false;
+        }
     }
 }
