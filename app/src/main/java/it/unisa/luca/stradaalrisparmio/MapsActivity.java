@@ -1,11 +1,14 @@
 package it.unisa.luca.stradaalrisparmio;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -39,6 +42,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private volatile HashMap<Marker, Distributore> distributoriMarker;
     Double lastMinLat, lastMaxLat, lastMinLng, lastMaxLng;
     LoadStationInScreen old;
+
+    private String prefCarburante;
+    private boolean prefSelf;
+    private int prefKmxl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,6 +139,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         loaderView.remove("Starting app...");
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
+        prefCarburante = pref.getString("carburante", "diesel");
+        prefSelf = pref.getBoolean("self", true);
+        prefKmxl = pref.getInt("kmxl", 20);
+        Log.d("Temp debug", prefCarburante +" "+prefSelf+" "+prefKmxl);
+    }
 
     /**
      * Manipulates the map once available.
@@ -168,14 +184,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     void setMarkersBasedOnPosition(){
         if(old!=null){
+            old.cancel(true);
+        }else{
             this.icon = resizeMapIcons("pomp_icon", 120, 120);
             this.lastMinLat=90.0;
             this.lastMaxLat=-90.0;
             this.lastMinLng=180.0;
             this.lastMaxLng=-180.0;
-            old.cancel(true);
         }
-        new LoadStationInScreen().execute();
+        (old = new LoadStationInScreen()).execute();
+    }
+
+    public void onOpenSettings(View view){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     public Bitmap resizeMapIcons(String iconName, int width, int height){

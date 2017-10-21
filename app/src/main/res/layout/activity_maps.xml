@@ -47,6 +47,13 @@
             android:inputType="textCapSentences"
             android:hint="Destinazione"/>
     </LinearLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="Settings"
+        android:onClick="onOpenSettings"/>
     <LinearLayout
         android:id="@+id/LoadingLayout"
         android:layout_width="match_parent"
