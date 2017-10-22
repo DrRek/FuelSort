@@ -298,7 +298,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             HashMap<Marker, Distributore> tempHashMap = new HashMap<>();
             Bitmap tempBitmap;
             for(Distributore dist : nuovi){
-                tempBitmap = BitmapCreator.getBitmap(context, Color.GRAY, dist.getDieselLowestPrice(), dist.getBandiera());
+                tempBitmap = BitmapCreator.getBitmap(context, Color.GRAY, dist.getLowestPrice(params), dist.getBandiera());
                 Marker temp = mMap.addMarker(
                         new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(dist.getId()+"").draggable(false).visible(true).alpha(0.95f).position(dist.getPosizione())
                 );

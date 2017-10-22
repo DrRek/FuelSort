@@ -2,10 +2,13 @@ package it.unisa.luca.stradaalrisparmio.stazioni;
 
 import android.icu.util.DateInterval;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+
+import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanager;
 
 /**
  * Da riempire
@@ -64,11 +67,11 @@ public class Distributore implements Comparable{
         return 0;
     }
 
-    public Float getDieselLowestPrice(){
-        Float lowest = 10f;
+    public Float getLowestPrice(DBmanager.SearchParams params){
+        Float lowest = 9.999f;
         for(Pompa p : pompe){
-            if(p.getPrezzo()<lowest){
-                lowest=p.getPrezzo();
+            if(params.checkCarburante(p.getCarburante()) && (params.isSelf() || (!params.isSelf() && !p.isSelf())) && p.getPrezzo()<lowest) {
+                lowest = p.getPrezzo();
             }
         }
         return lowest;
