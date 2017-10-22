@@ -1,9 +1,10 @@
 package it.unisa.luca.stradaalrisparmio;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import java.util.Set;
 
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanager;
+import it.unisa.luca.stradaalrisparmio.support.BitmapCreator;
 import it.unisa.luca.stradaalrisparmio.support.LoadingShow;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -50,6 +52,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private DBmanager.SearchParams params;
 
+    private Context context;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +72,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Roba dei campi d'input
         from = (EditText) findViewById(R.id.from);
         to = (EditText) findViewById(R.id.to);
+
+        context = getApplicationContext();
 
         /*to.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -171,7 +177,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 5.0f));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 15.0f));
         old=null;
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
@@ -196,7 +202,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if(old!=null){
             old.cancel(true);
         }else{
-            this.icon = resizeMapIcons("pomp_icon", 120, 120);
+            //this.icon = BitmapCreator.getBitmap(context, Color.GRAY);
+            //this.icon = resizeMapIcons("pomp_icon", 120, 120);
             this.lastMinLat=90.0;
             this.lastMaxLat=-90.0;
             this.lastMinLng=180.0;
@@ -210,12 +217,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startActivity(intent);
     }
 
-    public Bitmap resizeMapIcons(String iconName, int width, int height){
-        Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(),getResources().getIdentifier(iconName, "drawable", getPackageName()));
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(imageBitmap, width, height, false);
-        return resizedBitmap;
-    }
-
     /**
      * Async task usato per la ricerca dei distributori all'interno dello schermo.
      * Se SCREEN_DIMENSION_FOR_DATA > delle dimensioni dello schermo non viene creato alcun thread
@@ -226,6 +227,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         protected void onPreExecute(){
+            Log.d("Ricerca distributori", "Inizio a cercare distributori.");
             LatLngBounds view = mMap.getProjection().getVisibleRegion().latLngBounds;
             minLat = view.southwest.latitude; minLng = view.southwest.longitude; maxLat = view.northeast.latitude; maxLng = view.northeast.longitude;
             if(maxLat-minLat>SCREEN_DIMENSION_FOR_DATA && maxLng-minLng>SCREEN_DIMENSION_FOR_DATA){
@@ -294,9 +296,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         protected void onPostExecute(ArrayList<Distributore> nuovi) {
             HashMap<Marker, Distributore> tempHashMap = new HashMap<>();
+            Bitmap tempBitmap;
             for(Distributore dist : nuovi){
+                tempBitmap = BitmapCreator.getBitmap(context, Color.GRAY, dist.getDieselLowestPrice(), dist.getBandiera());
                 Marker temp = mMap.addMarker(
-                        new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon)).title(dist.getId()+"").draggable(false).visible(true).alpha(0.95f).position(dist.getPosizione())
+                        new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(dist.getId()+"").draggable(false).visible(true).alpha(0.95f).position(dist.getPosizione())
                 );
                 tempHashMap.put(temp, dist);
             }
@@ -307,6 +311,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             lastMaxLat=maxLat;
             lastMinLng=minLng;
             lastMaxLng=maxLng;
+            Log.d("Ricerca distributori", "Ricerca terminata con successo.");
         }
 
         protected void onCancelled(ArrayList<Distributore> nuovi){
@@ -314,6 +319,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             lastMaxLat=maxLat;
             lastMinLng=minLng;
             lastMaxLng=maxLng;
+            Log.d("Ricerca distributori", "Ricerca cancellata.");
         }
     }
 }
