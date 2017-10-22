@@ -5,12 +5,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,13 +25,18 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import it.unisa.luca.stradaalrisparmio.api.strada.DirectionFinder;
+import it.unisa.luca.stradaalrisparmio.api.strada.DirectionFinderListener;
+import it.unisa.luca.stradaalrisparmio.api.strada.Route;
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanager;
 import it.unisa.luca.stradaalrisparmio.support.BitmapCreator;
@@ -75,7 +84,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         context = getApplicationContext();
 
-        /*to.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        to.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 Toast.makeText(getApplicationContext(), "Inizio la ricerca!", Toast.LENGTH_SHORT).show();
@@ -89,6 +98,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         @Override
                         public void onDirectionFinderSuccess(List<Route> routes) {
                             Log.d("DirectionFinderSuccess", "Success");
+                            mMap.clear();
                             if (!routes.isEmpty()) {
                                 Route r = routes.get(0);
                                 mMap.addMarker(new MarkerOptions().title("Start").position(r.startLocation));
@@ -120,17 +130,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                         if(a.distanceTo(b) * a.distanceTo(c) / b.distanceTo(c) > 1000){
                                             //vicini.remove(d);
                                         }else{
-                                            if(minPrice>d.getDieselLowestPrice()){
+                                            if(minPrice>d.getLowestPrice(params)){
                                                 economico = d;
                                             }
-                                            station.add(mMap.addMarker(
-                                                    new MarkerOptions().title(d.getDieselLowestPrice()+"").draggable(false).visible(true).alpha(0.9f).position(d.getPosizione()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                                            ));
+                                            mMap.addMarker(
+                                                    new MarkerOptions().title(d.getLowestPrice(params)+"").draggable(false).visible(true).alpha(0.9f).position(d.getPosizione()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                                            );
                                         }
                                     }
-                                    station.add(mMap.addMarker(
-                                            new MarkerOptions().title(economico.getDieselLowestPrice()+"").draggable(false).visible(true).alpha(0.9f).position(economico.getPosizione()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                                    ));
+                                    mMap.addMarker(
+                                            new MarkerOptions().title(economico.getLowestPrice(params)+"").draggable(false).visible(true).alpha(0.9f).position(economico.getPosizione()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                                    );
                                 }
 
                             }
@@ -142,7 +152,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 return false;
             }
-        });*/
+        });
         loaderView.remove("Starting app...");
     }
 
