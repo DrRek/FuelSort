@@ -62,8 +62,6 @@ public class DirectionFinder {
                 while ((line = reader.readLine()) != null) {
                     buffer.append(line + "\n");
                 }
-
-                Log.d("Boh", buffer.toString());
                 return buffer.toString();
 
             } catch (MalformedURLException e) {
@@ -109,11 +107,30 @@ public class DirectionFinder {
             route.startLocation = new LatLng(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
             route.endLocation = new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
             route.points = decodePolyLine(overview_polylineJson.getString("points"));
+            route.steps = decodeSteps(jsonLeg.getJSONArray("steps"));
 
             routes.add(route);
         }
 
         listener.onDirectionFinderSuccess(routes);
+    }
+
+    private List<Step> decodeSteps(JSONArray steps) throws JSONException {
+        List<Step> trovati = new ArrayList<>();
+        for(int i=0; i<steps.length(); i++){
+            JSONObject step = steps.getJSONObject(i);
+            JSONObject start = step.getJSONObject("start_location");
+            JSONObject end = step.getJSONObject("end_location");
+            JSONObject distance = step.getJSONObject("distance");
+            trovati.add(
+                    new Step(
+                        new LatLng(start.getDouble("lat"), start.getDouble("lng")),
+                        new LatLng(end.getDouble("lat"), end.getDouble("lng")),
+                        new Distance(distance.getString("text"), distance.getInt("value"))
+                    )
+            );
+        }
+        return trovati;
     }
 
     private List<LatLng> decodePolyLine(final String poly) {

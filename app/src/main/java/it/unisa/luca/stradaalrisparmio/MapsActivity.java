@@ -111,7 +111,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     plo.add(r.points.get(i));
                                 }
                                 mMap.addPolyline(plo);
-                                ArrayList<Distributore> vicini = manager.getZoneStation(r);
+
+                                for(int i=0; i<r.steps.size()-1;i++){
+                                    mMap.addMarker(new MarkerOptions().position(r.steps.get(i).end));
+                                }
+                                /*ArrayList<Distributore> vicini = manager.getZoneStation(r);
                                 Log.d("Test", "test1");
                                 Distributore economico = null;
                                 Float minPrice = 10f;
@@ -141,7 +145,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     mMap.addMarker(
                                             new MarkerOptions().title(economico.getLowestPrice(params)+"").draggable(false).visible(true).alpha(0.9f).position(economico.getPosizione()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
                                     );
-                                }
+                                }*/
 
                             }
                             loaderView.remove("Searching path");

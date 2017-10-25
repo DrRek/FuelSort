@@ -13,4 +13,5 @@ public class Route {
     public LatLng startLocation;
 
     public List<LatLng> points;
+    public List<Step> steps;
 }
