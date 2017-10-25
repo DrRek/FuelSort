@@ -264,7 +264,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //Scorre tutti i marker già presenti, se non entrano nei bordi dello schermo li rimuove
             LatLng tempPosition;
             Marker temp;
-            if(isCancelled()) return;
             synchronized (LoadStationInScreen.class) {
                 Iterator<Map.Entry<Marker, Distributore>> iter = distributoriMarker.entrySet().iterator();
                 while(iter.hasNext()) {
@@ -284,26 +283,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          */
         @Override
         protected synchronized ArrayList<Distributore> doInBackground(Void... voids) {
-            if(isCancelled()) return null;
+            if(isCancelled()) {
+                lastMinLat = minLatC;
+                lastMaxLat = maxLatC;
+                lastMinLng = minLngC;
+                lastMaxLng = maxLngC;
+                return null;
+            }
             ArrayList<Distributore> nuovi = new ArrayList<>();
             if(minLat<lastMinLat){
                 nuovi.addAll(manager.getDistributoriInRange(minLat, lastMinLat, minLng, maxLng, params));
+                if (isCancelled()){
+                    lastMinLat = minLat;
+                    lastMaxLat = maxLatC;
+                    lastMinLng = minLngC;
+                    lastMaxLng = maxLngC;
+                    return null;
+                }
             }
-            if(isCancelled()) return null;
             if(maxLat>lastMaxLat){
                 nuovi.addAll(manager.getDistributoriInRange(lastMaxLat, maxLat, minLng, maxLng, params));
+                if (isCancelled()){
+                    lastMaxLat = maxLat;
+                    lastMinLng = minLngC;
+                    lastMaxLng = maxLngC;
+                    return null;
+                }
             }
-            if(isCancelled()) return null;
             if(minLng<lastMinLng){
-                Double neededMinLat = Math.max(minLat, lastMinLat);
-                Double neededMaxLat = Math.min(maxLat, lastMaxLat);
-                nuovi.addAll(manager.getDistributoriInRange(neededMinLat, neededMaxLat, minLng, lastMinLng, params));
+                //Double neededMinLat = Math.max(minLat, lastMinLat);
+               // Double neededMaxLat = Math.min(maxLat, lastMaxLat);
+                nuovi.addAll(manager.getDistributoriInRange(minLatC, maxLatC, minLng, lastMinLng, params));
+                if (isCancelled()){
+                    lastMinLng = minLng;
+                    lastMaxLng = maxLngC;
+                    return null;
+                }
             }
-            if(isCancelled()) return null;
             if(maxLng>lastMaxLng){
-                Double neededMinLat = Math.max(minLat, lastMinLat);
-                Double neededMaxLat = Math.min(maxLat, lastMaxLat);
-                nuovi.addAll(manager.getDistributoriInRange(neededMinLat, neededMaxLat, lastMaxLng, maxLng, params));
+                //Double neededMinLat = Math.max(minLat, lastMinLat);
+                //Double neededMaxLat = Math.min(maxLat, lastMaxLat);
+                nuovi.addAll(manager.getDistributoriInRange(minLatC, maxLatC, lastMaxLng, maxLng, params));
+                if (isCancelled()){
+                    lastMaxLng = maxLng;
+                    return null;
+                }
             }
             return nuovi;
         }
@@ -329,10 +353,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         protected void onCancelled(ArrayList<Distributore> nuovi){
-            lastMinLat=minLat;
-            lastMaxLat=maxLat;
-            lastMinLng=minLng;
-            lastMaxLng=maxLng;
             Log.d("Ricerca distributori", "Ricerca cancellata.");
         }
     }
