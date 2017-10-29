@@ -115,38 +115,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 for(int i=0; i<r.steps.size()-1;i++){
                                     mMap.addMarker(new MarkerOptions().position(r.steps.get(i).end));
                                 }
-                                /*ArrayList<Distributore> vicini = manager.getZoneStation(r);
-                                Log.d("Test", "test1");
-                                Distributore economico = null;
-                                Float minPrice = 10f;
-                                for(Distributore d : vicini){
-                                    Log.d("Test", "test1");
-                                    Location a = new Location("");//provider name is unnecessary
-                                    a.setLatitude(d.getLat());//your coords of course
-                                    a.setLongitude(d.getLon());
-                                    for(int i=0; i<r.points.size()-1; i++){
-                                        Location b = new Location("");//provider name is unnecessary
-                                        b.setLatitude(r.points.get(i).latitude);//your coords of course
-                                        b.setLongitude(r.points.get(i).longitude);
-                                        Location c = new Location("");//provider name is unnecessary
-                                        c.setLatitude(r.points.get(i+1).latitude);//your coords of course
-                                        c.setLongitude(r.points.get(i+1).longitude);
-                                        if(a.distanceTo(b) * a.distanceTo(c) / b.distanceTo(c) > 1000){
-                                            //vicini.remove(d);
-                                        }else{
-                                            if(minPrice>d.getLowestPrice(params)){
-                                                economico = d;
-                                            }
-                                            mMap.addMarker(
-                                                    new MarkerOptions().title(d.getLowestPrice(params)+"").draggable(false).visible(true).alpha(0.9f).position(d.getPosizione()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                                            );
-                                        }
-                                    }
-                                    mMap.addMarker(
-                                            new MarkerOptions().title(economico.getLowestPrice(params)+"").draggable(false).visible(true).alpha(0.9f).position(economico.getPosizione()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                                    );
-                                }*/
-
                             }
                             loaderView.remove("Searching path");
                         }
