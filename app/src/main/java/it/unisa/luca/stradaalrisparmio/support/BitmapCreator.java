@@ -54,38 +54,40 @@ public class BitmapCreator {
         paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         canvas.drawText(value+"", ((SIZE - bounds.width())/2)-2, SIZE/4, paint);
 
-        Bitmap bandieraBitmap;
-        String toCheck = bandiera.toLowerCase();
-        if(toCheck.contains("esso")){
-            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(ESSO_ICON, "drawable", context.getPackageName()));
-        } else if(toCheck.contains("q8")){
-            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(Q8_ICON, "drawable", context.getPackageName()));
-        } else if(toCheck.contains("bianche")){
-            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(BIANCHE_ICON, "drawable", context.getPackageName()));
-        } else if(toCheck.contains("total erg")){
-            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(TOTALERG_ICON, "drawable", context.getPackageName()));
-        } else if(toCheck.contains("energas")){
-            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(ENERGAS_ICON, "drawable", context.getPackageName()));
-        } else if(toCheck.contains("tamoil")){
-            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(TAMOIL_ICON, "drawable", context.getPackageName()));
-        } else if(toCheck.contains("repsol")){
-            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(REPSOL_ICON, "drawable", context.getPackageName()));
-        }   else if(toCheck.contains("ip")){
-            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(IP_ICON, "drawable", context.getPackageName()));
-        } else {
-            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(OTHER_ICON, "drawable", context.getPackageName()));
+        if(bandiera!=null){
+            Bitmap bandieraBitmap;
+            String toCheck = bandiera.toLowerCase();
+            if(toCheck.contains("esso")){
+                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(ESSO_ICON, "drawable", context.getPackageName()));
+            } else if(toCheck.contains("q8")){
+                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(Q8_ICON, "drawable", context.getPackageName()));
+            } else if(toCheck.contains("bianche")){
+                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(BIANCHE_ICON, "drawable", context.getPackageName()));
+            } else if(toCheck.contains("total erg")){
+                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(TOTALERG_ICON, "drawable", context.getPackageName()));
+            } else if(toCheck.contains("energas")){
+                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(ENERGAS_ICON, "drawable", context.getPackageName()));
+            } else if(toCheck.contains("tamoil")){
+                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(TAMOIL_ICON, "drawable", context.getPackageName()));
+            } else if(toCheck.contains("repsol")){
+                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(REPSOL_ICON, "drawable", context.getPackageName()));
+            }   else if(toCheck.contains("ip")){
+                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(IP_ICON, "drawable", context.getPackageName()));
+            } else {
+                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(OTHER_ICON, "drawable", context.getPackageName()));
+            }
+            int x=bandieraBitmap.getWidth(), y=bandieraBitmap.getHeight();
+            if(x>y){
+                y = BANDIERA_SIZE * y / x;
+                x = BANDIERA_SIZE;
+            }
+            else{
+                x = BANDIERA_SIZE * x / y;
+                y = BANDIERA_SIZE;
+            }
+            bandieraBitmap = Bitmap.createScaledBitmap(bandieraBitmap, x, y, false).copy(config, true);
+            canvas.drawBitmap(bandieraBitmap, (SIZE-x)/2, (SIZE-y)*3/5, null);
         }
-        int x=bandieraBitmap.getWidth(), y=bandieraBitmap.getHeight();
-        if(x>y){
-            y = BANDIERA_SIZE * y / x;
-            x = BANDIERA_SIZE;
-        }
-        else{
-            x = BANDIERA_SIZE * x / y;
-            y = BANDIERA_SIZE;
-        }
-        bandieraBitmap = Bitmap.createScaledBitmap(bandieraBitmap, x, y, false).copy(config, true);
-        canvas.drawBitmap(bandieraBitmap, (SIZE-x)/2, (SIZE-y)*3/5, null);
 
         return bitmap;
     }

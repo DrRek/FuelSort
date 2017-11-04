@@ -128,7 +128,7 @@ public class DirectionFinder {
             succ = r.points.get(i);
             Location.distanceBetween(prec.latitude, prec.longitude, succ.latitude, succ.longitude, dist);
             distance = (int)dist[0];
-            if(lastReg!=null){
+            if(lastReg!=null && lastReg.distance+distance>Route.SUGGESTED_REGION_SIZE){
                 lastReg.addMargin(Route.BOUNDS_FOR_REGION);
             }
             if(lastReg==null || lastReg.distance+distance>Route.SUGGESTED_REGION_SIZE){//Max kilometer

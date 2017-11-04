@@ -45,7 +45,7 @@ import it.unisa.luca.stradaalrisparmio.support.LoadingShow;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    public static Double SCREEN_DIMENSION_FOR_DATA = 0.2;
+    public static Double SCREEN_DIMENSION_FOR_DATA = 0.15;
 
     private GoogleMap mMap;
     private EditText to, from;
@@ -117,11 +117,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }
                                 mMap.addPolyline(plo);
 
-                                //Creare classe con i tread per computare la ricerca dei cosi
-                                //Per ogni caio cercare il migliore
+                                //To show regions
+                                /*for(Step s : r.regions){
+                                    Bitmap tempBitmap = BitmapCreator.getBitmap(context, Color.BLUE, 0.0f, null);
+                                    mMap.addMarker(
+                                            new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(s.distance+"").draggable(false).visible(true).alpha(0.95f).position(s.SOBound)
+                                    );
+                                    mMap.addMarker(
+                                            new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(s.distance+"").draggable(false).visible(true).alpha(0.95f).position(s.NEBound)
+                                    );
+                                }*/
+
                                 List<Distributore> results = manager.getZoneStation(r, params);
-                                for (Distributore d : results){
-                                    Log.d("Found", "name: "+d.getId()+" price: "+d.getLowestPrice(params));
+                                if (results!=null){
+                                    for (Distributore d :results){
+                                        Log.d("Found", "name: "+d.getId()+" price: "+d.getLowestPrice(params));
+                                    }
                                 }
                             }
                             loaderView.remove("Searching path");

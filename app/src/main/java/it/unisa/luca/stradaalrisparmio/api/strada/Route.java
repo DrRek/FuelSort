@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Route {
-    public static final int SUGGESTED_REGION_SIZE = 2000; //in km
-    public static final int BOUNDS_FOR_REGION = 1000; //in km
+    public static final int SUGGESTED_REGION_SIZE = 4000; //in m
+    public static final int BOUNDS_FOR_REGION = 500; //in m
 
     public Distance distance;
     public Duration duration;
