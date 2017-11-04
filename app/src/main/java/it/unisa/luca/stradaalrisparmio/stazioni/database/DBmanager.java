@@ -12,6 +12,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 
 import it.unisa.luca.stradaalrisparmio.api.strada.Route;
+import it.unisa.luca.stradaalrisparmio.api.strada.Step;
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.stazioni.Pompa;
 import it.unisa.luca.stradaalrisparmio.support.LoadingShow;
@@ -20,6 +21,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import static android.R.attr.id;
 
@@ -224,7 +228,7 @@ public class DBmanager extends Thread{
             lat = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LAT));
             lon = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LON));
             temp = new Distributore(id, gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia, lat, lon);
-            if(setPompeForDistributore(temp, params)){
+            if(setPompeForDistributore(temp, params, false)){
                 risultati.add(temp);
             }
         }
@@ -233,7 +237,7 @@ public class DBmanager extends Thread{
         return risultati;
     }
 
-    public boolean setPompeForDistributore(Distributore d, SearchParams params){
+    public boolean setPompeForDistributore(Distributore d, SearchParams params, boolean multi_thread){
         SQLiteDatabase rd = dbhelper.getReadableDatabase();
         String sql = "SELECT * FROM "+DBhelper.TBL_PREZZI+" where "+DBhelper.FIELD_ID+"="+d.getId()+";";
         Cursor c =rd.rawQuery(sql, null);
@@ -263,56 +267,92 @@ public class DBmanager extends Thread{
             );
         }
         c.close();
-        rd.close();
-        if(!rightPomp || (!params.isSelf() && !forNewbie)){
+        if(!multi_thread)
+            rd.close();
+        if(!rightPomp || (!params.isSelf() && !forNewbie))
             return false;
-        }
         d.setPompe(results);
         return true;
     }
 
-    public ArrayList<Distributore> getZoneStation(Route r){
-        ArrayList<Distributore> results = new ArrayList<Distributore>();
-        Double minLat, maxLat, minLng, maxLng;
-        minLat = r.startLocation.latitude;
-        maxLat = minLat;
-        minLng = r.startLocation.longitude;
-        maxLng = minLng;
-        for(LatLng p : r.points){
-            if(p.latitude < minLat) minLat = p.latitude;
-            if(p.latitude > maxLat) maxLat = p.latitude;
-            if(p.longitude < minLng) minLng = p.longitude;
-            if(p.longitude > maxLng) maxLng = p.longitude;
+    public List<Distributore> getZoneStation(Route r, final SearchParams params){
+        List<Distributore> results = new ArrayList<>();
+
+        class computeSearchOnSingleRegion extends Thread{
+            private Step step;
+            private List<Distributore> res;
+            computeSearchOnSingleRegion(Step s) {
+                this.step = s;
+                this.res = new ArrayList<Distributore>();
+            }
+
+            public void run(){
+                SQLiteDatabase rd = dbhelper.getReadableDatabase();
+                String sql = "SELECT * FROM "+DBhelper.TBL_DISTRIBUTORI+" where " +
+                        DBhelper.FIELD_LAT + " >= " + step.SOBound.latitude + " and " +
+                        DBhelper.FIELD_LAT + " <= " + step.NEBound.latitude + " and " +
+                        DBhelper.FIELD_LON + " >= " + step.SOBound.longitude + " and " +
+                        DBhelper.FIELD_LON + " <= " + step.NEBound.longitude + ";";
+                Cursor c =rd.rawQuery(sql, null);
+                int id;
+                String gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia;
+                double lat, lon;
+                Distributore temp;
+                while(c.moveToNext()){
+                    id = c.getInt(c.getColumnIndex(DBhelper.FIELD_ID));
+                    gestore = c.getString(c.getColumnIndex(DBhelper.FIELD_GESTORE));
+                    bandiera = c.getString(c.getColumnIndex(DBhelper.FIELD_BANDIERA));
+                    tipoImpianto = c.getString(c.getColumnIndex(DBhelper.FIELD_TIPO_IMPIANTO));
+                    nome = c.getString(c.getColumnIndex(DBhelper.FIELD_NOME));
+                    indirizzo = c.getString(c.getColumnIndex(DBhelper.FIELD_INDIRIZZO));
+                    comune = c.getString(c.getColumnIndex(DBhelper.FIELD_COMUNE));
+                    provincia = c.getString(c.getColumnIndex(DBhelper.FIELD_PROVINCIA));
+                    lat = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LAT));
+                    lon = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LON));
+                    temp = new Distributore(
+                                    id, gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia, lat, lon
+                            );
+                    if(setPompeForDistributore(temp, params, true)){
+                        res.add(temp);
+                    }
+                }
+                c.close();
+                rd.close();
+            }
+
+            public List<Distributore> getResults(){
+                return res;
+            }
         }
-        SQLiteDatabase rd = dbhelper.getReadableDatabase();
-        String sql = "SELECT * FROM "+DBhelper.TBL_DISTRIBUTORI+" where " +
-                DBhelper.FIELD_LAT + " >= " + minLat + " and " +
-                DBhelper.FIELD_LAT + " <= " + maxLat + " and " +
-                DBhelper.FIELD_LON + " >= " + minLng + " and " +
-                DBhelper.FIELD_LON + " <= " + maxLng + ";";
-        Cursor c =rd.rawQuery(sql, null);
-        int id;
-        String gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia;
-        double lat, lon;
-        while(c.moveToNext()){
-            id = c.getInt(c.getColumnIndex(DBhelper.FIELD_ID));
-            gestore = c.getString(c.getColumnIndex(DBhelper.FIELD_GESTORE));
-            bandiera = c.getString(c.getColumnIndex(DBhelper.FIELD_BANDIERA));
-            tipoImpianto = c.getString(c.getColumnIndex(DBhelper.FIELD_TIPO_IMPIANTO));
-            nome = c.getString(c.getColumnIndex(DBhelper.FIELD_NOME));
-            indirizzo = c.getString(c.getColumnIndex(DBhelper.FIELD_INDIRIZZO));
-            comune = c.getString(c.getColumnIndex(DBhelper.FIELD_COMUNE));
-            provincia = c.getString(c.getColumnIndex(DBhelper.FIELD_PROVINCIA));
-            lat = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LAT));
-            lon = c.getDouble(c.getColumnIndex(DBhelper.FIELD_LON));
-            results.add(
-                    new Distributore(
-                            id, gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia, lat, lon
-                    )
-            );
+
+        List<computeSearchOnSingleRegion> ths = new ArrayList<>();
+        computeSearchOnSingleRegion temp;
+        for (Step s : r.regions){
+            temp = new computeSearchOnSingleRegion(s);
+            temp.start();
+            ths.add(temp);
         }
-        c.close();
-        rd.close();
+
+        for(computeSearchOnSingleRegion t : ths){
+            try{
+                t.join();
+                results.addAll(t.getResults());
+            } catch (Exception e){
+                Log.d("Severe warning", "Compute search on a region did something wrong\n"+e.getStackTrace());
+            }
+        }
+
+        Collections.sort(results, new Comparator<Distributore>() {
+            @Override
+            public int compare(Distributore fruit2, Distributore fruit1)
+            {
+                double f1Price = fruit1.getLowestPrice(params), f2Price = fruit2.getLowestPrice(params);
+                if(f1Price<f2Price) return -1;
+                else if(f1Price==f2Price) return 0;
+                return 1;
+            }
+        });
+
         return results;
     }
 

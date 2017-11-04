@@ -37,6 +37,7 @@ import java.util.Set;
 import it.unisa.luca.stradaalrisparmio.api.strada.DirectionFinder;
 import it.unisa.luca.stradaalrisparmio.api.strada.DirectionFinderListener;
 import it.unisa.luca.stradaalrisparmio.api.strada.Route;
+import it.unisa.luca.stradaalrisparmio.api.strada.Step;
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanager;
 import it.unisa.luca.stradaalrisparmio.support.BitmapCreator;
@@ -96,6 +97,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
 
                         @Override
+                        /*
+                         * Levare la classe Distance
+                         * Inserire variabile globale al posto di 2000
+                         */
                         public void onDirectionFinderSuccess(List<Route> routes) {
                             Log.d("DirectionFinderSuccess", "Success");
                             mMap.clear();
@@ -112,8 +117,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }
                                 mMap.addPolyline(plo);
 
-                                for(int i=0; i<r.steps.size()-1;i++){
-                                    mMap.addMarker(new MarkerOptions().position(r.steps.get(i).end));
+                                //Creare classe con i tread per computare la ricerca dei cosi
+                                //Per ogni caio cercare il migliore
+                                List<Distributore> results = manager.getZoneStation(r, params);
+                                for (Distributore d : results){
+                                    Log.d("Found", "name: "+d.getId()+" price: "+d.getLowestPrice(params));
                                 }
                             }
                             loaderView.remove("Searching path");
@@ -167,13 +175,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 setMarkersBasedOnPosition();
             }
         });
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+       /* mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
                 setInfoWindowBasedOnStation(distributoriMarker.get(marker));
                 return false;
             }
-        });
+        });*/
     }
 
     void setInfoWindowBasedOnStation(Distributore d){

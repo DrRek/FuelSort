@@ -1,5 +1,6 @@
 package it.unisa.luca.stradaalrisparmio.api.strada;
 
+import android.location.Location;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -107,12 +108,38 @@ public class DirectionFinder {
             route.startLocation = new LatLng(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
             route.endLocation = new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
             route.points = decodePolyLine(overview_polylineJson.getString("points"));
-            route.calculateAndSetRegions(decodeSteps(jsonLeg.getJSONArray("steps")));
+            route.regions = calculateRegions(route);
+            //route.calculateAndSetRegions(decodeSteps(jsonLeg.getJSONArray("steps")));
 
             routes.add(route);
         }
 
         listener.onDirectionFinderSuccess(routes);
+    }
+
+    private List calculateRegions(Route r){
+        List<Step> regions = new ArrayList<>();
+        int distance;
+        LatLng prec, succ;
+        Step lastReg = null;
+        for(int i=1; i<r.points.size(); i++){
+            float [] dist = new float[1];
+            prec = r.points.get(i-1);
+            succ = r.points.get(i);
+            Location.distanceBetween(prec.latitude, prec.longitude, succ.latitude, succ.longitude, dist);
+            distance = (int)dist[0];
+            if(lastReg!=null){
+                lastReg.addMargin(Route.BOUNDS_FOR_REGION);
+            }
+            if(lastReg==null || lastReg.distance+distance>Route.SUGGESTED_REGION_SIZE){//Max kilometer
+                regions.add(new Step(prec, succ, distance));
+                lastReg = regions.get(regions.size()-1);
+            } else {
+                lastReg.setNewEnd(succ, distance);
+            }
+        }
+        regions.get(regions.size()-1).addMargin(Route.BOUNDS_FOR_REGION);
+        return regions;
     }
 
     private List<Step> decodeSteps(JSONArray steps) throws JSONException {
@@ -126,7 +153,7 @@ public class DirectionFinder {
                     new Step(
                         new LatLng(start.getDouble("lat"), start.getDouble("lng")),
                         new LatLng(end.getDouble("lat"), end.getDouble("lng")),
-                        new Distance(distance.getString("text"), distance.getInt("value"))
+                            distance.getInt("value")
                     )
             );
         }
