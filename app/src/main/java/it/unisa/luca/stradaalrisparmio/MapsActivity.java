@@ -89,63 +89,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 Toast.makeText(getApplicationContext(), "Inizio la ricerca!", Toast.LENGTH_SHORT).show();
-                try {
-                    new DirectionFinder(from.getText().toString(), to.getText().toString(), new DirectionFinderListener() {
-                        @Override
-                        public void onDirectionFinderStart() {
-                            loaderView.add("Searching path");
-                        }
-
-                        @Override
-                        /*
-                         * Levare la classe Distance
-                         * Inserire variabile globale al posto di 2000
-                         */
-                        public void onDirectionFinderSuccess(List<Route> routes) {
-                            Log.d("DirectionFinderSuccess", "Success");
-                            mMap.clear();
-                            if (!routes.isEmpty()) {
-                                Route r = routes.get(0);
-                                mMap.addMarker(new MarkerOptions().title("Start").position(r.startLocation));
-                                mMap.addMarker(new MarkerOptions().title("End").position(r.endLocation));
-                                PolylineOptions plo = new PolylineOptions();
-                                plo.geodesic(true);
-                                plo.color(Color.BLUE);
-                                plo.width(10);
-                                for (int i = 0; i < r.points.size(); i++) {
-                                    plo.add(r.points.get(i));
-                                }
-                                mMap.addPolyline(plo);
-
-                                //To show regions
-                                /*for(Step s : r.regions){
-                                    Bitmap tempBitmap = BitmapCreator.getBitmap(context, Color.BLUE, 0.0f, null);
-                                    mMap.addMarker(
-                                            new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(s.distance+"").draggable(false).visible(true).alpha(0.95f).position(s.SOBound)
-                                    );
-                                    mMap.addMarker(
-                                            new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(s.distance+"").draggable(false).visible(true).alpha(0.95f).position(s.NEBound)
-                                    );
-                                }*/
-
-                                List<Distributore> results = manager.getZoneStation(r, params);
-                                if (results!=null){
-                                    for (Distributore d :results){
-                                        Log.d("Found", "name: "+d.getId()+" price: "+d.getLowestPrice(params));
-                                    }
-                                }
-                            }
-                            loaderView.remove("Searching path");
-                        }
-                    }).execute();
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-                return false;
+                return findForPath();
             }
         });
+
         loaderView.remove("Starting app...");
     }
+
 
     @Override
     protected void onResume() {
@@ -199,12 +149,79 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Log.d("Distributore info", d.toString());
     }
 
+
+
+
+
+    /** THIS SECTION CONTAIN SEARCH FOR PERFECT ROUTE**/
+
+
+    private boolean findForPath(){
+        try {
+            new DirectionFinder(from.getText().toString(), to.getText().toString(), new DirectionFinderListener() {
+                @Override
+                public void onDirectionFinderStart() {
+                    loaderView.add("Searching path");
+                }
+
+                @Override
+                /*
+                 * Levare la classe Distance
+                 * Inserire variabile globale al posto di 2000
+                 */
+                public void onDirectionFinderSuccess(List<Route> routes) {
+                    Log.d("DirectionFinderSuccess", "Success");
+                    mMap.clear();
+                    if (!routes.isEmpty()) {
+                        Route r = routes.get(0);
+                        mMap.addMarker(new MarkerOptions().title("Start").position(r.startLocation));
+                        mMap.addMarker(new MarkerOptions().title("End").position(r.endLocation));
+                        PolylineOptions plo = new PolylineOptions();
+                        plo.geodesic(true);
+                        plo.color(Color.BLUE);
+                        plo.width(10);
+                        for (int i = 0; i < r.points.size(); i++) {
+                            plo.add(r.points.get(i));
+                        }
+                        mMap.addPolyline(plo);
+
+                        new LoadStationForRoute().execute(r);
+                    }
+                }
+            }).execute();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private class LoadStationForRoute extends AsyncTask<Route, Integer, List<Distributore>>{
+        @Override
+        protected List<Distributore> doInBackground(Route... r) {
+            return manager.getZoneStation(r[0], params);
+        }
+
+        @Override
+        protected void onPostExecute(List<Distributore> results) {
+            if (results!=null){
+                for (Distributore d :results){
+                    Log.d("Found", "name: "+d.getId()+" price: "+d.getLowestPrice(params));
+                }
+            }
+            loaderView.remove("Searching path");
+        }
+    }
+
+
+
+
+
+    /** THIS SECTION CONTAIN SEARCH BASED ON SCREEN**/
+
     void setMarkersBasedOnPosition(){
         if(old!=null){
             old.cancel(true);
         }else{
-            //this.icon = BitmapCreator.getBitmap(context, Color.GRAY);
-            //this.icon = resizeMapIcons("pomp_icon", 120, 120);
             this.lastMinLat=90.0;
             this.lastMaxLat=-90.0;
             this.lastMinLng=180.0;

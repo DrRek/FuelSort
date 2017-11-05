@@ -317,7 +317,6 @@ public class DBmanager extends Thread{
                     }
                 }
                 c.close();
-                rd.close();
             }
 
             public List<Distributore> getResults(){
@@ -347,9 +346,9 @@ public class DBmanager extends Thread{
             public int compare(Distributore fruit2, Distributore fruit1)
             {
                 double f1Price = fruit1.getLowestPrice(params), f2Price = fruit2.getLowestPrice(params);
-                if(f1Price<f2Price) return -1;
+                if(f1Price<f2Price) return 1;
                 else if(f1Price==f2Price) return 0;
-                return 1;
+                return -1;
             }
         });
 
