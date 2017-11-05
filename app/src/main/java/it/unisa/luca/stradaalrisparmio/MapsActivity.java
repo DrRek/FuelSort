@@ -9,9 +9,11 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,6 +49,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public static Double SCREEN_DIMENSION_FOR_DATA = 0.15;
 
+    private boolean loadStationOnPosition;
     private GoogleMap mMap;
     private EditText to, from;
     private DBmanager manager;
@@ -93,6 +96,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+        //To avoid searching once i move into the map, use the button to undo
+        loadStationOnPosition = false;
+
         loaderView.remove("Starting app...");
     }
 
@@ -107,13 +113,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         params = new DBmanager.SearchParams(prefCarburante, prefSelf, prefKmxl);
 
         old = null; //necessario per aggiornare bene lo schermo quando si ritorna da un'altra attività
-        if(distributoriMarker!=null) {
-            Set<Marker> markers = distributoriMarker.keySet();
-            for (Marker m : markers) {
-                m.remove();
-            }
-        }
-        distributoriMarker = new HashMap<>();
+        removeAllStationFoundInScreen();
     }
 
     /**
@@ -129,7 +129,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 15.0f));
-        old=null;
+        old = null;
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
@@ -145,18 +145,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });*/
     }
 
-    void setInfoWindowBasedOnStation(Distributore d){
+    void setInfoWindowBasedOnStation(Distributore d) {
         Log.d("Distributore info", d.toString());
     }
 
 
+    /**
+     * THIS SECTION CONTAIN SEARCH FOR PERFECT ROUTE
+     **/
 
 
-
-    /** THIS SECTION CONTAIN SEARCH FOR PERFECT ROUTE**/
-
-
-    private boolean findForPath(){
+    private boolean findForPath() {
         try {
             new DirectionFinder(from.getText().toString(), to.getText().toString(), new DirectionFinderListener() {
                 @Override
@@ -189,13 +188,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
             }).execute();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    private class LoadStationForRoute extends AsyncTask<Route, Integer, List<Distributore>>{
+    private class LoadStationForRoute extends AsyncTask<Route, Integer, List<Distributore>> {
         @Override
         protected List<Distributore> doInBackground(Route... r) {
             return manager.getZoneStation(r[0], params);
@@ -203,9 +202,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         protected void onPostExecute(List<Distributore> results) {
-            if (results!=null){
-                for (Distributore d :results){
-                    Log.d("Found", "name: "+d.getId()+" price: "+d.getLowestPrice(params));
+            if (results != null) {
+                for (Distributore d : results) {
+                    Log.d("Found", "name: " + d.getId() + " price: " + d.getLowestPrice(params));
                 }
             }
             loaderView.remove("Searching path");
@@ -213,64 +212,77 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    /**
+     * THIS SECTION CONTAIN SEARCH BASED ON SCREEN
+     **/
 
-
-
-    /** THIS SECTION CONTAIN SEARCH BASED ON SCREEN**/
-
-    void setMarkersBasedOnPosition(){
-        if(old!=null){
-            old.cancel(true);
-        }else{
-            this.lastMinLat=90.0;
-            this.lastMaxLat=-90.0;
-            this.lastMinLng=180.0;
-            this.lastMaxLng=-180.0;
+    void setMarkersBasedOnPosition() {
+        if(loadStationOnPosition) {
+            if (old != null) {
+                old.cancel(true);
+            } else {
+                this.lastMinLat = 90.0;
+                this.lastMaxLat = -90.0;
+                this.lastMinLng = 180.0;
+                this.lastMaxLng = -180.0;
+            }
+            (old = new LoadStationInScreen()).execute();
         }
-        (old = new LoadStationInScreen()).execute();
     }
 
-    public void onOpenSettings(View view){
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
+    void removeAllStationFoundInScreen(){
+        if (distributoriMarker != null) {
+            Set<Marker> markers = distributoriMarker.keySet();
+            for (Marker m : markers) {
+                m.remove();
+            }
+        }
+        this.lastMinLat = 90.0;
+        this.lastMaxLat = -90.0;
+        this.lastMinLng = 180.0;
+        this.lastMaxLng = -180.0;
+        distributoriMarker = new HashMap<>();
     }
 
     /**
      * Async task usato per la ricerca dei distributori all'interno dello schermo.
      * Se SCREEN_DIMENSION_FOR_DATA > delle dimensioni dello schermo non viene creato alcun thread
      */
-    private class LoadStationInScreen extends AsyncTask<Void, Integer, ArrayList<Distributore>>{
+    private class LoadStationInScreen extends AsyncTask<Void, Integer, ArrayList<Distributore>> {
         private Double minLat, maxLat, minLng, maxLng;
         private Double minLatC, maxLatC, minLngC, maxLngC;
 
         @Override
-        protected void onPreExecute(){
+        protected void onPreExecute() {
             Log.d("Ricerca distributori", "Inizio a cercare distributori.");
             LatLngBounds view = mMap.getProjection().getVisibleRegion().latLngBounds;
-            minLat = view.southwest.latitude; minLng = view.southwest.longitude; maxLat = view.northeast.latitude; maxLng = view.northeast.longitude;
-            if(maxLat-minLat>SCREEN_DIMENSION_FOR_DATA && maxLng-minLng>SCREEN_DIMENSION_FOR_DATA){
+            minLat = view.southwest.latitude;
+            minLng = view.southwest.longitude;
+            maxLat = view.northeast.latitude;
+            maxLng = view.northeast.longitude;
+            if (maxLat - minLat > SCREEN_DIMENSION_FOR_DATA && maxLng - minLng > SCREEN_DIMENSION_FOR_DATA) {
                 cancel(true);
                 return;
             }
-            if(view.northeast.latitude<=view.southwest.latitude){
+            if (view.northeast.latitude <= view.southwest.latitude) {
                 minLat = view.northeast.latitude;
                 maxLat = view.southwest.latitude;
             }
-            if(view.northeast.longitude<=view.southwest.longitude){
+            if (view.northeast.longitude <= view.southwest.longitude) {
                 minLat = view.northeast.longitude;
                 maxLat = view.southwest.longitude;
             }
-            minLatC=Math.max(minLat, lastMinLat);
-            maxLatC=Math.min(maxLat, lastMaxLat);
-            minLngC=Math.max(minLng, lastMinLng);
-            maxLngC=Math.min(maxLng, lastMaxLng);
+            minLatC = Math.max(minLat, lastMinLat);
+            maxLatC = Math.min(maxLat, lastMaxLat);
+            minLngC = Math.max(minLng, lastMinLng);
+            maxLngC = Math.min(maxLng, lastMaxLng);
 
             //Scorre tutti i marker già presenti, se non entrano nei bordi dello schermo li rimuove
             LatLng tempPosition;
             Marker temp;
             synchronized (LoadStationInScreen.class) {
                 Iterator<Map.Entry<Marker, Distributore>> iter = distributoriMarker.entrySet().iterator();
-                while(iter.hasNext()) {
+                while (iter.hasNext()) {
                     temp = iter.next().getKey();
                     tempPosition = temp.getPosition();
                     if (tempPosition.latitude < minLatC || tempPosition.latitude > maxLatC || tempPosition.longitude < minLngC || tempPosition.longitude > maxLngC) {
@@ -287,7 +299,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
          */
         @Override
         protected synchronized ArrayList<Distributore> doInBackground(Void... voids) {
-            if(isCancelled()) {
+            if (isCancelled()) {
                 lastMinLat = minLatC;
                 lastMaxLat = maxLatC;
                 lastMinLng = minLngC;
@@ -295,9 +307,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return null;
             }
             ArrayList<Distributore> nuovi = new ArrayList<>();
-            if(minLat<lastMinLat){
+            if (minLat < lastMinLat) {
                 nuovi.addAll(manager.getDistributoriInRange(minLat, lastMinLat, minLng, maxLng, params));
-                if (isCancelled()){
+                if (isCancelled()) {
                     lastMinLat = minLat;
                     lastMaxLat = maxLatC;
                     lastMinLng = minLngC;
@@ -305,30 +317,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     return null;
                 }
             }
-            if(maxLat>lastMaxLat){
+            if (maxLat > lastMaxLat) {
                 nuovi.addAll(manager.getDistributoriInRange(lastMaxLat, maxLat, minLng, maxLng, params));
-                if (isCancelled()){
+                if (isCancelled()) {
                     lastMaxLat = maxLat;
                     lastMinLng = minLngC;
                     lastMaxLng = maxLngC;
                     return null;
                 }
             }
-            if(minLng<lastMinLng){
+            if (minLng < lastMinLng) {
                 //Double neededMinLat = Math.max(minLat, lastMinLat);
-               // Double neededMaxLat = Math.min(maxLat, lastMaxLat);
+                // Double neededMaxLat = Math.min(maxLat, lastMaxLat);
                 nuovi.addAll(manager.getDistributoriInRange(minLatC, maxLatC, minLng, lastMinLng, params));
-                if (isCancelled()){
+                if (isCancelled()) {
                     lastMinLng = minLng;
                     lastMaxLng = maxLngC;
                     return null;
                 }
             }
-            if(maxLng>lastMaxLng){
+            if (maxLng > lastMaxLng) {
                 //Double neededMinLat = Math.max(minLat, lastMinLat);
                 //Double neededMaxLat = Math.min(maxLat, lastMaxLat);
                 nuovi.addAll(manager.getDistributoriInRange(minLatC, maxLatC, lastMaxLng, maxLng, params));
-                if (isCancelled()){
+                if (isCancelled()) {
                     lastMaxLng = maxLng;
                     return null;
                 }
@@ -339,25 +351,50 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onPostExecute(ArrayList<Distributore> nuovi) {
             HashMap<Marker, Distributore> tempHashMap = new HashMap<>();
             Bitmap tempBitmap;
-            for(Distributore dist : nuovi){
+            for (Distributore dist : nuovi) {
                 tempBitmap = BitmapCreator.getBitmap(context, Color.GRAY, dist.getLowestPrice(params), dist.getBandiera());
                 Marker temp = mMap.addMarker(
-                        new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(dist.getId()+"").draggable(false).visible(true).alpha(0.95f).position(dist.getPosizione())
+                        new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(dist.getId() + "").draggable(false).visible(true).alpha(0.95f).position(dist.getPosizione())
                 );
                 tempHashMap.put(temp, dist);
             }
             synchronized (LoadStationInScreen.class) {
                 distributoriMarker.putAll(tempHashMap);
             }
-            lastMinLat=minLat;
-            lastMaxLat=maxLat;
-            lastMinLng=minLng;
-            lastMaxLng=maxLng;
+            lastMinLat = minLat;
+            lastMaxLat = maxLat;
+            lastMinLng = minLng;
+            lastMaxLng = maxLng;
             Log.d("Ricerca distributori", "Ricerca terminata con successo.");
         }
 
-        protected void onCancelled(ArrayList<Distributore> nuovi){
+        protected void onCancelled(ArrayList<Distributore> nuovi) {
             Log.d("Ricerca distributori", "Ricerca cancellata.");
+        }
+    }
+
+
+
+    /**THIS IS FOR SETTINGS**/
+
+    public void onOpenSettings(View view) {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
+
+
+    /**THIS IS TO HIDE/VIEW STATION IN SCREEN**/
+
+    public void onChangeStationScreenLoad(View v){
+        if(loadStationOnPosition){
+            Toast.makeText(getApplicationContext(), "Rimuovo i distributori nello schermo", Toast.LENGTH_SHORT).show();
+            removeAllStationFoundInScreen();
+            loadStationOnPosition = false;
+        } else {
+            Toast.makeText(getApplicationContext(), "Aggiungo i distributori nello schermo", Toast.LENGTH_SHORT).show();
+            loadStationOnPosition = true;
+            setMarkersBasedOnPosition();
         }
     }
 }

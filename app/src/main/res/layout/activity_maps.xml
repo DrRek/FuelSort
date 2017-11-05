@@ -48,12 +48,22 @@
             android:hint="Destinazione"/>
     </LinearLayout>
     <Button
+        android:id="@+id/settings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:text="Settings"
         android:onClick="onOpenSettings"/>
+    <Button
+        android:id="@+id/viewStation"
+        android:layout_marginBottom="5dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/pomp_icon"
+        android:layout_toLeftOf="@id/settings"
+        android:onClick="onChangeStationScreenLoad"/>/>
     <LinearLayout
         android:id="@+id/LoadingLayout"
         android:layout_width="match_parent"
