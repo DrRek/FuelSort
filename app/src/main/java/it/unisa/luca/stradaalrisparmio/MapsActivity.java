@@ -154,10 +154,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * THIS SECTION CONTAIN SEARCH FOR PERFECT ROUTE
      **/
 
-
     private boolean findForPath() {
         try {
-            new DirectionFinder(from.getText().toString(), to.getText().toString(), new DirectionFinderListener() {
+            new DirectionFinder(from.getText().toString(), to.getText().toString(), null, new DirectionFinderListener() {
                 @Override
                 public void onDirectionFinderStart() {
                     loaderView.add("Searching path");
@@ -182,8 +181,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         for (int i = 0; i < r.points.size(); i++) {
                             plo.add(r.points.get(i));
                         }
-                        mMap.addPolyline(plo);
-
+                        //mMap.addPolyline(plo);
+                        for(Step s : r.regions){
+                            mMap.addMarker(new MarkerOptions().title(s.distance+"").position(s.SOBound));
+                            mMap.addMarker(new MarkerOptions().title(s.distance+"").position(s.NEBound));
+                        }
                         new LoadStationForRoute().execute(r);
                     }
                 }
@@ -203,9 +205,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(List<Distributore> results) {
             if (results != null) {
-                for (Distributore d : results) {
+                final Distributore d = results.get(0);
+                    try {
+                        new DirectionFinder(from.getText().toString(), to.getText().toString(), d.getPosizione(), new DirectionFinderListener() {
+                            @Override
+                            public void onDirectionFinderStart() {
+                                loaderView.add("Searching path");
+                            }
+
+                            @Override
+                            /*
+                             * Levare la classe Distance
+                             * Inserire variabile globale al posto di 2000
+                             */
+                            public void onDirectionFinderSuccess(List<Route> routes) {
+                                Log.d("DirectionFinderSuccess", "Success");
+                                mMap.clear();
+                                if (!routes.isEmpty()) {
+                                    Route r = routes.get(0);
+                                    mMap.addMarker(new MarkerOptions().title("Start").position(r.startLocation));
+                                    mMap.addMarker(new MarkerOptions().title("End").position(r.endLocation));
+                                    mMap.addMarker(new MarkerOptions().title("Distributore").position(d.getPosizione()));
+                                    PolylineOptions plo = new PolylineOptions();
+                                    plo.geodesic(true);
+                                    plo.color(Color.BLUE);
+                                    plo.width(10);
+                                    for (int i = 0; i < r.points.size(); i++) {
+                                        plo.add(r.points.get(i));
+                                    }
+                                    mMap.addPolyline(plo);
+                                    /*for(Step s : r.regions){
+                                        mMap.addMarker(new MarkerOptions().title(s.distance+"").position(s.SOBound));
+                                        mMap.addMarker(new MarkerOptions().title(s.distance+"").position(s.NEBound));
+                                    }*/
+                                    new LoadStationForRoute().execute(r);
+                                }
+                            }
+                        }).execute();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     Log.d("Found", "name: " + d.getId() + " price: " + d.getLowestPrice(params));
-                }
+
             }
             loaderView.remove("Searching path");
         }
