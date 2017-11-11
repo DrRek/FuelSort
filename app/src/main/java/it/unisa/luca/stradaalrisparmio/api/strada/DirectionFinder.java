@@ -103,16 +103,26 @@ public class DirectionFinder {
 
             JSONObject overview_polylineJson = jsonRoute.getJSONObject("overview_polyline");
             JSONArray jsonLegs = jsonRoute.getJSONArray("legs");
-            JSONObject jsonLeg = jsonLegs.getJSONObject(0);
-            JSONObject jsonDistance = jsonLeg.getJSONObject("distance");
-            JSONObject jsonDuration = jsonLeg.getJSONObject("duration");
-            JSONObject jsonEndLocation = jsonLeg.getJSONObject("end_location");
-            JSONObject jsonStartLocation = jsonLeg.getJSONObject("start_location");
+            JSONObject jsonLegStart = jsonLegs.getJSONObject(0);
+            JSONObject jsonLegEnd = jsonLegs.getJSONObject(jsonLegs.length()-1);
 
-            route.distance = new Distance(jsonDistance.getString("text"), jsonDistance.getInt("value"));
-            route.duration = new Duration(jsonDuration.getString("text"), jsonDuration.getInt("value"));
-            route.endAddress = jsonLeg.getString("end_address");
-            route.startAddress = jsonLeg.getString("start_address");
+            JSONObject jsonEndLocation = jsonLegEnd.getJSONObject("end_location");
+            JSONObject jsonStartLocation = jsonLegStart.getJSONObject("start_location");
+
+            Distance distance = new Distance("No string data for path with waypoint, just waypoint", 0);
+            Duration duration = new Duration("No string data for path with waypoint, just waypoint", 0);
+            for (int y=0; i<jsonLegs.length();i++){
+                JSONObject jsO = (JSONObject) jsonLegs.get(y);
+                JSONObject jsODuration = jsO.getJSONObject("duration");
+                JSONObject jsODistance = jsO.getJSONObject("distance");
+                duration.value = duration.value + jsODuration.getInt("value");
+                distance.value = distance.value + jsODistance.getInt("value");
+            }
+            route.distance = distance;
+            route.duration = duration;
+
+            route.endAddress = jsonLegEnd.getString("end_address");
+            route.startAddress = jsonLegStart.getString("start_address");
             route.startLocation = new LatLng(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
             route.endLocation = new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
             route.points = decodePolyLine(overview_polylineJson.getString("points"));

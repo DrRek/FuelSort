@@ -29,7 +29,8 @@
             android:id="@+id/from"
             android:imeOptions="actionNext"
             android:inputType="textCapSentences"
-            android:hint="Partenza"/>
+            android:hint="Partenza"
+            android:text="Torre del greco" />
 
         <EditText
             android:layout_width="match_parent"
@@ -45,7 +46,8 @@
             android:id="@+id/to"
             android:imeOptions="actionDone"
             android:inputType="textCapSentences"
-            android:hint="Destinazione"/>
+            android:hint="Destinazione"
+            android:text="Fisciano"/>
     </LinearLayout>
     <Button
         android:id="@+id/settings"
