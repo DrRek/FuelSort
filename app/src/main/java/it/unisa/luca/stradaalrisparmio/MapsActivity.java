@@ -10,11 +10,18 @@ import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,7 +52,7 @@ import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanager;
 import it.unisa.luca.stradaalrisparmio.support.BitmapCreator;
 import it.unisa.luca.stradaalrisparmio.support.LoadingShow;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     public static Double SCREEN_DIMENSION_FOR_DATA = 0.15;
 
@@ -68,12 +75,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Context context;
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        context = getApplicationContext();
+
         loaderView = LoadingShow.getLoader(this);
         loaderView.add("Starting app...");
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
 
         manager = new DBmanager(this);
         manager.start();
@@ -85,8 +104,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //Roba dei campi d'input
         from = (EditText) findViewById(R.id.from);
         to = (EditText) findViewById(R.id.to);
-
-        context = getApplicationContext();
 
         to.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -114,6 +131,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         old = null; //necessario per aggiornare bene lo schermo quando si ritorna da un'altra attività
         removeAllStationFoundInScreen();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.settings:
+                // User chose the "Settings" item, show the app settings UI...
+                Log.d("test", "test");
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     /**
