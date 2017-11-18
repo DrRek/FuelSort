@@ -138,7 +138,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         switch (item.getItemId()) {
             case R.id.settings:
                 // User chose the "Settings" item, show the app settings UI...
-                Log.d("test", "test");
+                openSettings();
                 return true;
 
             default:
@@ -441,7 +441,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /**THIS IS FOR SETTINGS**/
 
-    public void onOpenSettings(View view) {
+    public void openSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
