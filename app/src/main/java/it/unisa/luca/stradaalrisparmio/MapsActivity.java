@@ -159,6 +159,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             new DirectionFinder(from.getText().toString(), to.getText().toString(), null, new DirectionFinderListener() {
                 @Override
                 public void onDirectionFinderStart() {
+                    loadStationOnPosition=false;
+                    removeAllStationFoundInScreen();
+                    mMap.clear();
                     loaderView.add("Searching path");
                 }
 
@@ -169,10 +172,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                  */
                 public void onDirectionFinderSuccess(List<Route> routes) {
                     Log.d("DirectionFinderSuccess", "Success");
-                    mMap.clear();
                     if (!routes.isEmpty()) {
                         Route r = routes.get(0);
-                        mMap.addMarker(new MarkerOptions().title("Start").position(r.startLocation));
+                        /*mMap.addMarker(new MarkerOptions().title("Start").position(r.startLocation));
                         mMap.addMarker(new MarkerOptions().title("End").position(r.endLocation));
                         PolylineOptions plo = new PolylineOptions();
                         plo.geodesic(true);
@@ -180,12 +182,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         plo.width(10);
                         for (int i = 0; i < r.points.size(); i++) {
                             plo.add(r.points.get(i));
-                        }
-                        //mMap.addPolyline(plo);
-                        for(Step s : r.regions){
-                            mMap.addMarker(new MarkerOptions().title(s.distance+"").position(s.SOBound));
-                            mMap.addMarker(new MarkerOptions().title(s.distance+"").position(s.NEBound));
-                        }
+                        }*/
                         new LoadStationForRoute().execute(r);
                     }
                 }
@@ -218,12 +215,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             */
                         public void onDirectionFinderSuccess(List<Route> routes) {
                             Log.d("DirectionFinderSuccess", "Success");
-                            mMap.clear();
                             if (!routes.isEmpty()) {
                                 Route r = routes.get(0);
-                                mMap.addMarker(new MarkerOptions().title("Start").position(r.startLocation));
-                                mMap.addMarker(new MarkerOptions().title("End").position(r.endLocation));
-                                mMap.addMarker(new MarkerOptions().title("Distributore").position(d.getPosizione()));
+                                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getStartBitmap(context))).title("Start").position(r.startLocation));
+                                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getFinishBitmap(context))).title("End").position(r.endLocation));
+                                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(context, Color.RED, d.getLowestPrice(params), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
+                                mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(r.getLatLngBounds(), 100)); //100 is just some padding
                                 PolylineOptions plo = new PolylineOptions();
                                 plo.geodesic(true);
                                 plo.color(Color.BLUE);
@@ -232,10 +229,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     plo.add(r.points.get(i));
                                 }
                                 mMap.addPolyline(plo);
-                                /*for(Step s : r.regions){
-                                       mMap.addMarker(new MarkerOptions().title(s.distance+"").position(s.SOBound));
-                                       mMap.addMarker(new MarkerOptions().title(s.distance+"").position(s.NEBound));
-                                  }*/
                             }
                         }
                     }).execute();

@@ -91,4 +91,17 @@ public class BitmapCreator {
 
         return bitmap;
     }
+
+    public static Bitmap getStartBitmap(Context context){
+        Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
+
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("start", "drawable", context.getPackageName()));
+        return Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
+    }
+    public static Bitmap getFinishBitmap(Context context){
+        Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
+
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("finish", "drawable", context.getPackageName()));
+        return Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
+    }
 }
