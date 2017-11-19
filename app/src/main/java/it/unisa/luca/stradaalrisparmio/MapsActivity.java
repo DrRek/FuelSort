@@ -1,5 +1,6 @@
 package it.unisa.luca.stradaalrisparmio;
 
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -444,6 +445,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void openSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
+        //startActivity(intent);
+        overridePendingTransition(R.anim.slide_in_right, android.R.anim.fade_out);
     }
 
 

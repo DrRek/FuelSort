@@ -72,4 +72,10 @@ public class SettingsActivity extends FragmentActivity {
         edit.putInt("kmxl", Integer.parseInt(((EditText)findViewById(R.id.kmxl)).getText()+""));
         edit.commit();
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.slide_out_right);
+    }
 }
