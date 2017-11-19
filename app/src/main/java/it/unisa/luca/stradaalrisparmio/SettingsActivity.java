@@ -88,10 +88,19 @@ public class SettingsActivity extends FragmentActivity implements AdapterView.On
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
         SharedPreferences.Editor edit = pref.edit();
-        Log.d("test", i+"");
-        switch (i){
+        Log.e("test", i+"");
+        if(i==0){
+            edit.putString("carburante", "benzina");
+        }else if(i==1){
+            edit.putString("carburante", "diesel");
+        }else if(i==2){
+            edit.putString("carburante", "gpl");
+        }else if(i==3){
+            edit.putString("carburante", "metano");
+        }
+        /*switch (i){
             case 0 : {
-                Log.d("test", "test");
+                Log.e("test", "test");
                 edit.putString("carburante", "benzina");
             }
             case 1 : {
@@ -103,7 +112,7 @@ public class SettingsActivity extends FragmentActivity implements AdapterView.On
             case 3 : {
                 edit.putString("carburante", "metano");
             }
-        }
+        }*/
         edit.commit();
     }
 
