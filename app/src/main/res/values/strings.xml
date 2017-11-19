@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">StradaAlRisparmio</string>
     <string name="title_activity_maps">Map</string>
+    <string-array name="tipi_benzina_array">
+        <item>Benzina</item>
+        <item>Diesel</item>
+        <item>GPL</item>
+        <item>Metano</item>
+    </string-array>
 </resources>

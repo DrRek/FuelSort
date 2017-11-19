@@ -126,6 +126,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
         prefCarburante = pref.getString("carburante", "diesel");
+        Log.d("test", prefCarburante+"lalalalalalala");
         prefSelf = pref.getBoolean("self", true);
         prefKmxl = pref.getInt("kmxl", 20);
         params = new DBmanager.SearchParams(prefCarburante, prefSelf, prefKmxl);

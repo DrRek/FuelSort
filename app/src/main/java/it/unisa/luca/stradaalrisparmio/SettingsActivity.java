@@ -8,9 +8,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 /**
@@ -18,29 +21,32 @@ import android.widget.TextView;
  * Created by luca on 21/10/17.
  */
 
-public class SettingsActivity extends FragmentActivity {
+public class SettingsActivity extends FragmentActivity implements AdapterView.OnItemSelectedListener {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.settings_layout);
+
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
         String prefCarburante = pref.getString("carburante", "diesel");
         boolean prefSelf = pref.getBoolean("self", true);
         int prefKmxl = pref.getInt("kmxl", 20);
 
+        Spinner spinner = findViewById(R.id.tipiCarburantiSpinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.tipi_benzina_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+
         if(prefCarburante.equalsIgnoreCase("benzina")) {
-            RadioButton v = findViewById(R.id.carburante_benzina);
-            v.setChecked(true);
+            spinner.setSelection(0);
         } else if(prefCarburante.equalsIgnoreCase("diesel")) {
-            RadioButton v = findViewById(R.id.carburante_diesel);
-            v.setChecked(true);
+            spinner.setSelection(1);
         } else if(prefCarburante.equalsIgnoreCase("gpl")) {
-            RadioButton v = findViewById(R.id.carburante_gpl);
-            v.setChecked(true);
+            spinner.setSelection(2);
         } else if(prefCarburante.equalsIgnoreCase("metano")) {
-            RadioButton v = findViewById(R.id.carburante_metano);
-            v.setChecked(true);
+            spinner.setSelection(3);
         }
 
         if(prefSelf){
@@ -63,7 +69,6 @@ public class SettingsActivity extends FragmentActivity {
         super.onPause();
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
         SharedPreferences.Editor edit = pref.edit();
-        edit.putString("carburante", ((RadioButton)findViewById(((RadioGroup)findViewById(R.id.carburante)).getCheckedRadioButtonId())).getText()+"");
         if((((RadioButton)findViewById(((RadioGroup)findViewById(R.id.self)).getCheckedRadioButtonId())).getText()+"").equalsIgnoreCase("si")){
             edit.putBoolean("self", true);
         } else{
@@ -78,4 +83,30 @@ public class SettingsActivity extends FragmentActivity {
         super.onBackPressed();
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.slide_out_right);
     }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
+        SharedPreferences.Editor edit = pref.edit();
+        Log.d("test", i+"");
+        switch (i){
+            case 0 : {
+                Log.d("test", "test");
+                edit.putString("carburante", "benzina");
+            }
+            case 1 : {
+                edit.putString("carburante", "diesel");
+            }
+            case 2 : {
+                edit.putString("carburante", "gpl");
+            }
+            case 3 : {
+                edit.putString("carburante", "metano");
+            }
+        }
+        edit.commit();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {}
 }
