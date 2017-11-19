@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -49,12 +50,11 @@ public class SettingsActivity extends FragmentActivity implements AdapterView.On
             spinner.setSelection(3);
         }
 
+        CheckBox v = findViewById(R.id.self);
         if(prefSelf){
-            RadioButton v = findViewById(R.id.self_true);
             v.setChecked(true);
         }else {
-            RadioButton v = findViewById(R.id.self_false);
-            v.setChecked(true);
+            v.setChecked(false);
         }
 
         ((EditText)findViewById(R.id.kmxl)).setText(prefKmxl+"", EditText.BufferType.EDITABLE);
@@ -69,7 +69,7 @@ public class SettingsActivity extends FragmentActivity implements AdapterView.On
         super.onPause();
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
         SharedPreferences.Editor edit = pref.edit();
-        if((((RadioButton)findViewById(((RadioGroup)findViewById(R.id.self)).getCheckedRadioButtonId())).getText()+"").equalsIgnoreCase("si")){
+        if(((CheckBox)findViewById(R.id.self)).isChecked()){
             edit.putBoolean("self", true);
         } else{
             edit.putBoolean("self", false);
@@ -98,21 +98,6 @@ public class SettingsActivity extends FragmentActivity implements AdapterView.On
         }else if(i==3){
             edit.putString("carburante", "metano");
         }
-        /*switch (i){
-            case 0 : {
-                Log.e("test", "test");
-                edit.putString("carburante", "benzina");
-            }
-            case 1 : {
-                edit.putString("carburante", "diesel");
-            }
-            case 2 : {
-                edit.putString("carburante", "gpl");
-            }
-            case 3 : {
-                edit.putString("carburante", "metano");
-            }
-        }*/
         edit.commit();
     }
 
