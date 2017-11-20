@@ -8,6 +8,8 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -31,6 +33,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -415,7 +419,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             return nuovi;
         }
 
-        protected void onPostExecute(ArrayList<Distributore> nuovi) {
+        protected void onPostExecute(ArrayList<Distributore> nuovi) {/*
             HashMap<Marker, Distributore> tempHashMap = new HashMap<>();
             Bitmap tempBitmap;
             for (Distributore dist : nuovi) {
@@ -432,9 +436,42 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             lastMaxLat = maxLat;
             lastMinLng = minLng;
             lastMaxLng = maxLng;
-            Log.d("Ricerca distributori", "Ricerca terminata con successo.");
+            Log.d("Ricerca distributori", "Ricerca terminata con successo.");*/
 
             loaderView.remove("Cerco distributori nella zona");
+
+            synchronized (LoadStationInScreen.class) {
+                Set<Marker> markers = distributoriMarker.keySet();
+                for (Marker m : markers) {
+                    nuovi.add(distributoriMarker.get(m));
+                    m.remove();
+                }
+                distributoriMarker = new HashMap<>();
+                Collections.sort(nuovi, new Comparator<Distributore>() {
+                    @Override
+                    public int compare(Distributore distributore, Distributore t1) {
+                        return Math.round(distributore.getLowestPrice(params) - t1.getLowestPrice(params));
+                    }
+                });
+                int numeroColoriDaUsare = nuovi.size();
+                int green = ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null);
+                int red = ResourcesCompat.getColor(getResources(), R.color.red, null);
+                float rDifference = Math.abs(Color.red(green) - Color.red(red));
+                float gDifference = Math.abs(Color.green(green) - Color.green(red));
+                float bDifference = Math.abs(Color.red(green) - Color.blue(red));
+                float rIncrement = rDifference/(numeroColoriDaUsare-1);
+                float gIncrement = gDifference/(numeroColoriDaUsare-1);
+                float bIncrement = bDifference/(numeroColoriDaUsare-1);
+                for(int i=0; i<numeroColoriDaUsare; i++){
+                    Distributore tempDist = nuovi.get(i);
+                    Log.d("color", Color.rgb(Math.round(Color.red(green)+rIncrement*i),Math.round(Color.green(green)+gIncrement*i),Math.round(Color.blue(green)+bIncrement*i))+"");
+                    Bitmap tempBitmap = BitmapCreator.getBitmap(context, Color.rgb(Math.round(Color.red(green)+(rIncrement*i)),Math.round(Color.green(green)+(gIncrement*i)),Math.round((Color.blue(green)+bIncrement*i))), tempDist.getLowestPrice(params), tempDist.getBandiera());
+                    Marker tempMark = mMap.addMarker(
+                            new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(tempDist.getId() + "").draggable(false).visible(true).alpha(0.95f).position(tempDist.getPosizione())
+                    );
+                    distributoriMarker.put(tempMark, tempDist);
+                }
+            }
         }
 
         protected void onCancelled(ArrayList<Distributore> nuovi) {
