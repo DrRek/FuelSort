@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -50,8 +49,6 @@ import it.unisa.luca.stradaalrisparmio.support.BitmapCreator;
 import it.unisa.luca.stradaalrisparmio.support.LoadingShow;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
-
-    public static Double SCREEN_DIMENSION_FOR_DATA = 0.15;
 
     private boolean loadStationOnPosition;
     private GoogleMap mMap;
@@ -290,10 +287,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (old != null) {
                 old.cancel(true);
             } else {
-                this.lastMinLat = 90.0;
-                this.lastMaxLat = -90.0;
-                this.lastMinLng = 180.0;
-                this.lastMaxLng = -180.0;
+                resetLastBounds();
             }
             (old = new LoadStationInScreen()).execute();
         }
@@ -306,10 +300,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 m.remove();
             }
         }
-        this.lastMinLat = 90.0;
-        this.lastMaxLat = -90.0;
-        this.lastMinLng = 180.0;
-        this.lastMaxLng = -180.0;
+        resetLastBounds();
         distributoriMarker = new HashMap<>();
     }
 
@@ -343,6 +334,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 minLat = view.northeast.longitude;
                 maxLat = view.southwest.longitude;
             }
+
+            if(lastMinLat==null) return; //Se non abbiamo distributori precedenti
+
             minLatC = Math.max(minLat, lastMinLat);
             maxLatC = Math.min(maxLat, lastMaxLat);
             minLngC = Math.max(minLng, lastMinLng);
@@ -378,74 +372,58 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return null;
             }
             ArrayList<Distributore> nuovi = new ArrayList<>();
-            if (minLat < lastMinLat) {
-                nuovi.addAll(manager.getDistributoriInRange(minLat, lastMinLat, minLng, maxLng, params));
-                if (isCancelled()) {
-                    lastMinLat = minLat;
-                    lastMaxLat = maxLatC;
-                    lastMinLng = minLngC;
-                    lastMaxLng = maxLngC;
-                    return null;
+            if(lastMinLat==null){
+                nuovi.addAll(manager.getDistributoriInRange(minLat, maxLat, minLng, maxLng, params));
+            }else {
+                if (minLat < lastMinLat) {
+                    nuovi.addAll(manager.getDistributoriInRange(minLat, lastMinLat, minLng, maxLng, params));
+                    if (isCancelled()) {
+                        lastMinLat = minLat;
+                        lastMaxLat = maxLatC;
+                        lastMinLng = minLngC;
+                        lastMaxLng = maxLngC;
+                        return null;
+                    }
                 }
-            }
-            if (maxLat > lastMaxLat) {
-                nuovi.addAll(manager.getDistributoriInRange(lastMaxLat, maxLat, minLng, maxLng, params));
-                if (isCancelled()) {
-                    lastMaxLat = maxLat;
-                    lastMinLng = minLngC;
-                    lastMaxLng = maxLngC;
-                    return null;
+                if (maxLat > lastMaxLat) {
+                    nuovi.addAll(manager.getDistributoriInRange(lastMaxLat, maxLat, minLng, maxLng, params));
+                    if (isCancelled()) {
+                        lastMaxLat = maxLat;
+                        lastMinLng = minLngC;
+                        lastMaxLng = maxLngC;
+                        return null;
+                    }
                 }
-            }
-            if (minLng < lastMinLng) {
-                //Double neededMinLat = Math.max(minLat, lastMinLat);
-                // Double neededMaxLat = Math.min(maxLat, lastMaxLat);
-                nuovi.addAll(manager.getDistributoriInRange(minLatC, maxLatC, minLng, lastMinLng, params));
-                if (isCancelled()) {
-                    lastMinLng = minLng;
-                    lastMaxLng = maxLngC;
-                    return null;
+                if (minLng < lastMinLng) {
+                    //Double neededMinLat = Math.max(minLat, lastMinLat);
+                    // Double neededMaxLat = Math.min(maxLat, lastMaxLat);
+                    nuovi.addAll(manager.getDistributoriInRange(minLatC, maxLatC, minLng, lastMinLng, params));
+                    if (isCancelled()) {
+                        lastMinLng = minLng;
+                        lastMaxLng = maxLngC;
+                        return null;
+                    }
                 }
-            }
-            if (maxLng > lastMaxLng) {
-                //Double neededMinLat = Math.max(minLat, lastMinLat);
-                //Double neededMaxLat = Math.min(maxLat, lastMaxLat);
-                nuovi.addAll(manager.getDistributoriInRange(minLatC, maxLatC, lastMaxLng, maxLng, params));
-                if (isCancelled()) {
-                    lastMaxLng = maxLng;
-                    return null;
+                if (maxLng > lastMaxLng) {
+                    //Double neededMinLat = Math.max(minLat, lastMinLat);
+                    //Double neededMaxLat = Math.min(maxLat, lastMaxLat);
+                    nuovi.addAll(manager.getDistributoriInRange(minLatC, maxLatC, lastMaxLng, maxLng, params));
+                    if (isCancelled()) {
+                        lastMaxLng = maxLng;
+                        return null;
+                    }
                 }
             }
             return nuovi;
         }
 
-        protected void onPostExecute(ArrayList<Distributore> nuovi) {/*
-            HashMap<Marker, Distributore> tempHashMap = new HashMap<>();
-            Bitmap tempBitmap;
-            for (Distributore dist : nuovi) {
-                tempBitmap = BitmapCreator.getBitmap(context, Color.GRAY, dist.getLowestPrice(params), dist.getBandiera());
-                Marker temp = mMap.addMarker(
-                        new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(dist.getId() + "").draggable(false).visible(true).alpha(0.95f).position(dist.getPosizione())
-                );
-                tempHashMap.put(temp, dist);
-            }
-            synchronized (LoadStationInScreen.class) {
-                distributoriMarker.putAll(tempHashMap);
-            }
-            lastMinLat = minLat;
-            lastMaxLat = maxLat;
-            lastMinLng = minLng;
-            lastMaxLng = maxLng;
-            Log.d("Ricerca distributori", "Ricerca terminata con successo.");*/
-
-            loaderView.remove("Cerco distributori nella zona");
-
+        protected void onPostExecute(ArrayList<Distributore> nuovi) {
             synchronized (LoadStationInScreen.class) {
                 Set<Marker> markers = distributoriMarker.keySet();
                 for (Marker m : markers) {
-                    nuovi.add(distributoriMarker.get(m));
                     m.remove();
                 }
+                nuovi.addAll(distributoriMarker.values());
                 distributoriMarker = new HashMap<>();
                 Collections.sort(nuovi, new Comparator<Distributore>() {
                     @Override
@@ -454,23 +432,32 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
                 int numeroColoriDaUsare = nuovi.size();
-                int green = ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null);
-                int red = ResourcesCompat.getColor(getResources(), R.color.red, null);
-                float rDifference = Math.abs(Color.red(green) - Color.red(red));
-                float gDifference = Math.abs(Color.green(green) - Color.green(red));
-                float bDifference = Math.abs(Color.red(green) - Color.blue(red));
-                float rIncrement = rDifference/(numeroColoriDaUsare-1);
-                float gIncrement = gDifference/(numeroColoriDaUsare-1);
-                float bIncrement = bDifference/(numeroColoriDaUsare-1);
+                //int green = ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null);
+                //int red = ResourcesCompat.getColor(getResources(), R.color.red, null);
+                int green = Color.rgb(0,255,0);
+                int red = Color.rgb(255,0,0);
+
+                float angleRange = 120 - 0;
+                float stepAngle = angleRange / numeroColoriDaUsare;
+
+                float[] hsv = new float[3];
+                hsv[1]=1;
+                hsv[2]=1;
                 for(int i=0; i<numeroColoriDaUsare; i++){
                     Distributore tempDist = nuovi.get(i);
-                    Log.d("color", Color.rgb(Math.round(Color.red(green)+rIncrement*i),Math.round(Color.green(green)+gIncrement*i),Math.round(Color.blue(green)+bIncrement*i))+"");
-                    Bitmap tempBitmap = BitmapCreator.getBitmap(context, Color.rgb(Math.round(Color.red(green)+(rIncrement*i)),Math.round(Color.green(green)+(gIncrement*i)),Math.round((Color.blue(green)+bIncrement*i))), tempDist.getLowestPrice(params), tempDist.getBandiera());
+                    hsv[0] = 0 + i*stepAngle;
+                    Bitmap tempBitmap = BitmapCreator.getBitmap(context, Color.HSVToColor(hsv), tempDist.getLowestPrice(params), tempDist.getBandiera());
                     Marker tempMark = mMap.addMarker(
                             new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(tempDist.getId() + "").draggable(false).visible(true).alpha(0.95f).position(tempDist.getPosizione())
                     );
                     distributoriMarker.put(tempMark, tempDist);
                 }
+
+                lastMinLat = minLat;
+                lastMaxLat = maxLat;
+                lastMinLng = minLng;
+                lastMaxLng = maxLng;
+                loaderView.remove("Cerco distributori nella zona");
             }
         }
 
@@ -522,8 +509,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }, 150); //Il delay in questo caso è più corto perché il sistema sarà già in buona parte rallentato dalla ricerca di distributori
             //Toast.makeText(getApplicationContext(), "Aggiungo i distributori nello schermo", Toast.LENGTH_SHORT).show();
+
+            resetLastBounds();
             loadStationOnPosition = true;
             setMarkersBasedOnPosition();
         }
+    }
+
+    public void resetLastBounds(){
+        this.lastMinLat = null;
+        this.lastMaxLat = null;
+        this.lastMinLng = null;
+        this.lastMaxLng = null;
     }
 }
