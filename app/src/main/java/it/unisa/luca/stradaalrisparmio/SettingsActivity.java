@@ -1,15 +1,9 @@
 package it.unisa.luca.stradaalrisparmio;
 
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -19,10 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 /**
  * I
@@ -36,12 +27,11 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         setContentView(R.layout.settings_layout);
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);/*
-        getSupportActionBar().indi
-        upArrow.setColorFilter(ResourcesCompat.getColor(getResources(), R.color.white, null), PorterDuff.Mode.SRC_ATOP);
-        getSupportActionBar().setHomeAsUpIndicator(upArrow);*/
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        setSupportActionBar(myToolbar);
+        if(getSupportActionBar()!=null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
 
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
         String prefCarburante = pref.getString("carburante", "diesel");
@@ -77,7 +67,7 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         EditText et = ((EditText)findViewById(R.id.kmxl));
         //Set spinner color
         et.getBackground().setColorFilter(ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null), PorterDuff.Mode.SRC_ATOP);
-        et.setText(prefKmxl+"", EditText.BufferType.EDITABLE);
+        et.setText(String.valueOf(prefKmxl), EditText.BufferType.EDITABLE);
     }
 
     /**
@@ -95,7 +85,7 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
             edit.putBoolean("self", false);
         }
         edit.putInt("kmxl", Integer.parseInt(((EditText)findViewById(R.id.kmxl)).getText()+""));
-        edit.commit();
+        edit.apply();
     }
 
     @Override
@@ -118,7 +108,7 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         }else if(i==3){
             edit.putString("carburante", "metano");
         }
-        edit.commit();
+        edit.apply();
     }
 
     @Override

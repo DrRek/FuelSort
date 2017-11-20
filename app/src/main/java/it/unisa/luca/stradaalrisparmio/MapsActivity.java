@@ -1,28 +1,20 @@
 package it.unisa.luca.stradaalrisparmio;
 
-import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.location.Location;
 import android.os.AsyncTask;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,7 +39,6 @@ import java.util.Set;
 import it.unisa.luca.stradaalrisparmio.api.strada.DirectionFinder;
 import it.unisa.luca.stradaalrisparmio.api.strada.DirectionFinderListener;
 import it.unisa.luca.stradaalrisparmio.api.strada.Route;
-import it.unisa.luca.stradaalrisparmio.api.strada.Step;
 import it.unisa.luca.stradaalrisparmio.stazioni.Distributore;
 import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanager;
 import it.unisa.luca.stradaalrisparmio.support.BitmapCreator;
@@ -62,14 +53,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private EditText to, from;
     private DBmanager manager;
     private LoadingShow loaderView;
-    private Bitmap icon;
     private volatile HashMap<Marker, Distributore> distributoriMarker;
     Double lastMinLat, lastMaxLat, lastMinLng, lastMaxLng;
     LoadStationInScreen old;
-
-    private String prefCarburante;
-    private boolean prefSelf;
-    private int prefKmxl;
 
     private DBmanager.SearchParams params;
 
@@ -84,6 +70,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("test","on create wtf: " + (mMap==null));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
@@ -125,14 +112,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onResume() {
         super.onResume();
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
-        prefCarburante = pref.getString("carburante", "diesel");
-        Log.d("test", prefCarburante+"lalalalalalala");
-        prefSelf = pref.getBoolean("self", true);
-        prefKmxl = pref.getInt("kmxl", 20);
+        String prefCarburante = pref.getString("carburante", "diesel");
+        boolean prefSelf = pref.getBoolean("self", true);
+        int prefKmxl = pref.getInt("kmxl", 20);
         params = new DBmanager.SearchParams(prefCarburante, prefSelf, prefKmxl);
 
         old = null; //necessario per aggiornare bene lo schermo quando si ritorna da un'altra attività
         removeAllStationFoundInScreen();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
+        SharedPreferences.Editor edit = pref.edit();
+        edit.putLong("lat", Double.doubleToRawLongBits(mMap.getCameraPosition().target.latitude));
+        edit.putLong("lng", Double.doubleToRawLongBits(mMap.getCameraPosition().target.longitude));
+        edit.putFloat("zoom", mMap.getCameraPosition().zoom);
+        edit.apply();
     }
 
     @Override
@@ -163,7 +160,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 15.0f));
+        SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
+
+        if(!pref.contains("zoom")) {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 15.0f));
+        }else{
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.longBitsToDouble(pref.getLong("lat", Double.doubleToRawLongBits(40.769817))),Double.longBitsToDouble(pref.getLong("lng", Double.doubleToRawLongBits(14.7900013)))), pref.getFloat("zoom", 15.0f)));
+        }
         old = null;
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
@@ -179,11 +182,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });*/
     }
-
-    void setInfoWindowBasedOnStation(Distributore d) {
-        Log.d("Distributore info", d.toString());
-    }
-
 
     /**
      * THIS SECTION CONTAIN SEARCH FOR PERFECT ROUTE
