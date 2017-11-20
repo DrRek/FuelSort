@@ -4,12 +4,15 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -26,18 +29,26 @@ import android.widget.TextView;
  * Created by luca on 21/10/17.
  */
 
-public class SettingsActivity extends FragmentActivity implements AdapterView.OnItemSelectedListener {
+public class SettingsActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_layout);
+
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);/*
+        getSupportActionBar().indi
+        upArrow.setColorFilter(ResourcesCompat.getColor(getResources(), R.color.white, null), PorterDuff.Mode.SRC_ATOP);
+        getSupportActionBar().setHomeAsUpIndicator(upArrow);*/
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
         String prefCarburante = pref.getString("carburante", "diesel");
         boolean prefSelf = pref.getBoolean("self", true);
         int prefKmxl = pref.getInt("kmxl", 20);
 
-        Spinner spinner = findViewById(R.id.tipiCarburantiSpinner);
+        Spinner spinner = (Spinner) findViewById(R.id.tipiCarburantiSpinner);
         //Set spinner color
         spinner.getBackground().setColorFilter(ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null), PorterDuff.Mode.SRC_ATOP);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -56,7 +67,7 @@ public class SettingsActivity extends FragmentActivity implements AdapterView.On
             spinner.setSelection(3);
         }
 
-        CheckBox c = findViewById(R.id.self);
+        CheckBox c = (CheckBox) findViewById(R.id.self);
         if(prefSelf){
             c.setChecked(true);
         }else {
