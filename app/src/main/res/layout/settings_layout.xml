@@ -1,76 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <RelativeLayout
+    <!-- Codice sotto per mostrare le opzioni delle impostazioni -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_marginLeft="20dp"
-            android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <!--Ricorda che l'ordine all'interno del relative layout serve per prevenire overflow-->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:text="Carburante:"
-            android:textSize="20dp"/>
-        <Spinner
-            android:layout_centerVertical="true"
-            android:id="@+id/tipiCarburantiSpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true">
-        </Spinner>
-    </RelativeLayout>
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="horizontal">
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginLeft="20dp"
-            android:layout_centerVertical="true">
-            <TextView
+            android:minHeight="60dp"
+            android:orientation="horizontal">
+            <Spinner
+                android:layout_centerVertical="true"
+                android:id="@+id/tipiCarburantiSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Self service:"
-                android:textSize="20dp"/>
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:theme="@style/AppTheme">
+            </Spinner>
             <TextView
+                android:id="@+id/carburante_text_view"
+                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14dp"
-                android:text="Se selezionato include i distributori\nself-service." />
-        </LinearLayout>
-        <android.support.v7.widget.AppCompatCheckBox
-            android:layout_centerVertical="true"
-            android:id="@+id/self"
-            android:layout_width="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="@string/carburante"
+                android:textSize="20sp"
+                android:layout_toLeftOf="@id/tipiCarburantiSpinner"
+                android:layout_toStartOf="@id/tipiCarburantiSpinner"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"/>
+        </RelativeLayout>
+        <View
+            android:background="@color/gray"
+            android:layout_width = "match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="30dp">
-        </android.support.v7.widget.AppCompatCheckBox>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="horizontal">
-        <TextView
-            android:layout_marginLeft="20dp"
-            android:layout_centerVertical="true"
-            android:layout_width="wrap_content"
+            android:minHeight="60dp"
+            android:orientation="horizontal">
+            <android.support.v7.widget.AppCompatCheckBox
+                android:layout_centerVertical="true"
+                android:id="@+id/self"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="30dp"
+                android:layout_marginEnd="30dp"
+                android:theme="@style/CheckBoxTheme"/>
+            <LinearLayout
+                android:id="@+id/self_linear_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@id/self"
+                android:layout_toStartOf="@id/self"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/self_service"
+                    android:textSize="20sp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:text="@string/self_service_info" />
+            </LinearLayout>
+        </RelativeLayout>
+        <View
+            android:background="@color/gray"
+            android:layout_width = "match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Chilometri per litro:"
-            android:textSize="20dp"/>
-        <EditText
-            android:layout_centerVertical="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:id="@+id/kmxl"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="30dp"/>
-    </RelativeLayout>
+            android:minHeight="60dp"
+            android:orientation="horizontal">
+            <EditText
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:id="@+id/kmxl"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="30dp"
+                android:layout_marginEnd="30dp"
+                android:paddingLeft="20dp"
+                android:paddingStart="20dp"
+                android:paddingRight="5dp"
+                android:paddingEnd="5dp"
+                android:textCursorDrawable="@drawable/colored_cursor"/>
+            <TextView
+                android:id="@+id/kmxl_text_view"
+                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/kmxl"
+                android:textSize="20sp"
+                android:layout_toLeftOf="@id/kmxl"
+                android:layout_toStartOf="@id/kmxl"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"/>
+        </RelativeLayout>
+        <View
+            android:background="@color/gray"
+            android:layout_width = "match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"/>
+    </LinearLayout>
 </LinearLayout>

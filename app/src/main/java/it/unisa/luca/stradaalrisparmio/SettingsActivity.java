@@ -1,11 +1,15 @@
 package it.unisa.luca.stradaalrisparmio;
 
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -34,6 +38,8 @@ public class SettingsActivity extends FragmentActivity implements AdapterView.On
         int prefKmxl = pref.getInt("kmxl", 20);
 
         Spinner spinner = findViewById(R.id.tipiCarburantiSpinner);
+        //Set spinner color
+        spinner.getBackground().setColorFilter(ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null), PorterDuff.Mode.SRC_ATOP);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.tipi_benzina_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -50,14 +56,17 @@ public class SettingsActivity extends FragmentActivity implements AdapterView.On
             spinner.setSelection(3);
         }
 
-        CheckBox v = findViewById(R.id.self);
+        CheckBox c = findViewById(R.id.self);
         if(prefSelf){
-            v.setChecked(true);
+            c.setChecked(true);
         }else {
-            v.setChecked(false);
+            c.setChecked(false);
         }
 
-        ((EditText)findViewById(R.id.kmxl)).setText(prefKmxl+"", EditText.BufferType.EDITABLE);
+        EditText et = ((EditText)findViewById(R.id.kmxl));
+        //Set spinner color
+        et.getBackground().setColorFilter(ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null), PorterDuff.Mode.SRC_ATOP);
+        et.setText(prefKmxl+"", EditText.BufferType.EDITABLE);
     }
 
     /**

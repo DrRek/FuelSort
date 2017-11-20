@@ -2,6 +2,7 @@
 <resources>
     <color name="colorPrimary">#00be09</color>
     <color name="colorPrimaryDark">#00a008</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#00be09</color> <!-- Viene usato per cambiare il colore del pallino del cursore-->
     <color name="white">#FFFFFF</color>
+    <color name="gray">#b4b4b4</color>
 </resources>

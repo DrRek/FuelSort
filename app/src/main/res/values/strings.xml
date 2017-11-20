@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">StradaAlRisparmio</string>
     <string name="title_activity_maps">Map</string>
+    <string name="carburante">Carburante:</string>
+    <string name="self_service">Self service:</string>
+    <string name="self_service_info">Se selezionato include anche i distributore self-service.</string>
+    <string name="kmxl">Chilometri per litro:</string>
     <string-array name="tipi_benzina_array">
         <item>Benzina</item>
         <item>Diesel</item>
