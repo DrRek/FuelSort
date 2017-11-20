@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -324,9 +325,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             minLng = view.southwest.longitude;
             maxLat = view.northeast.latitude;
             maxLng = view.northeast.longitude;
-            if (maxLat - minLat > SCREEN_DIMENSION_FOR_DATA && maxLng - minLng > SCREEN_DIMENSION_FOR_DATA) {
+            if (mMap.getCameraPosition().zoom<=15f) {
                 cancel(true);
                 return;
+            }else{
+                loaderView.add("Cerco distributori nella zona");
             }
             if (view.northeast.latitude <= view.southwest.latitude) {
                 minLat = view.northeast.latitude;
@@ -430,10 +433,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             lastMinLng = minLng;
             lastMaxLng = maxLng;
             Log.d("Ricerca distributori", "Ricerca terminata con successo.");
+
+            loaderView.remove("Cerco distributori nella zona");
         }
 
         protected void onCancelled(ArrayList<Distributore> nuovi) {
             Log.d("Ricerca distributori", "Ricerca cancellata.");
+            loaderView.remove("Cerco distributori nella zona");
         }
     }
 
@@ -454,11 +460,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void onChangeStationScreenLoad(View v){
         if(loadStationOnPosition){
-            Toast.makeText(getApplicationContext(), "Rimuovo i distributori nello schermo", Toast.LENGTH_SHORT).show();
+            final Toast toast = Toast.makeText(getApplicationContext(), "Rimuovo i distributori nello schermo", Toast.LENGTH_SHORT);
+            toast.show();
+
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    toast.cancel();
+                }
+            }, 350);
+            //Toast.makeText(getApplicationContext(), "Rimuovo i distributori nello schermo", Toast.LENGTH_SHORT).show();
             removeAllStationFoundInScreen();
             loadStationOnPosition = false;
         } else {
-            Toast.makeText(getApplicationContext(), "Aggiungo i distributori nello schermo", Toast.LENGTH_SHORT).show();
+            final Toast toast = Toast.makeText(getApplicationContext(), "Aggiungo i distributori nello schermo", Toast.LENGTH_SHORT);
+            toast.show();
+
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    toast.cancel();
+                }
+            }, 150); //Il delay in questo caso è più corto perché il sistema sarà già in buona parte rallentato dalla ricerca di distributori
+            //Toast.makeText(getApplicationContext(), "Aggiungo i distributori nello schermo", Toast.LENGTH_SHORT).show();
             loadStationOnPosition = true;
             setMarkersBasedOnPosition();
         }

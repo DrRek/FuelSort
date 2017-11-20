@@ -79,7 +79,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:background="#d9b638"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="invisible">
 
             <ProgressBar
                 android:layout_width="wrap_content"
@@ -94,8 +95,7 @@
                 android:id="@+id/LoadingTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Starting application..."/>
+                android:layout_gravity="center"/>
         </LinearLayout>
     </RelativeLayout>
 </LinearLayout>
