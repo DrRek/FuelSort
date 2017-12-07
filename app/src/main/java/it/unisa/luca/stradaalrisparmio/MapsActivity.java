@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,7 +17,9 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,9 +53,13 @@ import it.unisa.luca.stradaalrisparmio.support.LoadingShow;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private static String GMAPS_DEFAULT_DIRECTION_URL = "https://www.google.com/maps/dir/?api=1&travelmode=driving&";
+
     private boolean loadStationOnPosition;
     private GoogleMap mMap;
     private EditText to, from;
+    private LinearLayout openOnGoogleMaps;
+    private String route_parameters;
     private DBmanager manager;
     private LoadingShow loaderView;
     private volatile HashMap<Marker, Distributore> distributoriMarker;
@@ -102,6 +109,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return findForPath();
             }
         });
+
+        openOnGoogleMaps = (LinearLayout) findViewById(R.id.openOnGoogleMaps);
+        openOnGoogleMaps.setVisibility(View.INVISIBLE);
 
         //To avoid searching once i move into the map, use the button to undo
         loadStationOnPosition = false;
@@ -264,6 +274,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     plo.add(r.points.get(i));
                                 }
                                 mMap.addPolyline(plo);
+
+                                route_parameters = r.parameters;
+                                openOnGoogleMaps.setVisibility(View.VISIBLE);
+                                Log.d("URL FOUND", r.parameters);
                             }
                         }
                     }).execute();
@@ -521,5 +535,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         this.lastMaxLat = null;
         this.lastMinLng = null;
         this.lastMaxLng = null;
+    }
+
+    /**THIS IS USED TO DISPLAY THE OPEN IN MAP BUTTON**/
+
+    public void setRouteToOpenOnGoogleMaps(View v){
+        String url = GMAPS_DEFAULT_DIRECTION_URL+route_parameters;
+        Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(intent);
     }
 }

@@ -30,6 +30,7 @@ public class DirectionFinder {
     private String origin;
     private String destination;
     private String waypoint;
+    private String url;
 
     public DirectionFinder(String origin, String destination, LatLng waypoint, DirectionFinderListener listener) {
         this.listener = listener;
@@ -43,16 +44,23 @@ public class DirectionFinder {
 
     public void execute() throws UnsupportedEncodingException {
         listener.onDirectionFinderStart();
-        new DownloadRawData().execute(createUrl());
+        this.url = DIRECTION_URL_API + createUrl();
+        new DownloadRawData().execute(url);
     }
 
-    private String createUrl() throws UnsupportedEncodingException {
-        String urlOrigin = URLEncoder.encode(origin, "utf-8");
-        String urlDestination = URLEncoder.encode(destination, "utf-8");
-        if(waypoint==null)
-            return DIRECTION_URL_API + "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY;
-        else
-            return DIRECTION_URL_API + "origin=" + urlOrigin + "&destination=" + urlDestination + "&waypoints=" + waypoint + "&key=" + GOOGLE_API_KEY;
+    private String createUrl() {
+        try {
+            String urlOrigin = URLEncoder.encode(origin, "utf-8");
+            String urlDestination = URLEncoder.encode(destination, "utf-8");
+            if (waypoint == null)
+                return "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY;
+            else
+                return "origin=" + urlOrigin + "&destination=" + urlDestination + "&waypoints=" + waypoint + "&key=" + GOOGLE_API_KEY;
+        } catch (UnsupportedEncodingException e) {
+            Log.e("ERROR", "Impossible to create url for path request");
+            e.printStackTrace();
+            return "";
+        }
     }
 
     private class DownloadRawData extends AsyncTask<String, Void, String> {
@@ -133,6 +141,7 @@ public class DirectionFinder {
             route.endLocation = new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
             route.points = decodePolyLine(overview_polylineJson.getString("points"));
             route.regions = calculateRegions(route);
+            route.parameters = createUrl();
 
             routes.add(route);
         }
