@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ButtonBarLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -58,7 +59,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean loadStationOnPosition;
     private GoogleMap mMap;
     private EditText to, from;
-    private LinearLayout openOnGoogleMaps;
+    private Button openOnGoogleMaps;
     private String route_parameters;
     private DBmanager manager;
     private LoadingShow loaderView;
@@ -110,7 +111,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        openOnGoogleMaps = (LinearLayout) findViewById(R.id.openOnGoogleMaps);
+        openOnGoogleMaps = (Button) findViewById(R.id.openOnGoogleMaps);
         openOnGoogleMaps.setVisibility(View.INVISIBLE);
 
         //To avoid searching once i move into the map, use the button to undo
@@ -172,6 +173,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.getUiSettings().setMapToolbarEnabled(false); //disbale pointer button
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
 
         if(!pref.contains("zoom")) {

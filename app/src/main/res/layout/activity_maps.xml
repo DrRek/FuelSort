@@ -64,25 +64,20 @@
                 android:hint="Destinazione"
                 android:text="Fisciano"/>
         </LinearLayout>
-        <LinearLayout
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:id="@+id/openOnGoogleMaps"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="3dp"
+            android:layout_marginRight="3dp"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:onClick="setRouteToOpenOnGoogleMaps">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/open_in"/>
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/google_maps_ico"/>
-        </LinearLayout>
+            android:onClick="setRouteToOpenOnGoogleMaps"
+            android:text="@string/open_in"
+            android:drawableRight="@drawable/google_maps_ico"/>
+
         <Button
             android:id="@+id/viewStation"
             android:layout_marginBottom="5dp"

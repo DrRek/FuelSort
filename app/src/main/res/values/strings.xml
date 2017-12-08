@@ -6,7 +6,7 @@
     <string name="self_service">Self service:</string>
     <string name="self_service_info">Se selezionato include anche i distributore self-service.</string>
     <string name="kmxl">Chilometri per litro:</string>
-    <string name="open_in">Open in</string>
+    <string name="open_in">Open in </string>
     <string-array name="tipi_benzina_array">
         <item>Benzina</item>
         <item>Diesel</item>
