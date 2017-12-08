@@ -95,13 +95,37 @@ public class BitmapCreator {
     public static Bitmap getStartBitmap(Context context){
         Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
 
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("start", "drawable", context.getPackageName()));
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("start_finish", "drawable", context.getPackageName()));
+        bitmap = Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
+
+        int [] allpixels = new int [SIZE*SIZE];
+        bitmap.getPixels(allpixels, 0, SIZE, 0, 0, SIZE, SIZE);
+        for(int i = 0; i < allpixels.length; i++)
+        {
+            if(allpixels[i] != 0 && allpixels[i]!=-1){
+                allpixels[i] = Color.GREEN;
+            }
+        }
+        bitmap.setPixels(allpixels,0,SIZE,0, 0, SIZE,SIZE);
+
         return Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
     }
     public static Bitmap getFinishBitmap(Context context){
         Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
 
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("finish", "drawable", context.getPackageName()));
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("start_finish", "drawable", context.getPackageName()));
+        bitmap = Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
+
+        int [] allpixels = new int [SIZE*SIZE];
+        bitmap.getPixels(allpixels, 0, SIZE, 0, 0, SIZE, SIZE);
+        for(int i = 0; i < allpixels.length; i++)
+        {
+            if(allpixels[i] != 0 && allpixels[i]!=-1){
+                allpixels[i] = Color.RED;
+            }
+        }
+        bitmap.setPixels(allpixels,0,SIZE,0, 0, SIZE,SIZE);
+
         return Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
     }
 }

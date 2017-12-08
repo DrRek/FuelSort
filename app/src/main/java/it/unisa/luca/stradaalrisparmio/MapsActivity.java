@@ -55,6 +55,7 @@ import it.unisa.luca.stradaalrisparmio.support.LoadingShow;
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static String GMAPS_DEFAULT_DIRECTION_URL = "https://www.google.com/maps/dir/?api=1&travelmode=driving&";
+    private static float SCREEN_ZOOM_FOR_DATA = 14.5f;
 
     private boolean loadStationOnPosition;
     private GoogleMap mMap;
@@ -322,7 +323,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /**
      * Async task usato per la ricerca dei distributori all'interno dello schermo.
-     * Se SCREEN_DIMENSION_FOR_DATA > delle dimensioni dello schermo non viene creato alcun thread
+     * Se SCREEN_ZOOM_FOR_DATA < dello zoom dello schermo non viene creato alcun thread
      */
     private class LoadStationInScreen extends AsyncTask<Void, Integer, ArrayList<Distributore>> {
         private Double minLat, maxLat, minLng, maxLng;
@@ -336,7 +337,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             minLng = view.southwest.longitude;
             maxLat = view.northeast.latitude;
             maxLng = view.northeast.longitude;
-            if (mMap.getCameraPosition().zoom<=15f) {
+            if (mMap.getCameraPosition().zoom<=SCREEN_ZOOM_FOR_DATA) {
                 cancel(true);
                 return;
             }else{
@@ -444,9 +445,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Collections.sort(nuovi, new Comparator<Distributore>() {
                     @Override
                     public int compare(Distributore distributore, Distributore t1) {
-                        return Math.round(distributore.getLowestPrice(params) - t1.getLowestPrice(params));
+                        return (int)((t1.getLowestPrice(params) - distributore.getLowestPrice(params))*100000);
                     }
                 });
+
                 int numeroColoriDaUsare = nuovi.size();
                 //int green = ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null);
                 //int red = ResourcesCompat.getColor(getResources(), R.color.red, null);
@@ -541,7 +543,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /**THIS IS USED TO DISPLAY THE OPEN IN MAP BUTTON**/
 
-    public void setRouteToOpenOnGoogleMaps(View v){
+    public void openOnGoogleMaps(View v){
         String url = GMAPS_DEFAULT_DIRECTION_URL+route_parameters;
         Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
