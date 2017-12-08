@@ -113,7 +113,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         openOnGoogleMaps = (Button) findViewById(R.id.openOnGoogleMaps);
-        openOnGoogleMaps.setVisibility(View.INVISIBLE);
+        openOnGoogleMaps.setVisibility(View.GONE);
 
         //To avoid searching once i move into the map, use the button to undo
         loadStationOnPosition = false;
@@ -267,7 +267,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 Route r = routes.get(0);
                                 mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getStartBitmap(context))).title("Start").position(r.startLocation));
                                 mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getFinishBitmap(context))).title("End").position(r.endLocation));
-                                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(context, Color.RED, d.getLowestPrice(params), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
+                                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(context, Color.BLUE, d.getLowestPrice(params), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
                                 mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(r.getLatLngBounds(), 100)); //100 is just some padding
                                 PolylineOptions plo = new PolylineOptions();
                                 plo.geodesic(true);

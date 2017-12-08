@@ -20,7 +20,6 @@
         android:orientation="vertical"
         tools:context="it.unisa.luca.stradaalrisparmio.MapsActivity" >
         <fragment
-            xmlns:map="http://schemas.android.com/apk/res-auto"
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
@@ -44,7 +43,7 @@
                 android:id="@+id/from"
                 android:imeOptions="actionNext"
                 android:inputType="textCapSentences"
-                android:hint="Partenza"
+                android:hint="@string/partenza"
                 android:text="Torre del greco" />
 
             <EditText
@@ -61,31 +60,33 @@
                 android:id="@+id/to"
                 android:imeOptions="actionDone"
                 android:inputType="textCapSentences"
-                android:hint="Destinazione"
+                android:hint="@string/destinazione"
                 android:text="Fisciano"/>
         </LinearLayout>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:id="@+id/openOnGoogleMaps"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:onClick="openOnGoogleMaps"
-            android:text="@string/open_in"
-            android:drawableRight="@drawable/google_maps_ico"
-            android:drawablePadding="5dp"/>
-
         <Button
             android:id="@+id/viewStation"
             android:layout_marginBottom="5dp"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@id/openOnGoogleMaps"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:background="@drawable/pomp_icon"
             android:onClick="onChangeStationScreenLoad"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/openOnGoogleMaps"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@id/viewStation"
+            android:layout_toStartOf="@id/viewStation"
+            android:onClick="openOnGoogleMaps"
+            android:text="@string/open_in"
+            android:drawableRight="@drawable/google_maps_ico"
+            android:drawableEnd="@drawable/google_maps_ico"
+            android:drawablePadding="5dp"/>
+
         <LinearLayout
             android:id="@+id/LoadingLayout"
             android:layout_width="match_parent"
