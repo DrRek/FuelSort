@@ -1,14 +1,12 @@
-package it.unisa.luca.stradaalrisparmio.stazioni;
+package it.unisa.luca.fuelsort.gasstation.entity;
 
-import android.icu.util.DateInterval;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
-import it.unisa.luca.stradaalrisparmio.stazioni.database.DBmanager;
+import it.unisa.luca.fuelsort.gasstation.database.DatabaseManager;
 
 /**
  * Da riempire
@@ -26,7 +24,7 @@ public class Distributore implements Comparable{
     private String provincia;
     private double lat;
     private double lon;
-    ArrayList<Pompa> pompe;
+    private ArrayList<Pompa> pompe;
 
     public Distributore(int id, String gestore, String bandiera, String tipoImpianto, String nome, String indirizzo, String comune, String provincia, double lat, double lon){
         this.id = id;
@@ -67,7 +65,7 @@ public class Distributore implements Comparable{
         return 0;
     }
 
-    public Float getLowestPrice(DBmanager.SearchParams params){
+    public Float getLowestPrice(DatabaseManager.SearchParams params){
         Float lowest = 9.999f;
         for(Pompa p : pompe){
             if(params.checkCarburante(p.getCarburante()) && (params.isSelf() || (!params.isSelf() && !p.isSelf())) && p.getPrezzo()<lowest) {
@@ -78,20 +76,20 @@ public class Distributore implements Comparable{
     }
 
     public String toString(){
-        String toString = "\n"+
-                "Id: "+id+"\n"+
-                "Gestore: "+gestore+"\n"+
-                "Bandiera: "+bandiera+"\n"+
-                "TipoImpianto: "+tipoImpianto+"\n"+
-                "Nome: "+nome+"\n"+
-                "Indirizzo: "+indirizzo+"\n"+
-                "Comune: "+comune+"\n"+
-                "Provincia: "+provincia+"\n"+
-                "Lat Lng: "+lat+" "+lon+"\n";
+        StringBuilder toString = new StringBuilder("\n" +
+                "Id: " + id + "\n" +
+                "Gestore: " + gestore + "\n" +
+                "Bandiera: " + bandiera + "\n" +
+                "TipoImpianto: " + tipoImpianto + "\n" +
+                "Nome: " + nome + "\n" +
+                "Indirizzo: " + indirizzo + "\n" +
+                "Comune: " + comune + "\n" +
+                "Provincia: " + provincia + "\n" +
+                "Lat Lng: " + lat + " " + lon + "\n");
         for (Pompa p : pompe){
-            toString += "Pompa:" + p.toString() +"\n";
+            toString.append("Pompa:").append(p.toString()).append("\n");
         }
-        return toString;
+        return toString.toString();
     }
 
     public LatLng getPosizione(){

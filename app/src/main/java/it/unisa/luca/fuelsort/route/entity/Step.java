@@ -1,18 +1,18 @@
-package it.unisa.luca.stradaalrisparmio.api.strada;
-
-import android.util.Log;
+package it.unisa.luca.fuelsort.route.entity;
 
 import com.google.android.gms.maps.model.LatLng;
 
 /**
+ * Step will contain path steps.
  * Created by luca on 22/10/17.
  */
 
 public class Step {
-    public final int EARTH_RADIUS = 6378000;
-    public LatLng start, end;
-    public LatLng SOBound, NEBound;
-    public int distance;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int EARTH_RADIUS = 6378000;
+    private LatLng start, end;
+    private LatLng SOBound, NEBound;
+    private int distance;
 
     public Step (LatLng start, LatLng end, int distance){
         this.start=start;
@@ -39,5 +39,33 @@ public class Step {
                 NEBound.latitude  + margin*180/(EARTH_RADIUS*Math.PI),
                 NEBound.longitude + (margin*180/(EARTH_RADIUS*Math.PI))/ Math.cos(NEBound.latitude * Math.PI/180)
         );
+    }
+
+    public LatLng getStart() {
+        return start;
+    }
+
+    public void setStart(LatLng start) {
+        this.start = start;
+    }
+
+    public LatLng getEnd() {
+        return end;
+    }
+
+    public void setEnd(LatLng end) {
+        this.end = end;
+    }
+
+    public LatLng getSOBound(){
+        return SOBound;
+    }
+
+    public LatLng getNEBound(){
+        return NEBound;
+    }
+
+    public int getDistance(){
+        return distance;
     }
 }

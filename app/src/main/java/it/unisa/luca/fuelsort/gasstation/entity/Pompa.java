@@ -1,8 +1,7 @@
-package it.unisa.luca.stradaalrisparmio.stazioni;
-
-import android.util.Log;
+package it.unisa.luca.fuelsort.gasstation.entity;
 
 /**
+ * A 'Disitributore' is based on one or more 'Pompa' class
  * Created by luca on 08/10/17.
  */
 

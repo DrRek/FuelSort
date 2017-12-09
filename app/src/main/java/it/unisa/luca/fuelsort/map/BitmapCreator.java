@@ -1,4 +1,4 @@
-package it.unisa.luca.stradaalrisparmio.support;
+package it.unisa.luca.fuelsort.map;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,25 +11,26 @@ import android.graphics.Typeface;
 
 
 /**
+ * This class will be used to modify bitmap.
  * Created by luca on 22/10/17.
  */
 
-public class BitmapCreator {
+@SuppressWarnings("FieldCanBeLocal")
+class BitmapCreator {
+    private static String DEFAULT_ICON = "pomp_icon";
+    private static String ESSO_ICON = "esso";
+    private static String IP_ICON = "ip";
+    private static String OTHER_ICON = "interrogative";
+    private static String TOTALERG_ICON = "totalerg";
+    private static String Q8_ICON = "q8";
+    private static String BIANCHE_ICON = "bianche";
+    private static String REPSOL_ICON = "repsol";
+    private static String TAMOIL_ICON = "tamoil";
+    private static String ENERGAS_ICON = "energas";
+    private static int SIZE = 160;
+    private static int BANDIERA_SIZE = 65;
 
-    public static String DEFAULT_ICON = "pomp_icon";
-    public static String ESSO_ICON = "esso";
-    public static String IP_ICON = "ip";
-    public static String OTHER_ICON = "interrogative";
-    public static String TOTALERG_ICON = "totalerg";
-    public static String Q8_ICON = "q8";
-    public static String BIANCHE_ICON = "bianche";
-    public static String REPSOL_ICON = "repsol";
-    public static String TAMOIL_ICON = "tamoil";
-    public static String ENERGAS_ICON = "energas";
-    public static int SIZE = 160;
-    public static int BANDIERA_SIZE = 65;
-
-    public static Bitmap getBitmap(Context context, int color, Float value, String bandiera){
+    static Bitmap getBitmap(Context context, int color, Float value, String bandiera){
         Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
 
         Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(DEFAULT_ICON, "drawable", context.getPackageName()));
@@ -92,7 +93,7 @@ public class BitmapCreator {
         return bitmap;
     }
 
-    public static Bitmap getStartBitmap(Context context){
+    static Bitmap getStartBitmap(Context context){
         Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
 
         Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("start_finish", "drawable", context.getPackageName()));
@@ -110,7 +111,7 @@ public class BitmapCreator {
 
         return Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
     }
-    public static Bitmap getFinishBitmap(Context context){
+    static Bitmap getFinishBitmap(Context context){
         Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
 
         Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("start_finish", "drawable", context.getPackageName()));

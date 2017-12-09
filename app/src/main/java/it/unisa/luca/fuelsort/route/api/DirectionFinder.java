@@ -1,4 +1,4 @@
-package it.unisa.luca.stradaalrisparmio.api.strada;
+package it.unisa.luca.fuelsort.route.api;
 
 import android.location.Location;
 import android.os.AsyncTask;
@@ -21,7 +21,10 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.unisa.luca.stradaalrisparmio.R;
+import it.unisa.luca.fuelsort.route.entity.Distance;
+import it.unisa.luca.fuelsort.route.entity.Duration;
+import it.unisa.luca.fuelsort.route.entity.Route;
+import it.unisa.luca.fuelsort.route.entity.Step;
 
 public class DirectionFinder {
     private static final String DIRECTION_URL_API = "https://maps.googleapis.com/maps/api/directions/json?";
@@ -30,7 +33,6 @@ public class DirectionFinder {
     private String origin;
     private String destination;
     private String waypoint;
-    private String url;
 
     public DirectionFinder(String origin, String destination, LatLng waypoint, DirectionFinderListener listener) {
         this.listener = listener;
@@ -44,7 +46,7 @@ public class DirectionFinder {
 
     public void execute() throws UnsupportedEncodingException {
         listener.onDirectionFinderStart();
-        this.url = DIRECTION_URL_API + createUrl();
+        String url = DIRECTION_URL_API + createUrl();
         new DownloadRawData().execute(url);
     }
 
@@ -71,13 +73,13 @@ public class DirectionFinder {
             try {
                 URL url = new URL(link);
                 InputStream is = url.openConnection().getInputStream();
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder buffer = new StringBuilder();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
                 String line;
                 while ((line = reader.readLine()) != null) {
                     System.out.println(line);
-                    buffer.append(line + "\n");
+                    buffer.append(line).append("\n");
                 }
                 return buffer.toString();
 
@@ -102,7 +104,7 @@ public class DirectionFinder {
     private void parseJSon(String data) throws JSONException {
         if (data == null)
             return;
-        List<Route> routes = new ArrayList<Route>();
+        List<Route> routes = new ArrayList<>();
         JSONObject jsonData = new JSONObject(data);
         JSONArray jsonRoutes = jsonData.getJSONArray("routes");
         for (int i = 0; i < jsonRoutes.length(); i++) {
@@ -127,21 +129,21 @@ public class DirectionFinder {
                 JSONObject jsO = (JSONObject) jsonLegs.get(y);
                 JSONObject jsODuration = jsO.getJSONObject("duration");
                 JSONObject jsODistance = jsO.getJSONObject("distance");
-                duration.value = duration.value + jsODuration.getInt("value");
-                distance.value = distance.value + jsODistance.getInt("value");
+                duration.setValue(duration.getValue() + jsODuration.getInt("value"));
+                distance.setValue(distance.getValue() + jsODistance.getInt("value"));
             }
-            route.distance = distance;
-            route.duration = duration;
+            route.setDistance(distance);
+            route.setDuration(duration);
 
-            route.northeast = new LatLng(jsonNE.getDouble("lat"), jsonNE.getDouble("lng"));
-            route.southwest = new LatLng(jsonSO.getDouble("lat"), jsonSO.getDouble("lng"));
-            route.endAddress = jsonLegEnd.getString("end_address");
-            route.startAddress = jsonLegStart.getString("start_address");
-            route.startLocation = new LatLng(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng"));
-            route.endLocation = new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng"));
-            route.points = decodePolyLine(overview_polylineJson.getString("points"));
-            route.regions = calculateRegions(route);
-            route.parameters = createUrl();
+            route.setNortheast(new LatLng(jsonNE.getDouble("lat"), jsonNE.getDouble("lng")));
+            route.setSouthwest(new LatLng(jsonSO.getDouble("lat"), jsonSO.getDouble("lng")));
+            route.setEndAddress(jsonLegEnd.getString("end_address"));
+            route.setStartAddress(jsonLegStart.getString("start_address"));
+            route.setStartLocation(new LatLng(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng")));
+            route.setEndLocation(new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng")));
+            route.setPoints(decodePolyLine(overview_polylineJson.getString("points")));
+            route.setRegions(calculateRegions(route));
+            route.setParameters(createUrl());
 
             routes.add(route);
         }
@@ -149,21 +151,21 @@ public class DirectionFinder {
         listener.onDirectionFinderSuccess(routes);
     }
 
-    private List calculateRegions(Route r){
+    private List<Step> calculateRegions(Route r){
         List<Step> regions = new ArrayList<>();
         int distance;
         LatLng prec, succ;
         Step lastReg = null;
-        for(int i=1; i<r.points.size(); i++){
+        for(int i=1; i<r.getPoints().size(); i++){
             float [] dist = new float[1];
-            prec = r.points.get(i-1);
-            succ = r.points.get(i);
+            prec = r.getPoints().get(i-1);
+            succ = r.getPoints().get(i);
             Location.distanceBetween(prec.latitude, prec.longitude, succ.latitude, succ.longitude, dist);
             distance = (int)dist[0];
-            if(lastReg!=null && lastReg.distance+distance>Route.SUGGESTED_REGION_SIZE){
+            if(lastReg!=null && lastReg.getDistance()+distance>Route.SUGGESTED_REGION_SIZE){
                 lastReg.addMargin(Route.BOUNDS_FOR_REGION);
             }
-            if(lastReg==null || lastReg.distance+distance>Route.SUGGESTED_REGION_SIZE){//Max kilometer
+            if(lastReg==null || lastReg.getDistance()+distance>Route.SUGGESTED_REGION_SIZE){//Max kilometer
                 regions.add(new Step(prec, succ, distance));
                 lastReg = regions.get(regions.size()-1);
             } else {
@@ -174,6 +176,8 @@ public class DirectionFinder {
         return regions;
     }
 
+    /*
+    This information is given by google but by now i don't need it, i'll leave it here. Maybe in future i'll need to implement some new features.
     private List<Step> decodeSteps(JSONArray steps) throws JSONException {
         List<Step> trovati = new ArrayList<>();
         for(int i=0; i<steps.length(); i++){
@@ -190,12 +194,12 @@ public class DirectionFinder {
             );
         }
         return trovati;
-    }
+    }*/
 
     private List<LatLng> decodePolyLine(final String poly) {
         int len = poly.length();
         int index = 0;
-        List<LatLng> decoded = new ArrayList<LatLng>();
+        List<LatLng> decoded = new ArrayList<>();
         int lat = 0;
         int lng = 0;
 

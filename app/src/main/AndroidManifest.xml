@@ -37,7 +37,7 @@
 
 
         <activity
-            android:name=".MapsActivity"
+            android:name="it.unisa.luca.fuelsort.activity.MapsActivity"
             android:label="@string/title_activity_maps"
             android:launchMode="singleTop">
             <intent-filter>
@@ -46,12 +46,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name="it.unisa.luca.fuelsort.activity.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MapsActivity">
+            android:parentActivityName="it.unisa.luca.fuelsort.activity.MapsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MapsActivity" />
+                android:value="it.unisa.luca.fuelsort.activity.MapsActivity" />
 
         </activity>
     </application>

@@ -1,4 +1,4 @@
-package it.unisa.luca.stradaalrisparmio.support;
+package it.unisa.luca.fuelsort.support;
 
 import android.app.Activity;
 import android.util.Log;
@@ -10,26 +10,27 @@ import java.util.ArrayList;
 import it.unisa.luca.stradaalrisparmio.R;
 
 /**
+ * Used to display information on background work to the user.
  * Created by Luca on 2017-10-10.
  */
 
-public class LoadingShow {
-    public static LoadingShow loader;
+public class LoadingManager {
+    private static LoadingManager loader;
 
-    public static LoadingShow getLoader(Activity activity){
+    public static LoadingManager getLoader(Activity activity){
         if(loader == null){
-            synchronized (LoadingShow.class){
+            synchronized (LoadingManager.class){
                 if(loader == null){
-                    loader = new LoadingShow(activity);
+                    loader = new LoadingManager(activity);
                 }
             }
         }
         return loader;
     }
 
-    public LoadingShow(Activity activity){
+    private LoadingManager(Activity activity){
         this.activity = activity;
-        acts = new ArrayList<String>();
+        acts = new ArrayList<>();
     }
 
     public synchronized void add(final String act){

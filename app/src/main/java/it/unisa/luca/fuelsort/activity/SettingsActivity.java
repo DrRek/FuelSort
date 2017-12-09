@@ -1,4 +1,4 @@
-package it.unisa.luca.stradaalrisparmio;
+package it.unisa.luca.fuelsort.activity;
 
 import android.app.FragmentManager;
 import android.content.SharedPreferences;
@@ -16,6 +16,8 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+
+import it.unisa.luca.stradaalrisparmio.R;
 
 /**
  * I
@@ -107,7 +109,6 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                // todo: goto back activity from here
                 onBackPressed();
                 return true;
 

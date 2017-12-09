@@ -1,4 +1,4 @@
-package it.unisa.luca.stradaalrisparmio.stazioni.database;
+package it.unisa.luca.fuelsort.gasstation.database;
 
 import java.io.BufferedReader;
 import java.io.IOException;

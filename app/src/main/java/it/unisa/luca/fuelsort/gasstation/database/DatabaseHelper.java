@@ -1,4 +1,4 @@
-package it.unisa.luca.stradaalrisparmio.stazioni.database;
+package it.unisa.luca.fuelsort.gasstation.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,7 +10,7 @@ import android.util.Log;
  * Created by luca on 08/10/17.
  */
 
-class DBhelper extends SQLiteOpenHelper{
+class DatabaseHelper extends SQLiteOpenHelper{
 
     private static final String DB_NAME = "stradaalrisparmio";
     static final String TBL_DISTRIBUTORI = "Anagrafica";
@@ -35,14 +35,14 @@ class DBhelper extends SQLiteOpenHelper{
     static final String CMP_DISTIBUTORI = "distributori";
     static final String CMP_POMPE = "pompe";
 
-    DBhelper(Context context) {
+    DatabaseHelper(Context context) {
         super(context, DB_NAME, null, 8);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        String q="CREATE TABLE "+DBhelper.TBL_DISTRIBUTORI+" ( " +
+        String q="CREATE TABLE "+ DatabaseHelper.TBL_DISTRIBUTORI+" ( " +
                 FIELD_ID +" INTEGER PRIMARY KEY, " +
                 FIELD_GESTORE+" TEXT, " +
                 FIELD_BANDIERA+" TEXT, " +
@@ -55,7 +55,7 @@ class DBhelper extends SQLiteOpenHelper{
                 FIELD_LON+" REAL );";
         Log.d("USATE:", q);
         db.execSQL(q);
-        q="CREATE TABLE "+DBhelper.TBL_PREZZI+" ( " +
+        q="CREATE TABLE "+ DatabaseHelper.TBL_PREZZI+" ( " +
             FIELD_ID+" INTEGER," +
             FIELD_CARBURANTE+" TEXT," +
             FIELD_PREZZO+" REAL," +
@@ -66,7 +66,7 @@ class DBhelper extends SQLiteOpenHelper{
         Log.d("USATE:", q);
         db.execSQL(q);
 
-        q="CREATE TABLE "+DBhelper.TBL_LATEST+" ( " +
+        q="CREATE TABLE "+ DatabaseHelper.TBL_LATEST+" ( " +
                 FIELD_DATA+" TEXT PRIMARY KEY," +
                 FIELD_LATEST_UPDATE+" TEXT );";
         Log.d("USATE:", q);

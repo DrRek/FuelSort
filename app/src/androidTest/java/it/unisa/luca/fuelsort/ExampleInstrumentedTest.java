@@ -1,4 +1,4 @@
-package it.unisa.luca.stradaalrisparmio;
+package it.unisa.luca.fuelsort;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
