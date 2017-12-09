@@ -323,22 +323,34 @@ public class MapManager implements OnMapReadyCallback {
                     }
                 });
 
-                int numeroColoriDaUsare = nuovi.size();
+                int distributoriSize = nuovi.size();
 
-                float angleRange = 120;
-                float stepAngle = angleRange / numeroColoriDaUsare;
-
-                float[] hsv = new float[3];
-                hsv[1]=1;
-                hsv[2]=1;
-                for(int i=0; i<numeroColoriDaUsare; i++){
-                    Distributore tempDist = nuovi.get(i);
-                    hsv[0] = 0 + i*stepAngle;
+                if(distributoriSize==1){
+                    Distributore tempDist = nuovi.get(0);
+                    float[] hsv = new float[3];
+                    hsv[0]=120;
+                    hsv[1]=1;
+                    hsv[2]=1;
                     Bitmap tempBitmap = BitmapCreator.getBitmap(activityContext, Color.HSVToColor(hsv), tempDist.setPriceByParams(params), tempDist.getBandiera());
                     Marker tempMark = mMap.addMarker(
                             new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(tempDist.getId() + "").draggable(false).visible(true).alpha(0.95f).position(tempDist.getPosizione())
                     );
                     distributoriMarker.put(tempMark, tempDist);
+                }else if(distributoriSize>1) {
+                    float min = nuovi.get(0).getBestPriceUsingSearchParams(), max = nuovi.get(distributoriSize - 1).getBestPriceUsingSearchParams();
+                    float diff = max - min;
+                    float[] hsv = new float[3];
+                    hsv[1] = 1;
+                    hsv[2] = 1;
+                    for (int i = 0; i < distributoriSize; i++) {
+                        Distributore tempDist = nuovi.get(i);
+                        hsv[0] = (tempDist.getBestPriceUsingSearchParams() - min) * 120 / diff;
+                        Bitmap tempBitmap = BitmapCreator.getBitmap(activityContext, Color.HSVToColor(hsv), tempDist.setPriceByParams(params), tempDist.getBandiera());
+                        Marker tempMark = mMap.addMarker(
+                                new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(tempDist.getId() + "").draggable(false).visible(true).alpha(0.95f).position(tempDist.getPosizione())
+                        );
+                        distributoriMarker.put(tempMark, tempDist);
+                    }
                 }
 
                 lastMinLat = minLat;
