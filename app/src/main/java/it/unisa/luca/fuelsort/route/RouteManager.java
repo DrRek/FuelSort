@@ -141,7 +141,7 @@ public class RouteManager {
                             Log.d("DirectionFinderSuccess", "Success");
                             if (!routes.isEmpty()) {
                                 Route r = routes.get(0);
-                                routeManagerListener.routeFound(r, d);
+                                if(routeManagerListener!=null)routeManagerListener.routeFound(r, d);
                             }
                         }
                     }).execute();

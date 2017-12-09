@@ -42,14 +42,14 @@ public class DatabaseUpdater extends Thread{
         pompeNewData = browser.retrieve(DataImporter.POMPE_PATH);
 
         if(isToUpdateDistributori()){
-            databaseUpdaterListener.onStartStationUpdate();
+            if(databaseUpdaterListener!=null)databaseUpdaterListener.onStartStationUpdate();
             retrieveUpdatedDistributori();
-            databaseUpdaterListener.onEndStationUpdate();
+            if(databaseUpdaterListener!=null)databaseUpdaterListener.onEndStationUpdate();
         }
         if(isToUpdatePompe()){
-            databaseUpdaterListener.onStartPriceUpdate();
+            if(databaseUpdaterListener!=null)databaseUpdaterListener.onStartPriceUpdate();
             retrieveUpdatedPompe();
-            databaseUpdaterListener.onEndPriceUpdate();
+            if(databaseUpdaterListener!=null)databaseUpdaterListener.onEndPriceUpdate();
         }
         Log.d("Database", "End managing updates");
     }

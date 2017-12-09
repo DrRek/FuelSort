@@ -57,6 +57,8 @@ public class MapManager implements OnMapReadyCallback {
     private DatabaseManager databaseManager;
     private DatabaseManager.SearchParams params;
 
+    private MapManagerListener listener;
+
     public MapManager(SupportMapFragment fragment, Context ctx) {
         fragment.getMapAsync(this);
         activityContext = ctx;
@@ -68,6 +70,10 @@ public class MapManager implements OnMapReadyCallback {
                 onChangeStationScreenLoad();
             }
         });
+    }
+
+    public void setListener(MapManagerListener listener){
+        this.listener=listener;
     }
 
     public void setRoute(final Route r, final Distributore d){
@@ -213,8 +219,10 @@ public class MapManager implements OnMapReadyCallback {
             maxLng = view.northeast.longitude;
             if (mMap.getCameraPosition().zoom<=SCREEN_ZOOM_FOR_DATA) {
                 cancel(false);
+                listener.lowZoomWhileSearchingStationInScreen();
                 return;
-            }//altrimenti cerca i distributori in zona
+            }
+            listener.startSearchingStationInScreen();
 
             if (view.northeast.latitude <= view.southwest.latitude) {
                 minLat = view.northeast.latitude;
@@ -358,6 +366,7 @@ public class MapManager implements OnMapReadyCallback {
                 lastMinLng = minLng;
                 lastMaxLng = maxLng;
                 //loaderManager.remove("Cerco distributori nella zona");
+                listener.endSearchingStationInScreen();
             }
         }
 

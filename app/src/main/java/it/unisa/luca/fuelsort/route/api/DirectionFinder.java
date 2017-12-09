@@ -45,7 +45,7 @@ public class DirectionFinder {
     }
 
     public void execute() throws UnsupportedEncodingException {
-        listener.onDirectionFinderStart();
+        if(listener!=null) listener.onDirectionFinderStart();
         String url = DIRECTION_URL_API + createUrl();
         new DownloadRawData().execute(url);
     }
@@ -148,7 +148,7 @@ public class DirectionFinder {
             routes.add(route);
         }
 
-        listener.onDirectionFinderSuccess(routes);
+        if(listener!=null)listener.onDirectionFinderSuccess(routes);
     }
 
     private List<Step> calculateRegions(Route r){

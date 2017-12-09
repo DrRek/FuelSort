@@ -2,6 +2,7 @@ package it.unisa.luca.fuelsort.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
@@ -17,6 +18,7 @@ import it.unisa.luca.fuelsort.gasstation.database.DatabaseUpdater;
 import it.unisa.luca.fuelsort.gasstation.database.DatabaseUpdaterListener;
 import it.unisa.luca.fuelsort.gasstation.entity.Distributore;
 import it.unisa.luca.fuelsort.map.MapManager;
+import it.unisa.luca.fuelsort.map.MapManagerListener;
 import it.unisa.luca.fuelsort.route.RouteManager;
 import it.unisa.luca.fuelsort.route.RouteManagerListener;
 import it.unisa.luca.fuelsort.route.entity.Route;
@@ -66,6 +68,28 @@ public class MapsActivity extends AppCompatActivity {
 
         //This is used to create the map. All the action/things relative to the map will be managed by this class.
         mapManager = new MapManager((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map), this);
+        mapManager.setListener(new MapManagerListener() {
+            @Override
+            public void startSearchingStationInScreen() {
+                loaderManager.add("Cerco distributori...");
+            }
+            @Override
+            public void lowZoomWhileSearchingStationInScreen() {
+                final Toast toast = Toast.makeText(getApplicationContext(), "Zooma di più per cercare distributori manualmente.", Toast.LENGTH_SHORT);
+                toast.show();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        toast.cancel();
+                    }
+                }, 450);
+            }
+            @Override
+            public void endSearchingStationInScreen() {
+                loaderManager.remove("Cerco distributori...");
+            }
+        });
 
         //This include the algoritm to find the best station based on route.
         routeManager = new RouteManager(this);
