@@ -73,7 +73,7 @@ public class MapManager implements OnMapReadyCallback {
     public void setRoute(final Route r, final Distributore d){
         mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getStartBitmap(activityContext))).title("Start").position(r.getStartLocation()));
         mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getFinishBitmap(activityContext))).title("End").position(r.getEndLocation()));
-        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, Color.BLUE, d.getLowestPrice(params), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
+        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, Color.BLUE, d.getBestPriceUsingSearchParams(), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(r.getLatLngBounds(), 100)); //100 is just some padding
         PolylineOptions plo = new PolylineOptions();
         plo.geodesic(true);
@@ -319,7 +319,7 @@ public class MapManager implements OnMapReadyCallback {
                 Collections.sort(nuovi, new Comparator<Distributore>() {
                     @Override
                     public int compare(Distributore distributore, Distributore t1) {
-                        return (int)((t1.getLowestPrice(params) - distributore.getLowestPrice(params))*100000);
+                        return (int)((t1.getBestPriceUsingSearchParams() - distributore.getBestPriceUsingSearchParams())*100000);
                     }
                 });
 
@@ -334,7 +334,7 @@ public class MapManager implements OnMapReadyCallback {
                 for(int i=0; i<numeroColoriDaUsare; i++){
                     Distributore tempDist = nuovi.get(i);
                     hsv[0] = 0 + i*stepAngle;
-                    Bitmap tempBitmap = BitmapCreator.getBitmap(activityContext, Color.HSVToColor(hsv), tempDist.getLowestPrice(params), tempDist.getBandiera());
+                    Bitmap tempBitmap = BitmapCreator.getBitmap(activityContext, Color.HSVToColor(hsv), tempDist.setPriceByParams(params), tempDist.getBandiera());
                     Marker tempMark = mMap.addMarker(
                             new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(tempDist.getId() + "").draggable(false).visible(true).alpha(0.95f).position(tempDist.getPosizione())
                     );

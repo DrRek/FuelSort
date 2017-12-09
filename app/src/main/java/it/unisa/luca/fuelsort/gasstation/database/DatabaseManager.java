@@ -95,6 +95,7 @@ public class DatabaseManager extends Thread{
                     id, gestore, bandiera, tipoImpianto, nome, indirizzo, comune, provincia, lat, lon
             );
             if(setPompeForDistributore(temp, params, multipleThreadWorking)){
+                temp.setPriceByParams(params);
                 res.add(temp);
             }
         }

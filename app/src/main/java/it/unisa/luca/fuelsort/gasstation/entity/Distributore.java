@@ -25,6 +25,7 @@ public class Distributore implements Comparable{
     private double lat;
     private double lon;
     private ArrayList<Pompa> pompe;
+    private float computedPrice;
 
     public Distributore(int id, String gestore, String bandiera, String tipoImpianto, String nome, String indirizzo, String comune, String provincia, double lat, double lon){
         this.id = id;
@@ -65,14 +66,18 @@ public class Distributore implements Comparable{
         return 0;
     }
 
-    public Float getLowestPrice(DatabaseManager.SearchParams params){
-        Float lowest = 9.999f;
+    public float setPriceByParams(DatabaseManager.SearchParams params){
+        computedPrice = 9.999f;
         for(Pompa p : pompe){
-            if(params.checkCarburante(p.getCarburante()) && (params.isSelf() || (!params.isSelf() && !p.isSelf())) && p.getPrezzo()<lowest) {
-                lowest = p.getPrezzo();
+            if(params.checkCarburante(p.getCarburante()) && (params.isSelf() || (!params.isSelf() && !p.isSelf())) && p.getPrezzo()<computedPrice) {
+                computedPrice = p.getPrezzo();
             }
         }
-        return lowest;
+        return computedPrice;
+    }
+
+    public float getBestPriceUsingSearchParams(){
+        return computedPrice;
     }
 
     public String toString(){

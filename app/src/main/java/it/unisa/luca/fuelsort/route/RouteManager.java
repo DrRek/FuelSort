@@ -110,7 +110,7 @@ public class RouteManager {
             @Override
             public int compare(Distributore fruit2, Distributore fruit1)
             {
-                double f1Price = fruit1.getLowestPrice(searchParams), f2Price = fruit2.getLowestPrice(searchParams);
+                double f1Price = fruit1.getBestPriceUsingSearchParams(), f2Price = fruit2.getBestPriceUsingSearchParams();
                 if(f1Price<f2Price) return 1;
                 else if(f1Price==f2Price) return 0;
                 return -1;
