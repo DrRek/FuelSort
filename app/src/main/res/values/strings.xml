@@ -9,6 +9,7 @@
     <string name="open_in">Open in</string>
     <string name="partenza">Partenza</string>
     <string name="destinazione">Destinazione</string>
+    <string name="bottono_per_iniziare_la_ricerca">Bottono per iniziare la ricerca</string>
     <string-array name="tipi_benzina_array">
         <item>Benzina</item>
         <item>Diesel</item>

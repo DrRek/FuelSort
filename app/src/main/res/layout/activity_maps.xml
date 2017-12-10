@@ -18,50 +18,66 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context="it.unisa.luca.stradaalrisparmio.it.unisa.luca.fuelsort.stradaalrisparmio.MapsActivity" >
-        <fragment
-            android:id="@+id/map"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        tools:context="it.unisa.luca.fuelsort.MapsActivity" >
+
+        <include layout="@layout/map_fragment"/>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <EditText
-                android:layout_width="match_parent"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:paddingTop="3dp"
-                android:paddingBottom="3dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:background="@drawable/searchfield_background"
-                android:id="@+id/from"
-                android:imeOptions="actionNext"
-                android:inputType="textCapSentences"
-                android:hint="@string/partenza"
-                android:text="Torre del greco" />
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:id="@+id/searchFieldLayout">
 
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:paddingTop="3dp"
-                android:paddingBottom="3dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:background="@drawable/searchfield_background"
-                android:id="@+id/to"
-                android:imeOptions="actionDone"
-                android:inputType="textCapSentences"
-                android:hint="@string/destinazione"
-                android:text="Fisciano"/>
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginLeft="10dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:paddingLeft="10dp"
+                    android:paddingStart="10dp"
+                    android:paddingRight="0dp"
+                    android:paddingEnd="0dp"
+                    android:background="@drawable/searchfield_background"
+                    android:id="@+id/from"
+                    android:imeOptions="actionNext"
+                    android:inputType="textCapSentences"
+                    android:hint="@string/partenza"
+                    android:text="Torre del greco"
+                    android:layout_marginStart="10dp" />
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginLeft="10dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"
+                    android:paddingLeft="10dp"
+                    android:paddingStart="10dp"
+                    android:paddingRight="0dp"
+                    android:paddingEnd="0dp"
+                    android:background="@drawable/searchfield_background"
+                    android:id="@+id/to"
+                    android:imeOptions="actionDone"
+                    android:inputType="textCapSentences"
+                    android:hint="@string/destinazione"
+                    android:text="Fisciano"
+                    android:layout_marginStart="10dp" />
+            </LinearLayout>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/startRouteSearch"
+                android:src="@drawable/search_ico"
+                android:onClick="startRouteSearch"
+                android:contentDescription="@string/bottono_per_iniziare_la_ricerca" />
         </LinearLayout>
         <Button
             android:id="@+id/viewStation"

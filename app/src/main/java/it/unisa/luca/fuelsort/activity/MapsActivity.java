@@ -8,7 +8,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -96,16 +98,7 @@ public class MapsActivity extends AppCompatActivity {
         ((EditText) findViewById(R.id.to)).setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                Toast.makeText(getApplicationContext(), "Inizio la ricerca!", Toast.LENGTH_SHORT).show();
-                loaderManager.add("Ricercando un percorso...");
-                routeManager.setListener(new RouteManagerListener(){
-                    @Override
-                    public void routeFound(Route r, Distributore d) {
-                        mapManager.setRoute(r, d);
-                        loaderManager.remove("Ricercando un percorso...");
-                    }
-                });
-                routeManager.findRoute();
+                startRouteSearch(null);
                 return true;
             }
         });
@@ -150,5 +143,18 @@ public class MapsActivity extends AppCompatActivity {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
         overridePendingTransition(R.anim.slide_in_right, android.R.anim.fade_out);
+    }
+
+    public void startRouteSearch(View v){
+        Toast.makeText(getApplicationContext(), "Inizio la ricerca!", Toast.LENGTH_SHORT).show();
+        loaderManager.add("Ricercando un percorso...");
+        routeManager.setListener(new RouteManagerListener(){
+            @Override
+            public void routeFound(Route r, Distributore d) {
+                mapManager.setRoute(r, d);
+                loaderManager.remove("Ricercando un percorso...");
+            }
+        });
+        routeManager.findRoute();
     }
 }

@@ -6,17 +6,24 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -24,8 +31,10 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -58,6 +67,7 @@ public class MapManager implements OnMapReadyCallback {
     private DatabaseManager.SearchParams params;
 
     private MapManagerListener listener;
+    private HashMap<LatLng, Marker> droppedPinHashMap;
 
     public MapManager(SupportMapFragment fragment, Context ctx) {
         fragment.getMapAsync(this);
@@ -144,7 +154,7 @@ public class MapManager implements OnMapReadyCallback {
 
     private void removeAllStationFoundInScreen(){
         if (distributoriMarker != null) {
-            Set<Marker> markers = distributoriMarker.keySet();
+            Collection<Marker> markers = distributoriMarker.values();
             for (Marker m : markers) {
                 m.remove();
             }
@@ -180,6 +190,51 @@ public class MapManager implements OnMapReadyCallback {
                 setMarkersBasedOnPosition();
             }
         });
+        droppedPinHashMap = new HashMap<>();
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                Marker temp = mMap.addMarker(new MarkerOptions().position(latLng).title("Your marker title").snippet("Your marker snippet")
+                        .icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getDefaultPin(activityContext))));
+                droppedPinHashMap.put(latLng, temp);
+            }
+        });
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if(droppedPinHashMap.containsValue(marker)) {
+                    Projection projection = mMap.getProjection();
+                    LatLng markerPosition = marker.getPosition();
+                    Point markerPoint = projection.toScreenLocation(markerPosition);
+                    Point targetPoint = new Point(markerPoint.x, markerPoint.y - ((Activity)activityContext).findViewById(android.R.id.content).getHeight()/6);
+                    LatLng targetPosition = projection.fromScreenLocation(targetPoint);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(targetPosition, mMap.getCameraPosition().zoom), 500, new GoogleMap.CancelableCallback() {
+                        @Override
+                        public void onFinish() {
+                            try {
+                                LayoutInflater li = LayoutInflater.from(activityContext);
+                                View layout = li.inflate(R.layout.pin_layout,
+                                        (ViewGroup) ((Activity) activityContext).findViewById(R.id.popup_element));
+                                PopupWindow pw = new PopupWindow(layout, 600, 530, true);
+                                pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+                                //To add listener
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onCancel() {
+
+                        }
+                    });
+                }else if(distributoriMarker.containsValue(marker)){
+                    Log.d("DEBUG", "FOR NOW NOTHING");
+                }
+                return true;
+            }
+        });
     }
 
     private void setMarkersBasedOnPosition() {
@@ -203,7 +258,7 @@ public class MapManager implements OnMapReadyCallback {
 
     private Double lastMinLat, lastMaxLat, lastMinLng, lastMaxLng;
     private LoadStationInScreen old;
-    private volatile HashMap<Marker, Distributore> distributoriMarker;
+    private volatile HashMap<Distributore, Marker> distributoriMarker;
 
     private class LoadStationInScreen extends AsyncTask<Void, Integer, ArrayList<Distributore>> {
         private Double minLat, maxLat, minLng, maxLng;
@@ -244,9 +299,9 @@ public class MapManager implements OnMapReadyCallback {
             LatLng tempPosition;
             Marker temp;
             synchronized (LoadStationInScreen.class) {
-                Iterator<Map.Entry<Marker, Distributore>> iter = distributoriMarker.entrySet().iterator();
+                Iterator<Map.Entry<Distributore, Marker>> iter = distributoriMarker.entrySet().iterator();
                 while (iter.hasNext()) {
-                    temp = iter.next().getKey();
+                    temp = iter.next().getValue();
                     tempPosition = temp.getPosition();
                     if (tempPosition.latitude < minLatC || tempPosition.latitude > maxLatC || tempPosition.longitude < minLngC || tempPosition.longitude > maxLngC) {
                         temp.remove();
@@ -318,12 +373,13 @@ public class MapManager implements OnMapReadyCallback {
 
         protected void onPostExecute(ArrayList<Distributore> nuovi) {
             synchronized (LoadStationInScreen.class) {
-                Set<Marker> markers = distributoriMarker.keySet();
-                for (Marker m : markers) {
-                    m.remove();
+                for(Distributore nuovo : nuovi){
+                    Marker tempMark = mMap.addMarker(
+                            new MarkerOptions().draggable(false).visible(true).alpha(0.95f).position(nuovo.getPosizione())
+                    );
+                    distributoriMarker.put(nuovo, tempMark);
                 }
-                nuovi.addAll(distributoriMarker.values());
-                distributoriMarker = new HashMap<>();
+                nuovi.addAll(distributoriMarker.keySet());
                 Collections.sort(nuovi, new Comparator<Distributore>() {
                     @Override
                     public int compare(Distributore distributore, Distributore t1) {
@@ -334,16 +390,14 @@ public class MapManager implements OnMapReadyCallback {
                 int distributoriSize = nuovi.size();
 
                 if(distributoriSize==1){
-                    Distributore tempDist = nuovi.get(0);
+                    Marker tempMarker = distributoriMarker.get(nuovi.get(0));
                     float[] hsv = new float[3];
                     hsv[0]=120;
                     hsv[1]=1;
                     hsv[2]=1;
-                    Bitmap tempBitmap = BitmapCreator.getBitmap(activityContext, Color.HSVToColor(hsv), tempDist.setPriceByParams(params), tempDist.getBandiera());
-                    Marker tempMark = mMap.addMarker(
-                            new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(tempDist.getId() + "").draggable(false).visible(true).alpha(0.95f).position(tempDist.getPosizione())
-                    );
-                    distributoriMarker.put(tempMark, tempDist);
+                    Bitmap tempBitmap = BitmapCreator.getBitmap(activityContext, Color.HSVToColor(hsv), nuovi.get(0).setPriceByParams(params), nuovi.get(0).getBandiera());
+                    tempMarker.setIcon(BitmapDescriptorFactory.fromBitmap(tempBitmap));
+
                 }else if(distributoriSize>1) {
                     float min = nuovi.get(0).getBestPriceUsingSearchParams(), max = nuovi.get(distributoriSize - 1).getBestPriceUsingSearchParams();
                     float diff = max - min;
@@ -352,12 +406,10 @@ public class MapManager implements OnMapReadyCallback {
                     hsv[2] = 1;
                     for (int i = 0; i < distributoriSize; i++) {
                         Distributore tempDist = nuovi.get(i);
+                        Marker tempMark = distributoriMarker.get(tempDist);
                         hsv[0] = (tempDist.getBestPriceUsingSearchParams() - min) * 120 / diff;
                         Bitmap tempBitmap = BitmapCreator.getBitmap(activityContext, Color.HSVToColor(hsv), tempDist.setPriceByParams(params), tempDist.getBandiera());
-                        Marker tempMark = mMap.addMarker(
-                                new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(tempBitmap)).title(tempDist.getId() + "").draggable(false).visible(true).alpha(0.95f).position(tempDist.getPosizione())
-                        );
-                        distributoriMarker.put(tempMark, tempDist);
+                        tempMark.setIcon(BitmapDescriptorFactory.fromBitmap(tempBitmap));
                     }
                 }
 
@@ -365,14 +417,12 @@ public class MapManager implements OnMapReadyCallback {
                 lastMaxLat = maxLat;
                 lastMinLng = minLng;
                 lastMaxLng = maxLng;
-                //loaderManager.remove("Cerco distributori nella zona");
                 listener.endSearchingStationInScreen();
             }
         }
 
         protected void onCancelled(ArrayList<Distributore> nuovi) {
             Log.d("Ricerca distributori", "Ricerca cancellata.");
-            //loaderManager.remove("Cerco distributori nella zona");
         }
     }
 }

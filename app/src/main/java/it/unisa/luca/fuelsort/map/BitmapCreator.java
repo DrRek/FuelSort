@@ -111,6 +111,7 @@ class BitmapCreator {
 
         return Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
     }
+
     static Bitmap getFinishBitmap(Context context){
         Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
 
@@ -128,5 +129,12 @@ class BitmapCreator {
         bitmap.setPixels(allpixels,0,SIZE,0, 0, SIZE,SIZE);
 
         return Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
+    }
+
+    static Bitmap getDefaultPin(Context context) {
+        Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("map_pin", "drawable", context.getPackageName()));
+        bitmap = Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
+        return bitmap;
     }
 }
