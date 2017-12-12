@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -217,6 +218,14 @@ public class MapManager implements OnMapReadyCallback {
                                         (ViewGroup) ((Activity) activityContext).findViewById(R.id.popup_element));
                                 PopupWindow pw = new PopupWindow(layout, 600, 530, true);
                                 pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+                                LinearLayout ll = ((Activity) activityContext).findViewById(R.id.addStart);
+                                ll.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        Log.d("DEBUG", "PORCODDIO");
+                                    }
+                                });
 
                                 //To add listener
                             } catch (Exception e) {

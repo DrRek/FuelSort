@@ -10,6 +10,12 @@
     <string name="partenza">Partenza</string>
     <string name="destinazione">Destinazione</string>
     <string name="bottono_per_iniziare_la_ricerca">Bottono per iniziare la ricerca</string>
+    <string name="elimina_il_segnaposto">Elimina il segnaposto</string>
+    <string name="rimuovi_pin">Rimuovi pin</string>
+    <string name="imposta_come_destinazione">Imposta come destinazione</string>
+    <string name="setta_destinazione">Setta destinazione</string>
+    <string name="imposta_come_punto_di_partenza">Imposta come punto di partenza</string>
+    <string name="setta_partenza">Setta partenza</string>
     <string-array name="tipi_benzina_array">
         <item>Benzina</item>
         <item>Diesel</item>

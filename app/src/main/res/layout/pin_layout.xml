@@ -5,17 +5,24 @@
     android:id="@+id/popup_element"
     android:background="@drawable/pin_layout_background">
     <LinearLayout
+        android:id="@+id/addStart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <ImageView
+        <RelativeLayout
             android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/green_pin_icon"/>
+            android:layout_height="50dp">
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/green_pin_icon"
+                android:contentDescription="@string/setta_partenza" />
+        </RelativeLayout>
         <TextView
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Imposta come punto di partenza"/>
+            android:text="@string/imposta_come_punto_di_partenza"/>
     </LinearLayout>
     <View
         android:background="@color/gray"
@@ -27,16 +34,24 @@
         android:layout_marginBottom="3dp"/>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <ImageView
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:clickable="true">
+        <RelativeLayout
             android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/red_pin_icon"/>
+            android:layout_height="50dp">
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/red_pin_icon"
+                android:contentDescription="@string/setta_destinazione" />
+        </RelativeLayout>
         <TextView
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Imposta come destinazione"/>
+            android:text="@string/imposta_come_destinazione"/>
     </LinearLayout>
     <View
         android:background="@color/gray"
@@ -48,16 +63,24 @@
         android:layout_marginBottom="3dp"/>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <ImageView
+        android:layout_height="wrap_content"
+        android:focusable="true"
+        android:clickable="true">
+        <RelativeLayout
             android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/trash_icon"/>
+            android:layout_height="50dp">
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/trash_icon"
+                android:contentDescription="@string/rimuovi_pin" />
+        </RelativeLayout>
         <TextView
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Elimina il segnaposto"/>
+            android:text="@string/elimina_il_segnaposto"/>
     </LinearLayout>
 
 </LinearLayout>
