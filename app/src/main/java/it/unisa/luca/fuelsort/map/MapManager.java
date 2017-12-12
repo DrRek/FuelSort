@@ -45,7 +45,7 @@ import java.util.Set;
 import it.unisa.luca.fuelsort.gasstation.database.DatabaseManager;
 import it.unisa.luca.fuelsort.gasstation.entity.Distributore;
 import it.unisa.luca.fuelsort.route.entity.Route;
-import it.unisa.luca.stradaalrisparmio.R;
+import it.unisa.luca.fuelsort.R;
 
 import static android.content.Context.MODE_PRIVATE;
 

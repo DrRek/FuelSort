@@ -20,7 +20,7 @@ import it.unisa.luca.fuelsort.route.api.DirectionFinder;
 import it.unisa.luca.fuelsort.route.api.DirectionFinderListener;
 import it.unisa.luca.fuelsort.route.entity.Route;
 import it.unisa.luca.fuelsort.route.entity.Step;
-import it.unisa.luca.stradaalrisparmio.R;
+import it.unisa.luca.fuelsort.R;
 
 /**
  * Route manager is the class delegated to search for the best path.

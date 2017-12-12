@@ -17,7 +17,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-import it.unisa.luca.stradaalrisparmio.R;
+import it.unisa.luca.fuelsort.R;
 
 /**
  * I

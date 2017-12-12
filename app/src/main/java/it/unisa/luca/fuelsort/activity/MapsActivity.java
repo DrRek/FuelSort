@@ -25,7 +25,7 @@ import it.unisa.luca.fuelsort.route.RouteManager;
 import it.unisa.luca.fuelsort.route.RouteManagerListener;
 import it.unisa.luca.fuelsort.route.entity.Route;
 import it.unisa.luca.fuelsort.support.LoadingManager;
-import it.unisa.luca.stradaalrisparmio.R;
+import it.unisa.luca.fuelsort.R;
 
 public class MapsActivity extends AppCompatActivity {
 
