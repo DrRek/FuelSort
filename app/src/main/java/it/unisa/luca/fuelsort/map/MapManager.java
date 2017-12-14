@@ -48,6 +48,7 @@ import it.unisa.luca.fuelsort.gasstation.entity.Distributore;
 import it.unisa.luca.fuelsort.route.entity.Route;
 import it.unisa.luca.fuelsort.R;
 
+import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
 
 /**
@@ -213,20 +214,24 @@ public class MapManager implements OnMapReadyCallback {
                         @Override
                         public void onFinish() {
                             try {
-                                LayoutInflater li = LayoutInflater.from(activityContext);
-                                View layout = li.inflate(R.layout.pin_layout,
-                                        (ViewGroup) ((Activity) activityContext).findViewById(R.id.popup_element));
-                                PopupWindow pw = new PopupWindow(layout, 600, 530, true);
-                                pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
+                                LayoutInflater inflater = (LayoutInflater) activityContext
+                                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                                if(inflater != null) {
+                                    View layout = inflater.inflate(R.layout.pin_layout,
+                                            (ViewGroup) ((Activity) activityContext).findViewById(R.id.popup_element));
+                                    PopupWindow pw = new PopupWindow(layout, 600, 530, true);
 
-                                LinearLayout ll = ((Activity) activityContext).findViewById(R.id.addStart);
-                                ll.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View view) {
-                                        Log.d("DEBUG", "PORCODDIO");
-                                    }
-                                });
-
+                                    LinearLayout ll = layout.findViewById(R.id.addStart);
+                                    ll.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            Log.d("DEBUG", "PORCODDIO");
+                                        }
+                                    });
+                                    pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
+                                }else{
+                                    Log.e("ERROR", "L'inflater del layout è null, impossibile creare il popup (MapManager)");
+                                }
                                 //To add listener
                             } catch (Exception e) {
                                 e.printStackTrace();
