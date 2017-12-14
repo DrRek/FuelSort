@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 /**
  * Created by luca on 08/10/17.
@@ -121,19 +122,24 @@ public class DatabaseUpdater extends Thread{
         String line;
         try {
             while((line = br.readLine()) != null){
+                Log.d("Debug update",line);
                 String[] str = line.split(";");
-                stmt.bindLong(1, Integer.parseInt(str[0]));
-                stmt.bindString(2, str[1]);
-                stmt.bindString(3, str[2]);
-                stmt.bindString(4, str[3]);
-                stmt.bindString(5, str[4]);
-                stmt.bindString(6, str[5]);
-                stmt.bindString(7, str[6]);
-                stmt.bindString(8, str[7]);
-                stmt.bindDouble(9, Double.parseDouble(str[8]));
-                stmt.bindDouble(10, Double.parseDouble(str[9]));
-                stmt.executeInsert();
-                stmt.clearBindings();
+                try {
+                    stmt.bindLong(1, Integer.parseInt(str[0]));
+                    stmt.bindString(2, str[1]);
+                    stmt.bindString(3, str[2]);
+                    stmt.bindString(4, str[3]);
+                    stmt.bindString(5, str[4]);
+                    stmt.bindString(6, str[5]);
+                    stmt.bindString(7, str[6]);
+                    stmt.bindString(8, str[7]);
+                    stmt.bindDouble(9, Double.parseDouble(str[8]));
+                    stmt.bindDouble(10, Double.parseDouble(str[9]));
+                    stmt.executeInsert();
+                    stmt.clearBindings();
+                } catch (ArrayIndexOutOfBoundsException | NumberFormatException e){
+                    Log.d("Update distributori exc", Arrays.toString(e.getStackTrace()));
+                }
             }
             wr.setTransactionSuccessful();
         } catch (Exception e){
