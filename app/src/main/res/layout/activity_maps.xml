@@ -35,24 +35,23 @@
                 android:id="@+id/searchFieldLayout">
 
                 <EditText
+                    android:id="@+id/from"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
                     android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:paddingTop="3dp"
-                    android:paddingBottom="3dp"
-                    android:paddingLeft="10dp"
-                    android:paddingStart="10dp"
-                    android:paddingRight="0dp"
-                    android:paddingEnd="0dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="5dp"
                     android:background="@drawable/searchfield_background"
-                    android:id="@+id/from"
+                    android:hint="@string/partenza"
                     android:imeOptions="actionNext"
                     android:inputType="textCapSentences"
-                    android:hint="@string/partenza"
-                    android:text="Torre del greco"
-                    android:layout_marginStart="10dp" />
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingLeft="10dp"
+                    android:paddingStart="10dp"
+                    android:paddingTop="3dp"
+                    android:text="Torre del grecoasdasdasdasdasdsadasd" />
 
                 <EditText
                     android:layout_width="match_parent"
@@ -63,8 +62,8 @@
                     android:paddingBottom="3dp"
                     android:paddingLeft="10dp"
                     android:paddingStart="10dp"
-                    android:paddingRight="0dp"
-                    android:paddingEnd="0dp"
+                    android:paddingRight="10dp"
+                    android:paddingEnd="10dp"
                     android:background="@drawable/searchfield_background"
                     android:id="@+id/to"
                     android:imeOptions="actionDone"
