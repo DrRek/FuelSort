@@ -10,7 +10,9 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -208,7 +210,16 @@ public class MapManager implements OnMapReadyCallback {
                     Projection projection = mMap.getProjection();
                     final LatLng markerPosition = marker.getPosition();
                     Point markerPoint = projection.toScreenLocation(markerPosition);
-                    Point targetPoint = new Point(markerPoint.x, markerPoint.y - ((Activity)activityContext).findViewById(android.R.id.content).getHeight()/6);
+
+                    DisplayMetrics metrics = new DisplayMetrics();
+                    ((Activity)activityContext).getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                    float logicalDensity = metrics.density;
+                    //int px = (int) Math.ceil(dp * logicalDensity);
+                    //int dp = (int) Math.floor(px / logicalDensity);
+
+                    float px = ((Activity)activityContext).findViewById(android.R.id.content).getHeight();
+                    int desired = (int)Math.floor(px*110/((int) Math.floor(px / logicalDensity)));
+
                     LatLng targetPosition = projection.fromScreenLocation(targetPoint);
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(targetPosition, mMap.getCameraPosition().zoom), 500, new GoogleMap.CancelableCallback() {
                         @Override
@@ -219,7 +230,7 @@ public class MapManager implements OnMapReadyCallback {
                                 if(inflater != null) {
                                     View layout = inflater.inflate(R.layout.pin_layout,
                                             (ViewGroup) ((Activity) activityContext).findViewById(R.id.popup_element));
-                                    final PopupWindow pw = new PopupWindow(layout, 600, 530, true);
+                                    final PopupWindow pw = new PopupWindow(layout, (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 210, activityContext.getResources().getDisplayMetrics()), (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 175, activityContext.getResources().getDisplayMetrics()), true);
 
                                     LinearLayout ll = layout.findViewById(R.id.add_start);
                                     ll.setOnClickListener(new View.OnClickListener() {

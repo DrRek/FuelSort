@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.util.TypedValue;
 
 
 /**
@@ -28,6 +29,7 @@ class BitmapCreator {
     private static String TAMOIL_ICON = "tamoil";
     private static String ENERGAS_ICON = "energas";
     private static int SIZE = 160;
+    private static int SIZE_FOR_DP = 60;
     private static int BANDIERA_SIZE = 65;
 
     static Bitmap getBitmap(Context context, int color, Float value, String bandiera){
@@ -134,7 +136,7 @@ class BitmapCreator {
     static Bitmap getDefaultPin(Context context) {
         Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("map_pin", "drawable", context.getPackageName()));
-        bitmap = Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
+        bitmap = Bitmap.createScaledBitmap(bitmap, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, SIZE_FOR_DP, context.getResources().getDisplayMetrics()), (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, SIZE_FOR_DP, context.getResources().getDisplayMetrics()), false).copy(config, true);
         return bitmap;
     }
 }
