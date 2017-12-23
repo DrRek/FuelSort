@@ -203,10 +203,10 @@ public class MapManager implements OnMapReadyCallback {
         });
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
-            public boolean onMarkerClick(Marker marker) {
+            public boolean onMarkerClick(final Marker marker) {
                 if(droppedPinHashMap.containsValue(marker)) {
                     Projection projection = mMap.getProjection();
-                    LatLng markerPosition = marker.getPosition();
+                    final LatLng markerPosition = marker.getPosition();
                     Point markerPoint = projection.toScreenLocation(markerPosition);
                     Point targetPoint = new Point(markerPoint.x, markerPoint.y - ((Activity)activityContext).findViewById(android.R.id.content).getHeight()/6);
                     LatLng targetPosition = projection.fromScreenLocation(targetPoint);
@@ -219,13 +219,35 @@ public class MapManager implements OnMapReadyCallback {
                                 if(inflater != null) {
                                     View layout = inflater.inflate(R.layout.pin_layout,
                                             (ViewGroup) ((Activity) activityContext).findViewById(R.id.popup_element));
-                                    PopupWindow pw = new PopupWindow(layout, 600, 530, true);
+                                    final PopupWindow pw = new PopupWindow(layout, 600, 530, true);
 
-                                    LinearLayout ll = layout.findViewById(R.id.addStart);
+                                    LinearLayout ll = layout.findViewById(R.id.add_start);
                                     ll.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
-                                            Log.d("DEBUG", "PORCODDIO");
+                                            Log.d("DEBUG", "Adding LatLng to Start field on user request");
+                                            TextView tv = ((Activity) activityContext).findViewById(R.id.from);
+                                            tv.setText(markerPosition.latitude+","+markerPosition.longitude);
+                                            pw.dismiss();
+                                        }
+                                    });
+                                    ll = layout.findViewById(R.id.add_end);
+                                    ll.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            Log.d("DEBUG", "Adding LatLng to End field on user request");
+                                            TextView tv = ((Activity) activityContext).findViewById(R.id.to);
+                                            tv.setText(markerPosition.latitude+","+markerPosition.longitude);
+                                            pw.dismiss();
+                                        }
+                                    });
+                                    ll = layout.findViewById(R.id.remove_marker);
+                                    ll.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            Log.d("DEBUG", "Removing marker on user request");
+                                            marker.remove();
+                                            pw.dismiss();
                                         }
                                     });
                                     pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
