@@ -220,6 +220,7 @@ public class MapManager implements OnMapReadyCallback {
                     float px = ((Activity)activityContext).findViewById(android.R.id.content).getHeight();
                     int desired = (int)Math.floor(px*110/((int) Math.floor(px / logicalDensity)));
 
+                    Point targetPoint = new Point(markerPoint.x, (int) Math.ceil(400*logicalDensity));//(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, activityContext.getResources().getDisplayMetrics()));
                     LatLng targetPosition = projection.fromScreenLocation(targetPoint);
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(targetPosition, mMap.getCameraPosition().zoom), 500, new GoogleMap.CancelableCallback() {
                         @Override
