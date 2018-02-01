@@ -72,13 +72,13 @@ public class DirectionFinder {
             String link = params[0];
             try {
                 URL url = new URL(link);
+                System.out.println(link);
                 InputStream is = url.openConnection().getInputStream();
                 StringBuilder buffer = new StringBuilder();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
                     buffer.append(line).append("\n");
                 }
                 return buffer.toString();

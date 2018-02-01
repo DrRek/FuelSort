@@ -91,6 +91,8 @@ public class MapManager implements OnMapReadyCallback {
     }
 
     public void setRoute(final Route r, final Distributore d){
+        removeAllStationFoundInScreen();
+        mMap.clear();
         mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getStartBitmap(activityContext))).title("Start").position(r.getStartLocation()));
         mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getFinishBitmap(activityContext))).title("End").position(r.getEndLocation()));
         mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, Color.BLUE, d.getBestPriceUsingSearchParams(), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
@@ -211,16 +213,7 @@ public class MapManager implements OnMapReadyCallback {
                     final LatLng markerPosition = marker.getPosition();
                     Point markerPoint = projection.toScreenLocation(markerPosition);
 
-                    DisplayMetrics metrics = new DisplayMetrics();
-                    ((Activity)activityContext).getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                    float logicalDensity = metrics.density;
-                    //int px = (int) Math.ceil(dp * logicalDensity);
-                    //int dp = (int) Math.floor(px / logicalDensity);
-
-                    float px = ((Activity)activityContext).findViewById(android.R.id.content).getHeight();
-                    int desired = (int)Math.floor(px*110/((int) Math.floor(px / logicalDensity)));
-
-                    Point targetPoint = new Point(markerPoint.x, (int) Math.ceil(400*logicalDensity));//(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, activityContext.getResources().getDisplayMetrics()));
+                    Point targetPoint = new Point(markerPoint.x, markerPoint.y-(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, activityContext.getResources().getDisplayMetrics()));//(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, activityContext.getResources().getDisplayMetrics()));
                     LatLng targetPosition = projection.fromScreenLocation(targetPoint);
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(targetPosition, mMap.getCameraPosition().zoom), 500, new GoogleMap.CancelableCallback() {
                         @Override
