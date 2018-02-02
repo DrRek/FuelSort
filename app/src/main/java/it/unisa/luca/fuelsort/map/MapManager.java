@@ -49,6 +49,7 @@ import it.unisa.luca.fuelsort.gasstation.database.DatabaseManager;
 import it.unisa.luca.fuelsort.gasstation.entity.Distributore;
 import it.unisa.luca.fuelsort.route.entity.Route;
 import it.unisa.luca.fuelsort.R;
+import it.unisa.luca.fuelsort.route.entity.Step;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
@@ -93,9 +94,9 @@ public class MapManager implements OnMapReadyCallback {
     public void setRoute(final Route r, final Distributore d){
         removeAllStationFoundInScreen();
         mMap.clear();
-        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getStartBitmap(activityContext))).title("Start").position(r.getStartLocation()));
-        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getFinishBitmap(activityContext))).title("End").position(r.getEndLocation()));
-        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, Color.BLUE, d.getBestPriceUsingSearchParams(), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
+        //mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getStartBitmap(activityContext))).title("Start").position(r.getStartLocation()));
+        //mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getFinishBitmap(activityContext))).title("End").position(r.getEndLocation()));
+        //mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, Color.BLUE, d.getBestPriceUsingSearchParams(), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(r.getLatLngBounds(), 100)); //100 is just some padding
         PolylineOptions plo = new PolylineOptions();
         plo.geodesic(true);
@@ -105,6 +106,12 @@ public class MapManager implements OnMapReadyCallback {
             plo.add(r.getPoints().get(i));
         }
         mMap.addPolyline(plo);
+
+        System.out.println("regions found: " + r.getRegions().size());
+        for(int i=0;i<r.getRegions().size();i++){
+            mMap.addMarker(new MarkerOptions().title("REGION NE "+i).position(r.getRegions().get(i).getNEBound()));
+            mMap.addMarker(new MarkerOptions().title("REGION SO "+i).position(r.getRegions().get(i).getSOBound()));
+        }
 
         Button openOnGoogleMaps = ((Activity)activityContext).findViewById(R.id.openOnGoogleMaps);
         openOnGoogleMaps.setVisibility(View.VISIBLE);
@@ -182,6 +189,7 @@ public class MapManager implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setMapToolbarEnabled(false); //disbale pointer button
+
         SharedPreferences pref = activityContext.getSharedPreferences("it.unisa.luca.fuelsort.pref", MODE_PRIVATE);
 
         if(!pref.contains("zoom")) {
@@ -272,6 +280,8 @@ public class MapManager implements OnMapReadyCallback {
                     });
                 }else if(distributoriMarker.containsValue(marker)){
                     Log.d("DEBUG", "FOR NOW NOTHING");
+                } else {
+                    return false;
                 }
                 return true;
             }

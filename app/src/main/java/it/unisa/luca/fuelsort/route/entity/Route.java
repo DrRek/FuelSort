@@ -3,11 +3,13 @@ package it.unisa.luca.fuelsort.route.entity;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Route {
     public static final int SUGGESTED_REGION_SIZE = 4000; //in m
-    public static final int BOUNDS_FOR_REGION = 500; //in m
+    public static final int BOUNDS_FOR_NORMAL_REGIONS = 500; //in m
+    public static final int BOUNDS_FOR_TOLLS_REGIONS = 10; //in m
 
     private Distance distance;
     private Duration duration;

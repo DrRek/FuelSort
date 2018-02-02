@@ -125,12 +125,13 @@ public class DirectionFinder {
 
             Distance distance = new Distance("No string data for path with waypoint, just waypoint", 0);
             Duration duration = new Duration("No string data for path with waypoint, just waypoint", 0);
-            for (int y=0; i<jsonLegs.length();i++){
+            for (int y=0; y<jsonLegs.length();y++){
                 JSONObject jsO = (JSONObject) jsonLegs.get(y);
                 JSONObject jsODuration = jsO.getJSONObject("duration");
                 JSONObject jsODistance = jsO.getJSONObject("distance");
                 duration.setValue(duration.getValue() + jsODuration.getInt("value"));
-                distance.setValue(distance.getValue() + jsODistance.getInt("value"));
+
+                route.setRegions(calculateRegions(jsO.getJSONArray("steps")));
             }
             route.setDistance(distance);
             route.setDuration(duration);
@@ -142,8 +143,22 @@ public class DirectionFinder {
             route.setStartLocation(new LatLng(jsonStartLocation.getDouble("lat"), jsonStartLocation.getDouble("lng")));
             route.setEndLocation(new LatLng(jsonEndLocation.getDouble("lat"), jsonEndLocation.getDouble("lng")));
             route.setPoints(decodePolyLine(overview_polylineJson.getString("points")));
-            route.setRegions(calculateRegions(route));
+            //route.setRegions(calculateRegions(route));
             route.setParameters(createUrl());
+
+            /* mantenuto temporaneamente mentre non finisco di controllare le regions
+
+            for (int y=0; i<jsonLegs.length();i++){
+                JSONObject jsOb = (JSONObject) jsonLegs.get(y);
+                JSONArray jsOa = jsOb.getJSONArray("steps");
+
+                route.legsPoint = (List<LatLng>[])new List[jsOa.length()];
+                for (int x=0; x<jsOa.length();x++){
+                    JSONObject jsO = jsOa.getJSONObject(x);
+                    System.out.println("Indice: " + x +"  autostrada: " + jsO.getString("html_instructions").toLowerCase().contains("toll") +" "+jsO.getString("html_instructions").toLowerCase());
+                    route.legsPoint[x] = decodePolyLine(jsO.getJSONObject("polyline").getString("points"));
+                }
+            } */
 
             routes.add(route);
         }
@@ -151,6 +166,55 @@ public class DirectionFinder {
         if(listener!=null)listener.onDirectionFinderSuccess(routes);
     }
 
+    /**
+     * Questo è la nuova funzione per il calcolo delle region, per ogni region verrà poi lanciato un thread
+     * Le regioni sono divise in "a pagamento" e "non a pagamento" ed in base a questo parametro si evitano ricerche che necessitano l'uscita dall'autostrada.
+     * @param steps
+     * @return
+     * @throws JSONException
+     */
+    private List<Step> calculateRegions(JSONArray steps) throws JSONException{
+        List<Step> regions = new ArrayList<>();
+        for(int i = 0; i < steps.length(); i++) {
+            boolean isToll = steps.getJSONObject(i).getString("html_instructions").toLowerCase().contains("toll");
+            int distance = steps.getJSONObject(i).getJSONObject("distance").getInt("value");
+            List<LatLng> currentStepPolilyne = decodePolyLine(steps.getJSONObject(i).getJSONObject("polyline").getString("points"));
+
+            double SOBoundLat = currentStepPolilyne.get(0).latitude;
+            double SOBoundLng = currentStepPolilyne.get(0).longitude;
+            double NEBoundLat = currentStepPolilyne.get(0).latitude;
+            double NEBoundLng = currentStepPolilyne.get(0).longitude;
+            for (int y = 1; y < currentStepPolilyne.size(); y++) {
+                SOBoundLat = Math.min(SOBoundLat, currentStepPolilyne.get(y).latitude);
+                SOBoundLng = Math.min(SOBoundLng, currentStepPolilyne.get(y).longitude);
+                NEBoundLat = Math.max(NEBoundLat, currentStepPolilyne.get(y).latitude);
+                NEBoundLng = Math.max(NEBoundLng, currentStepPolilyne.get(y).longitude);
+            }
+            Step currentStep = new Step(new LatLng(SOBoundLat, SOBoundLng), new LatLng(NEBoundLat, NEBoundLng), distance, isToll);
+
+            if(!regions.isEmpty())
+                System.out.println("Prova: "+ regions.get(regions.size()-1).isToll()+" "+ isToll +" " + (regions.get(regions.size()-1).isToll() == isToll));
+            if(     !regions.isEmpty() &&
+                    regions.get(regions.size()-1).isToll() == isToll &&
+                    regions.get(regions.size()-1).getDistance() + distance <= Route.SUGGESTED_REGION_SIZE){
+                Step oldStep = regions.get(regions.size()-1);
+                oldStep.merge(currentStep);
+            } else {
+                regions.add(currentStep);
+            }
+        }
+
+        for(Step s : regions){
+            if(s.isToll()) {
+                s.addMargin(Route.BOUNDS_FOR_TOLLS_REGIONS);
+            } else {
+                s.addMargin(Route.BOUNDS_FOR_NORMAL_REGIONS);
+            }
+        }
+
+        return regions;
+    }
+/*
     private List<Step> calculateRegions(Route r){
         List<Step> regions = new ArrayList<>();
         int distance;
