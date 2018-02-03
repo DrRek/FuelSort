@@ -1,0 +1,156 @@
+package it.drrek.fuelsort.entity.route;
+
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+
+import java.util.List;
+
+public class Route {
+    public static final int SUGGESTED_REGION_SIZE = 4000; //in m
+    public static final int BOUNDS_FOR_NORMAL_REGIONS = 1000; //in m
+    public static final int BOUNDS_FOR_TOLLS_REGIONS = 10; //in m
+    public static final int DISTANZA_MASSIMA_AGGIUNTA_AL_PERCORSO = 2000; //in m
+    public static final int TEMPO_MASSIMO_AGGIUNTO_AL_PERCORSO = 10; //in m
+
+    private Distance distance;
+    private Duration duration;
+    private String endAddress;
+    private LatLng endLocation;
+    private String startAddress;
+    private LatLng startLocation, northeast, southwest;
+    private String parameters;
+    private int numeroDiPagamenti;
+
+    private List<LatLng> points;
+    private List<Region> regions;
+
+    public LatLng getCenter(){
+        double  minLat=Math.min(southwest.latitude, northeast.latitude),
+                minLng=Math.min(southwest.longitude, northeast.longitude),
+                maxLat=Math.max(southwest.latitude, northeast.latitude),
+                maxLng=Math.max(southwest.longitude, northeast.longitude);
+        return new LatLng((maxLat-minLat)/2+minLat, (maxLng-minLng)/2+minLng);
+    }
+
+    public int getNumeroDiPagamenti(){
+        return numeroDiPagamenti;
+    }
+
+    public LatLngBounds getLatLngBounds(){
+        return new LatLngBounds(southwest, northeast);
+    }
+
+    public List<Region> getRegions() {
+        return regions;
+    }
+
+    public void addRegions(List<Region> regions) {
+        if(this.regions == null || this.regions.size() <=0) {
+            this.regions = regions;
+        } else{
+            this.regions.addAll(regions);
+        }
+
+        numeroDiPagamenti = 0;
+        boolean lastWasToll = false;
+        for(Region r : this.regions){
+            if(r.isToll()){
+                if(!lastWasToll){
+                    numeroDiPagamenti += 1;
+                }
+                lastWasToll = true;
+            }else{
+                lastWasToll = false;
+            }
+        }
+    }
+
+    public void setRegions(List<Region> regions) {
+        this.regions = regions;
+
+        numeroDiPagamenti = 0;
+        boolean lastWasToll = false;
+        for(Region r : regions){
+            if(r.isToll()){
+                if(!lastWasToll){
+                    numeroDiPagamenti += 1;
+                }
+                lastWasToll = true;
+            }else{
+                lastWasToll = false;
+            }
+        }
+    }
+
+    public List<LatLng> getPoints() {
+        return points;
+    }
+
+    public void setPoints(List<LatLng> points) {
+        this.points = points;
+    }
+
+    public String getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
+    }
+
+    public LatLng getStartLocation() {
+        return startLocation;
+    }
+
+    public void setStartLocation(LatLng startLocation) {
+        this.startLocation = startLocation;
+    }
+
+    public void setNortheast(LatLng northeast) {
+        this.northeast = northeast;
+    }
+
+    public void setSouthwest(LatLng southwest) {
+        this.southwest = southwest;
+    }
+
+    public String getStartAddress() {
+        return startAddress;
+    }
+
+    public void setStartAddress(String startAddress) {
+        this.startAddress = startAddress;
+    }
+
+    public LatLng getEndLocation() {
+        return endLocation;
+    }
+
+    public void setEndLocation(LatLng endLocation) {
+        this.endLocation = endLocation;
+    }
+
+    public String getEndAddress() {
+        return endAddress;
+    }
+
+    public void setEndAddress(String endAddress) {
+        this.endAddress = endAddress;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public Distance getDistance() {
+        return distance;
+    }
+
+    public void setDistance(Distance distance) {
+        this.distance = distance;
+    }
+}
