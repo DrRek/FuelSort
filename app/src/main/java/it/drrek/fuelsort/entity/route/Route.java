@@ -3,14 +3,16 @@ package it.drrek.fuelsort.entity.route;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Route {
-    public static final int SUGGESTED_REGION_SIZE = 4000; //in m
-    public static final int BOUNDS_FOR_NORMAL_REGIONS = 1000; //in m
-    public static final int BOUNDS_FOR_TOLLS_REGIONS = 10; //in m
-    public static final int DISTANZA_MASSIMA_AGGIUNTA_AL_PERCORSO = 2000; //in m
-    public static final int TEMPO_MASSIMO_AGGIUNTO_AL_PERCORSO = 10; //in m
+    public static final int SUGGESTED_REGION_SIZE = 4000; //in metri
+    public static final int BOUNDS_FOR_NORMAL_REGIONS = 1000; //in metri
+    public static final int BOUNDS_FOR_TOLLS_REGIONS = 10; //in metri
+    public static final int DISTANZA_MASSIMA_AGGIUNTA_AL_PERCORSO = 2000; //in metri
+    public static final int TEMPO_MASSIMO_AGGIUNTO_AL_PERCORSO = 600; //in secondi
+    public static final int DIMENSIONI_MASSIME_PERCORSO_IN_STAZIONE_DI_SERVIZIO = 500; //in metri
 
     private Distance distance;
     private Duration duration;
@@ -33,6 +35,19 @@ public class Route {
     }
 
     public int getNumeroDiPagamenti(){
+        if(numeroDiPagamenti < 0 && regions!= null && !regions.isEmpty()) {
+            numeroDiPagamenti = 0;
+
+            for(int i=0; i<regions.size(); i++) {
+                Region tempRegion = regions.get(i);
+                if (tempRegion.isToll()) {
+                    if (i < 2 || (i >= 2 && ((!regions.get(i - 1).isToll() && regions.get(i - 1).getDistance() >= DIMENSIONI_MASSIME_PERCORSO_IN_STAZIONE_DI_SERVIZIO) || (!regions.get(i - 1).isToll() && !regions.get(i - 2).isToll())))) {
+                        numeroDiPagamenti++;
+                    }
+                }
+            }
+
+        }
         return numeroDiPagamenti;
     }
 
@@ -44,42 +59,27 @@ public class Route {
         return regions;
     }
 
-    public void addRegions(List<Region> regions) {
-        if(this.regions == null || this.regions.size() <=0) {
-            this.regions = regions;
-        } else{
-            this.regions.addAll(regions);
-        }
-
-        numeroDiPagamenti = 0;
-        boolean lastWasToll = false;
-        for(Region r : this.regions){
-            if(r.isToll()){
-                if(!lastWasToll){
-                    numeroDiPagamenti += 1;
-                }
-                lastWasToll = true;
-            }else{
-                lastWasToll = false;
+    /**
+     * Le region vengono sommate alle preesistenti se presenti.
+     * Importante notare che viene fatto il controllo tra la region esistente finale e quella iniziale nuova, questo è indispensabile perché il meccanismo
+     * del calcolo delle autostrade funzioni a dovere!
+     * @param newRegions
+     */
+    public void addRegions(List<Region> newRegions) {
+        if((this.regions == null || this.regions.size() <= 0) && (newRegions == null || newRegions.size() <= 0)){
+            this.regions = new ArrayList<>();
+        } else if(this.regions == null || this.regions.size() <=0){
+            this.regions = newRegions;
+        } else if(!(this.regions == null || this.regions.size() <= 0) && !(newRegions == null || newRegions.size() <= 0)){
+            Region lastOne = this.regions.get(this.regions.size()-1), firstTwo = newRegions.get(0);
+            if(lastOne.isToll() == firstTwo.isToll() && lastOne.getDistance() + firstTwo.getDistance() <= Route.SUGGESTED_REGION_SIZE){
+                lastOne.merge(firstTwo);
+                newRegions.remove(0);
+                this.regions.addAll(newRegions);
             }
         }
-    }
 
-    public void setRegions(List<Region> regions) {
-        this.regions = regions;
-
-        numeroDiPagamenti = 0;
-        boolean lastWasToll = false;
-        for(Region r : regions){
-            if(r.isToll()){
-                if(!lastWasToll){
-                    numeroDiPagamenti += 1;
-                }
-                lastWasToll = true;
-            }else{
-                lastWasToll = false;
-            }
-        }
+        numeroDiPagamenti = -1;
     }
 
     public List<LatLng> getPoints() {

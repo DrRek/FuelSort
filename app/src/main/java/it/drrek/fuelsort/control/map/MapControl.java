@@ -42,11 +42,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import it.drrek.fuelsort.entity.route.Region;
 import it.drrek.fuelsort.model.DatabaseManager;
 import it.drrek.fuelsort.entity.station.Distributore;
 import it.drrek.fuelsort.support.BitmapCreator;
 import it.drrek.fuelsort.entity.route.Route;
-import it.unisa.luca.fuelsort.R;
+import it.drrek.fuelsort.R;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -102,6 +103,11 @@ public class MapControl implements OnMapReadyCallback {
             plo.add(r.getPoints().get(i));
         }
         mMap.addPolyline(plo);
+
+        int i =0;
+        for(Region re : r.getRegions()){
+            System.out.println("n."+i+"\n\tis toll: "+re.isToll()+"\n\tdistance: "+re.getDistance()+"\n");
+        }
 
         Button openOnGoogleMaps = ((Activity)activityContext).findViewById(R.id.openOnGoogleMaps);
         openOnGoogleMaps.setVisibility(View.VISIBLE);
@@ -269,7 +275,7 @@ public class MapControl implements OnMapReadyCallback {
                         }
                     });
                 }else if(distributoriMarker.containsValue(marker)){
-                    Log.d("DEBUG", "FOR NOW NOTHING");
+                    System.out.println("Distributore cliccato: "+ marker.getPosition());
                 } else {
                     return false;
                 }

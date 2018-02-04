@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import it.unisa.luca.fuelsort.R;
+import it.drrek.fuelsort.R;
 
 /**
  * Used to display information on background work to the user.

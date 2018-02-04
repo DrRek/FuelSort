@@ -16,6 +16,8 @@
     <string name="setta_destinazione">Setta destinazione</string>
     <string name="imposta_come_punto_di_partenza">Imposta come punto di partenza</string>
     <string name="setta_partenza">Setta partenza</string>
+    <string name="force_update">Forza l\'aggiornamento dei dati delle pompe di benzina.</string>
+    <string name="force_update_title">Force update</string>
     <string-array name="tipi_benzina_array">
         <item>Benzina</item>
         <item>Diesel</item>

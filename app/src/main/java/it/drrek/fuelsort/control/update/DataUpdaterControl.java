@@ -4,13 +4,20 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.text.format.DateUtils;
 import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -22,23 +29,83 @@ public class DataUpdaterControl extends Thread{
     private DatabaseHelper dbhelper;
     private DataUpdaterControlListener dataUpdaterControlListener;
     private String distributoriNewData, pompeNewData;
+    private boolean forceUpdate;
 
     public DataUpdaterControl(Context ctx) {
         dbhelper=new DatabaseHelper(ctx);
+        forceUpdate = false;
     }
 
     public void setDataUpdaterControlListener(DataUpdaterControlListener dul){
         this.dataUpdaterControlListener = dul;
     }
 
+    public void setForceUpdate(boolean force){
+        this.forceUpdate=force;
+    }
+
     @Override
     public void run() {
-        Log.d("Database", "Inizia il thread.");
+        Log.d("DataUpdaterControl", "Inizio l'aggiornamento dei dati. Aggiornamento forzato: "+forceUpdate);
         updateData();
     }
 
     private void updateData(){
-        DataImporter browser = new DataImporter();
+
+        //In questo caso forzo il download dei dati
+        if(forceUpdate){
+            forceUpdate = false;
+            DataImporter browser = new DataImporter();
+            distributoriNewData = browser.retrieve(DataImporter.DISTRIBUTORI_PATH);
+            pompeNewData = browser.retrieve(DataImporter.POMPE_PATH);
+            if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onStartStationUpdate();
+            retrieveUpdatedDistributori();
+            if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onEndStationUpdate();
+            if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onStartPriceUpdate();
+            retrieveUpdatedPompe();
+            if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onEndPriceUpdate();
+            return;
+        }
+
+        Date thisMorning = null, distributoriDate = null, pompeDate = null;
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.US);
+            thisMorning = sdf1.parse(sdf.format(new Date()) + " 08:00");
+            distributoriDate = thisMorning;
+            pompeDate = thisMorning;
+            Matcher m = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})").matcher(getDistributoriCurrentVersion());
+            while (m.find()) {
+                distributoriDate = sdf.parse(m.group(1));
+            }
+            m = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})").matcher(getPompeCurrentVersion());
+            while (m.find()) {
+                pompeDate = sdf.parse(m.group(1));
+            }
+        } catch (ParseException e){
+            Log.e("DataUpdaterControl", "Errore cercando di controllare la necessità di aggiornamenti con la data odierna");
+        }
+
+        if(thisMorning == null || distributoriDate == null || thisMorning.after(distributoriDate)){
+            DataImporter browser = new DataImporter();
+            distributoriNewData = browser.retrieve(DataImporter.DISTRIBUTORI_PATH);
+            if(isToUpdateDistributori()){
+                if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onStartStationUpdate();
+                retrieveUpdatedDistributori();
+                if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onEndStationUpdate();
+            }
+        }
+        if(thisMorning == null || pompeDate == null || thisMorning.after(pompeDate)){
+            DataImporter browser = new DataImporter();
+            pompeNewData = browser.retrieve(DataImporter.POMPE_PATH);
+            if(isToUpdatePompe()){
+                if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onStartPriceUpdate();
+                retrieveUpdatedPompe();
+                if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onEndPriceUpdate();
+            }
+        }
+
+        /*DataImporter browser = new DataImporter();
 
         distributoriNewData = browser.retrieve(DataImporter.DISTRIBUTORI_PATH);
         pompeNewData = browser.retrieve(DataImporter.POMPE_PATH);
@@ -52,8 +119,7 @@ public class DataUpdaterControl extends Thread{
             if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onStartPriceUpdate();
             retrieveUpdatedPompe();
             if(dataUpdaterControlListener !=null) dataUpdaterControlListener.onEndPriceUpdate();
-        }
-        Log.d("Database", "End managing updates");
+        }*/
     }
 
     private boolean isToUpdateDistributori(){

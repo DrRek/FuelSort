@@ -24,7 +24,7 @@ import it.drrek.fuelsort.control.route.RouteControl;
 import it.drrek.fuelsort.control.route.RouteControlListener;
 import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.support.LoadingManager;
-import it.unisa.luca.fuelsort.R;
+import it.drrek.fuelsort.R;
 
 public class MapsActivity extends AppCompatActivity {
 

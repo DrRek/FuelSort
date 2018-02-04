@@ -1,6 +1,9 @@
 package it.drrek.fuelsort.view;
 
 import android.app.FragmentManager;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -15,9 +18,18 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import it.unisa.luca.fuelsort.R;
+import java.util.Set;
+
+import it.drrek.fuelsort.R;
+import it.drrek.fuelsort.control.update.DataUpdaterControl;
+import it.drrek.fuelsort.control.update.DataUpdaterControlListener;
 
 /**
  * I
@@ -25,10 +37,14 @@ import it.unisa.luca.fuelsort.R;
  */
 
 public class SettingsActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+    Context ctx;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_layout);
+
+        ctx = this;
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
 
@@ -68,12 +84,60 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
             spinner.setSelection(3);
         }
 
-        CheckBox c = (CheckBox) findViewById(R.id.self);
+        final CheckBox c = (CheckBox) findViewById(R.id.self);
         if(prefSelf){
             c.setChecked(true);
         }else {
             c.setChecked(false);
         }
+
+        RelativeLayout tv = (RelativeLayout) findViewById(R.id.force_update_layout);
+        tv.setClickable(true);
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final ProgressBar pb = (ProgressBar) findViewById(R.id.force_update_progress);
+                pb.setVisibility(View.VISIBLE);
+                DataUpdaterControl dataUpdaterControl = new DataUpdaterControl(ctx);
+                dataUpdaterControl.setForceUpdate(true);
+                dataUpdaterControl.setDataUpdaterControlListener(new DataUpdaterControlListener(){
+                    boolean end1 = false, end2 = false;
+                    @Override
+                    public void onStartPriceUpdate() {
+                    }
+                    @Override
+                    public void onStartStationUpdate() {
+                    }
+                    @Override
+                    public void onEndPriceUpdate() {
+                        end1=true;
+                        checkForEnd();
+                    }
+                    @Override
+                    public void onEndStationUpdate() {
+                        end2=true;
+                        checkForEnd();
+                    }
+
+                    private void checkForEnd(){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                pb.setVisibility(View.GONE);
+                            }
+                        });
+                    }
+                });
+                dataUpdaterControl.start();
+                /*try {
+                    //dataUpdaterControl.join();
+
+                } catch (InterruptedException e) {
+                    Log.e("SettingsActivity", "Errore facendo il join del thread per aggiornare il database");
+                    e.printStackTrace();
+                }*/
+            }
+        });
 
         EditText et = ((EditText)findViewById(R.id.kmxl));
         //Set spinner color

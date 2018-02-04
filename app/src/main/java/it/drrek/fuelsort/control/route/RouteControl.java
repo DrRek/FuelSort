@@ -21,7 +21,7 @@ import it.drrek.fuelsort.model.DatabaseManager;
 import it.drrek.fuelsort.entity.station.Distributore;
 import it.drrek.fuelsort.entity.route.Region;
 import it.drrek.fuelsort.entity.route.Route;
-import it.unisa.luca.fuelsort.R;
+import it.drrek.fuelsort.R;
 
 /**
  * Route manager is the class delegated to search for the best path.
@@ -79,8 +79,8 @@ public class RouteControl {
         private Route defaultRoute;
         class Result
         {
-            public Route strada;
-            public Distributore distributore;
+            Route strada;
+            Distributore distributore;
 
             Result(Route s, Distributore d){strada=s; distributore=d;}
         };
@@ -139,14 +139,15 @@ public class RouteControl {
             });
 
             System.out.println("Results size" + results.size());
-            while(results.size() != 0){
-                Distributore d = results.get(0);
+            for(Distributore d : results){
                 try {
                     List<Route> resultList = new DirectionFinderSync(from, to, d.getPosizione()).execute();
                     Route result = resultList.get(0);
                     System.out.println("Analizzo il primo risultato: ");
+                    System.out.println("Lat:"+d.getLat()+"  Lng:"+d.getLon());
                     System.out.println("Lunghezza nuovo: "+result.getDistance().getValue()+"m Lunghezza vecchio:"+ defaultRoute.getDistance().getValue()+"m");
                     System.out.println("Autostrade nuovo: "+result.getNumeroDiPagamenti()+"  Autostrade vecchio:"+ defaultRoute.getNumeroDiPagamenti()+" ");
+                    System.out.println("Durata nuovo: "+result.getDuration().getValue()+"m Durata vecchio:"+ defaultRoute.getDuration().getValue()+"m");
                     if(     result.getDistance().getValue() - defaultRoute.getDistance().getValue() <= Route.DISTANZA_MASSIMA_AGGIUNTA_AL_PERCORSO &&
                             result.getNumeroDiPagamenti() <= defaultRoute.getNumeroDiPagamenti() &&
                             result.getDuration().getValue() - defaultRoute.getDuration().getValue() <= Route.TEMPO_MASSIMO_AGGIUNTO_AL_PERCORSO){
@@ -154,7 +155,6 @@ public class RouteControl {
                         return new Result(result, d);
                     } else{
                         System.out.println("Risultato NON accettabile, passo al prossimo. \n");
-                        results.remove(d);
                     }
                 } catch (UnsupportedEncodingException | JSONException e) {
                     e.printStackTrace();
