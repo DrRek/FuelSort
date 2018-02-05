@@ -133,6 +133,14 @@ public class BitmapCreator {
         return Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
     }
 
+    public static Bitmap getTest(Context context, int sizeinpx){
+        Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
+
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("ip", "drawable", context.getPackageName()));
+
+        return Bitmap.createScaledBitmap(bitmap, sizeinpx, sizeinpx, false).copy(config, true);
+    }
+
     public static Bitmap getDefaultPin(Context context) {
         Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("map_pin", "drawable", context.getPackageName()));

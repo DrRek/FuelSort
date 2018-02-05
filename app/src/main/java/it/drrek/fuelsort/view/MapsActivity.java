@@ -1,14 +1,20 @@
 package it.drrek.fuelsort.view;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,6 +23,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 
 import it.drrek.fuelsort.control.update.DataUpdaterControl;
 import it.drrek.fuelsort.control.update.DataUpdaterControlListener;
+import it.drrek.fuelsort.entity.exception.NoDataForPathException;
+import it.drrek.fuelsort.entity.exception.UnableToUpdateException;
 import it.drrek.fuelsort.entity.station.Distributore;
 import it.drrek.fuelsort.control.map.MapControl;
 import it.drrek.fuelsort.control.map.MapControlListener;
@@ -60,6 +68,14 @@ public class MapsActivity extends AppCompatActivity {
             public void onEndPriceUpdate() {
                 loaderManager.remove("Updating price data...");
             }
+
+            @Override
+            public void exceptionUpdatingData(Exception e) {
+                loaderManager.remove("Updating price data...");
+                loaderManager.remove("Updating station data...");
+                HandleExceptionAsListener(e);
+            }
+
             @Override
             public void onEndStationUpdate() {
                 loaderManager.remove("Updating station data...");
@@ -145,6 +161,14 @@ public class MapsActivity extends AppCompatActivity {
     }
 
     public void startRouteSearch(View v){
+
+        //Solo per chiudere la tastiera
+        View et = getCurrentFocus();
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (et != null && imm != null) {
+            imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
+        }
+
         Toast.makeText(getApplicationContext(), "Inizio la ricerca!", Toast.LENGTH_SHORT).show();
         loaderManager.add("Ricercando un percorso...");
         routeControl.setListener(new RouteControlListener(){
@@ -153,7 +177,48 @@ public class MapsActivity extends AppCompatActivity {
                 mapControl.setRoute(r, d);
                 loaderManager.remove("Ricercando un percorso...");
             }
+
+            @Override
+            public void exceptionSearchingForRoute(Exception e) {
+                loaderManager.remove("Ricercando un percorso...");
+                HandleExceptionAsListener(e);
+            }
         });
         routeControl.findRoute();
+    }
+
+    public void HandleExceptionAsListener(Exception e){
+        if(e instanceof NoDataForPathException){
+            Log.e("MapsActivity", "Nessun percorso ritrovato.");
+            final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
+            builder.setMessage(e.getMessage())
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            Dialog d = builder.create();
+            d.show();
+        } else if(e instanceof UnableToUpdateException){
+            Log.e("MapsActivity", "impossibile aggiornare.");
+            final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
+            builder.setMessage(e.getMessage())
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Dialog d = builder.create();
+                    d.show();
+                }
+            });
+        }else {
+            e.printStackTrace();
+        }
     }
 }

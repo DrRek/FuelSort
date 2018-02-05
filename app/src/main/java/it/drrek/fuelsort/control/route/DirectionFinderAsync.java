@@ -20,6 +20,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.drrek.fuelsort.entity.exception.NoDataForPathException;
 import it.drrek.fuelsort.entity.route.Distance;
 import it.drrek.fuelsort.entity.route.Duration;
 import it.drrek.fuelsort.entity.route.Route;
@@ -54,7 +55,7 @@ public class DirectionFinderAsync extends DirectionFinder {
         }
     }
 
-    private class DownloadRawData extends AsyncTask<String, Void, String> {
+    private class DownloadRawData extends AsyncTask<String, Void, String>{
 
         @Override
         protected String doInBackground(String... params) {
@@ -91,8 +92,10 @@ public class DirectionFinderAsync extends DirectionFinder {
     }
 
     private void parseJSon(String data) throws JSONException {
-        if (data == null)
+        if (data == null) {
+            listener.directionFinderException(new NoDataForPathException("Errore cercando un percorso, controlla di avere una connessione ad internet disponibile!"));
             return;
+        }
         List<Route> routes = new ArrayList<>();
         JSONObject jsonData = new JSONObject(data);
         JSONArray jsonRoutes = jsonData.getJSONArray("routes");

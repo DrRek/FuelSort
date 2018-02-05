@@ -43,11 +43,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 import it.drrek.fuelsort.entity.route.Region;
-import it.drrek.fuelsort.model.DatabaseManager;
+import it.drrek.fuelsort.entity.settings.SearchParams;
 import it.drrek.fuelsort.entity.station.Distributore;
+import it.drrek.fuelsort.model.DistributoriManager;
+import it.drrek.fuelsort.model.SearchParamsModel;
 import it.drrek.fuelsort.support.BitmapCreator;
 import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.R;
+import it.drrek.fuelsort.view.DistributoreActivity;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -65,8 +68,8 @@ public class MapControl implements OnMapReadyCallback {
     private GoogleMap mMap;
     private Context activityContext;
     private boolean loadStationOnPosition;
-    private DatabaseManager databaseManager;
-    private DatabaseManager.SearchParams params;
+    private DistributoriManager distManager;
+    private SearchParams params;
 
     private MapControlListener listener;
     private HashMap<LatLng, Marker> droppedPinHashMap;
@@ -123,9 +126,9 @@ public class MapControl implements OnMapReadyCallback {
 
     public void onResume(){
         old=null; //Needed for new map position
-        databaseManager = new DatabaseManager(activityContext);
-        params = databaseManager.getSearchParams();
-        loadStationOnPosition = false; //Temporaneamente
+        distManager = new DistributoriManager(activityContext);
+        params = SearchParamsModel.getSearchParams(activityContext);
+        loadStationOnPosition = true;
         removeAllStationFoundInScreen();
     }
 
@@ -275,7 +278,15 @@ public class MapControl implements OnMapReadyCallback {
                         }
                     });
                 }else if(distributoriMarker.containsValue(marker)){
-                    System.out.println("Distributore cliccato: "+ marker.getPosition());
+                    Intent intent = new Intent(activityContext, DistributoreActivity.class);
+                    for(Distributore d : distributoriMarker.keySet()){
+                        if(distributoriMarker.get(d).equals(marker)){
+                            intent.putExtra("distributore", d);
+                            break;
+                        }
+                    }
+                    activityContext.startActivity(intent);
+                    ((Activity)activityContext).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 } else {
                     return false;
                 }
@@ -374,10 +385,10 @@ public class MapControl implements OnMapReadyCallback {
 
             ArrayList<Distributore> nuovi = new ArrayList<>();
             if(lastMinLat==null){
-                nuovi.addAll(databaseManager.getStationsInBound(minLat, maxLat, minLng, maxLng, params, false));
+                nuovi.addAll(distManager.getStationsInBound(minLat, maxLat, minLng, maxLng, params, false));
             }else {
                 if (minLat < lastMinLat) {
-                    nuovi.addAll(databaseManager.getStationsInBound(minLat, lastMinLat, minLng, maxLng, params, false));
+                    nuovi.addAll(distManager.getStationsInBound(minLat, lastMinLat, minLng, maxLng, params, false));
                     if (isCancelled()) {
                         lastMinLat = minLat;
                         lastMaxLat = maxLatC;
@@ -387,7 +398,7 @@ public class MapControl implements OnMapReadyCallback {
                     }
                 }
                 if (maxLat > lastMaxLat) {
-                    nuovi.addAll(databaseManager.getStationsInBound(lastMaxLat, maxLat, minLng, maxLng, params, false));
+                    nuovi.addAll(distManager.getStationsInBound(lastMaxLat, maxLat, minLng, maxLng, params, false));
                     if (isCancelled()) {
                         lastMaxLat = maxLat;
                         lastMinLng = minLngC;
@@ -398,7 +409,7 @@ public class MapControl implements OnMapReadyCallback {
                 if (minLng < lastMinLng) {
                     //Double neededMinLat = Math.max(minLat, lastMinLat);
                     // Double neededMaxLat = Math.min(maxLat, lastMaxLat);
-                    nuovi.addAll(databaseManager.getStationsInBound(minLatC, maxLatC, minLng, lastMinLng, params, false));
+                    nuovi.addAll(distManager.getStationsInBound(minLatC, maxLatC, minLng, lastMinLng, params, false));
                     if (isCancelled()) {
                         lastMinLng = minLng;
                         lastMaxLng = maxLngC;
@@ -408,7 +419,7 @@ public class MapControl implements OnMapReadyCallback {
                 if (maxLng > lastMaxLng) {
                     //Double neededMinLat = Math.max(minLat, lastMinLat);
                     //Double neededMaxLat = Math.min(maxLat, lastMaxLat);
-                    nuovi.addAll(databaseManager.getStationsInBound(minLatC, maxLatC, lastMaxLng, maxLng, params, false));
+                    nuovi.addAll(distManager.getStationsInBound(minLatC, maxLatC, lastMaxLng, maxLng, params, false));
                     if (isCancelled()) {
                         lastMaxLng = maxLng;
                         return null;

@@ -18,6 +18,7 @@
     <string name="setta_partenza">Setta partenza</string>
     <string name="force_update">Forza l\'aggiornamento dei dati delle pompe di benzina.</string>
     <string name="force_update_title">Force update</string>
+    <string name="distributore_activity_title">Distributore</string>
     <string-array name="tipi_benzina_array">
         <item>Benzina</item>
         <item>Diesel</item>

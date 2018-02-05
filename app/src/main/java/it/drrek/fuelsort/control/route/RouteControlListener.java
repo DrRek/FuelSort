@@ -10,4 +10,6 @@ import it.drrek.fuelsort.entity.route.Route;
 
 public interface RouteControlListener {
     void routeFound(Route r, Distributore d);
+
+    void exceptionSearchingForRoute(Exception e);
 }

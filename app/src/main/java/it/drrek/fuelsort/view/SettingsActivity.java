@@ -1,8 +1,11 @@
 package it.drrek.fuelsort.view;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
@@ -30,6 +33,8 @@ import java.util.Set;
 import it.drrek.fuelsort.R;
 import it.drrek.fuelsort.control.update.DataUpdaterControl;
 import it.drrek.fuelsort.control.update.DataUpdaterControlListener;
+import it.drrek.fuelsort.entity.exception.NoDataForPathException;
+import it.drrek.fuelsort.entity.exception.UnableToUpdateException;
 
 /**
  * I
@@ -56,7 +61,7 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         getFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
-                Log.d("tset","test");
+                Log.d("SettingsActivity","Backstack changed");
             }
         });
 
@@ -113,6 +118,14 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
                         end1=true;
                         checkForEnd();
                     }
+
+                    @Override
+                    public void exceptionUpdatingData(Exception e) {
+                        onEndPriceUpdate();
+                        onEndStationUpdate();
+                        HandleExceptionAsListener(e);
+                    }
+
                     @Override
                     public void onEndStationUpdate() {
                         end2=true;
@@ -120,22 +133,17 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
                     }
 
                     private void checkForEnd(){
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                pb.setVisibility(View.GONE);
-                            }
-                        });
+                        if(end1 && end2) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    pb.setVisibility(View.GONE);
+                                }
+                            });
+                        }
                     }
                 });
                 dataUpdaterControl.start();
-                /*try {
-                    //dataUpdaterControl.join();
-
-                } catch (InterruptedException e) {
-                    Log.e("SettingsActivity", "Errore facendo il join del thread per aggiornare il database");
-                    e.printStackTrace();
-                }*/
             }
         });
 
@@ -200,4 +208,27 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {}
+
+    public void HandleExceptionAsListener(Exception e){
+        if(e instanceof UnableToUpdateException){
+            Log.e("SettingsActivity", "Impossibile aggiornare.");
+            final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
+            builder.setMessage(e.getMessage())
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Dialog d = builder.create();
+                    d.show();
+                }
+            });
+        }else {
+            e.printStackTrace();
+        }
+    }
 }

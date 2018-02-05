@@ -4,16 +4,20 @@ import android.support.annotation.NonNull;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-import it.drrek.fuelsort.model.DatabaseManager;
+import it.drrek.fuelsort.entity.settings.SearchParams;
 
 /**
  * Da riempire
  * Created by luca on 08/10/17.
  */
 
-public class Distributore implements Comparable{
+public class Distributore implements Comparable, Serializable{
+
+    private static final long serialVersionUID = 1L;
+
     private int id;
     private String gestore;
     private String bandiera;
@@ -56,6 +60,10 @@ public class Distributore implements Comparable{
         this.pompe = pompe;
     }
 
+    public ArrayList<Pompa> getPompe() {
+        return pompe;
+    }
+
     @Override
     public int compareTo(@NonNull Object o) {
         if(((Distributore)o).getId()>this.id){
@@ -66,7 +74,7 @@ public class Distributore implements Comparable{
         return 0;
     }
 
-    public float setPriceByParams(DatabaseManager.SearchParams params){
+    public float setPriceByParams(SearchParams params){
         computedPrice = 9.999f;
         for(Pompa p : pompe){
             if(params.checkCarburante(p.getCarburante()) && (params.isSelf() || (!params.isSelf() && !p.isSelf())) && p.getPrezzo()<computedPrice) {

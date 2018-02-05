@@ -17,11 +17,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import it.drrek.fuelsort.model.DatabaseManager;
+import it.drrek.fuelsort.entity.settings.SearchParams;
 import it.drrek.fuelsort.entity.station.Distributore;
 import it.drrek.fuelsort.entity.route.Region;
 import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.R;
+import it.drrek.fuelsort.model.DistributoriManager;
+import it.drrek.fuelsort.model.SearchParamsModel;
 
 /**
  * Route manager is the class delegated to search for the best path.
@@ -62,8 +64,12 @@ public class RouteControl {
                     if (!routes.isEmpty()) {
                         Route r = routes.get(0);
                         new LoadStationForRoute().execute(r);
-                        System.out.println("ed ora inizio a cercare un percorso nuovo");
                     }
+                }
+
+                @Override
+                public void directionFinderException(Exception e) {
+                    routeControlListener.exceptionSearchingForRoute(e);
                 }
             }).execute();
         } catch (Exception e) {
@@ -86,7 +92,7 @@ public class RouteControl {
         };
 
         @Override
-        protected Result doInBackground(Route... r) {
+        protected Result doInBackground(final Route... r) {
             List<Distributore> results = new ArrayList<>();
 
             abstract class ComputeSearchOnSingleRegion implements Runnable{
@@ -101,16 +107,16 @@ public class RouteControl {
                 }
                 Region getStep(){return s;}
             }
-            final DatabaseManager databaseManager = new DatabaseManager(activityContext);
-            final DatabaseManager.SearchParams searchParams = databaseManager.getSearchParams();
+            final DistributoriManager distManager = new DistributoriManager(activityContext);
+            final SearchParams searchParams = SearchParamsModel.getSearchParams(activityContext);
 
-            Map<Thread, ComputeSearchOnSingleRegion> threads  = new HashMap<>();
+            final Map<Thread, ComputeSearchOnSingleRegion> threads  = new HashMap<>();
             this.defaultRoute =r[0];
-            for (Region s : this.defaultRoute.getRegions()){
+            for (final Region s : this.defaultRoute.getRegions()){
                 ComputeSearchOnSingleRegion runnableTemp = new ComputeSearchOnSingleRegion(s){
                     @Override
                     public void run() {
-                        this.setResults(databaseManager.getStationsInBound(this.getStep().getSOBound().latitude,this.getStep().getNEBound().latitude,this.getStep().getSOBound().longitude,this.getStep().getNEBound().longitude, searchParams, true));
+                        this.setResults(distManager.getStationsInBound(this.getStep().getSOBound().latitude,this.getStep().getNEBound().latitude,this.getStep().getSOBound().longitude,this.getStep().getNEBound().longitude, searchParams, true, s.isToll()));
                     }
                 };
                 Thread threadTemp = new Thread(runnableTemp);
@@ -138,29 +144,46 @@ public class RouteControl {
                 }
             });
 
-            System.out.println("Results size" + results.size());
+            Distributore bestDistrTillNow = null;
+            float bestPrezzoTillNow = 9999.99f;
+            Route bestRouteTillNow = null;
             for(Distributore d : results){
+
+                //Condizione d'uscita principale
+                if(bestPrezzoTillNow < d.getBestPriceUsingSearchParams()){
+                    return new Result(bestRouteTillNow, bestDistrTillNow);
+                }
+
                 try {
                     List<Route> resultList = new DirectionFinderSync(from, to, d.getPosizione()).execute();
                     Route result = resultList.get(0);
-                    System.out.println("Analizzo il primo risultato: ");
-                    System.out.println("Lat:"+d.getLat()+"  Lng:"+d.getLon());
-                    System.out.println("Lunghezza nuovo: "+result.getDistance().getValue()+"m Lunghezza vecchio:"+ defaultRoute.getDistance().getValue()+"m");
-                    System.out.println("Autostrade nuovo: "+result.getNumeroDiPagamenti()+"  Autostrade vecchio:"+ defaultRoute.getNumeroDiPagamenti()+" ");
-                    System.out.println("Durata nuovo: "+result.getDuration().getValue()+"m Durata vecchio:"+ defaultRoute.getDuration().getValue()+"m");
-                    if(     result.getDistance().getValue() - defaultRoute.getDistance().getValue() <= Route.DISTANZA_MASSIMA_AGGIUNTA_AL_PERCORSO &&
+                    Log.d("RouteControl","Analizzo il primo risultato: ");
+                    Log.d("RouteControl", "Lat:"+d.getLat()+"  Lng:"+d.getLon());
+                    Log.d("RouteControl", "Lunghezza nuovo: "+result.getDistance().getValue()+"m Lunghezza vecchio:"+ defaultRoute.getDistance().getValue()+"m");
+                    Log.d("RouteControl", "Autostrade nuovo: "+result.getNumeroDiPagamenti()+"  Autostrade vecchio:"+ defaultRoute.getNumeroDiPagamenti()+" ");
+                    Log.d("RouteControl", "Durata nuovo: "+result.getDuration().getValue()+"m Durata vecchio:"+ defaultRoute.getDuration().getValue()+"m");
+                    if(
+                            result.getDistance().getValue() - defaultRoute.getDistance().getValue() <= Route.DISTANZA_MASSIMA_AGGIUNTA_AL_PERCORSO &&
                             result.getNumeroDiPagamenti() <= defaultRoute.getNumeroDiPagamenti() &&
                             result.getDuration().getValue() - defaultRoute.getDuration().getValue() <= Route.TEMPO_MASSIMO_AGGIUNTO_AL_PERCORSO){
-                        System.out.println("Risultato accettabile.");
-                        return new Result(result, d);
+
+                        //Questo controllo serve per controllare tutti i distributori con lo stesso prezzo.
+                        float tempPrezzo = d.getBestPriceUsingSearchParams();
+                        if((bestPrezzoTillNow == tempPrezzo && (bestRouteTillNow == null || bestRouteTillNow.getDuration().getValue()>result.getDuration().getValue())) || (tempPrezzo < bestPrezzoTillNow)){
+                            bestRouteTillNow = result;
+                            bestDistrTillNow = d;
+                            bestPrezzoTillNow = tempPrezzo;
+                        }
                     } else{
-                        System.out.println("Risultato NON accettabile, passo al prossimo. \n");
+                        Log.d("RouteControl", "Risultato NON accettabile, passo al prossimo. \n");
                     }
                 } catch (UnsupportedEncodingException | JSONException e) {
                     e.printStackTrace();
                 }
             }
 
+            //In questo caso non sono stati trovati risultati.
+            //TODO: CERCARE DI EVITARE QUESTA SITUAZIONE!
             return null;
         }
 

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="tipo_pompa_height">40dp</dimen>
+    <dimen name="tipo_pompa_width">40dp</dimen>
+    <dimen name="five_dp">5dp</dimen>
+</resources>

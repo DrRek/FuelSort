@@ -1,4 +1,4 @@
-package it.drrek.fuelsort.control.update;
+package it.drrek.fuelsort.model;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,7 +10,7 @@ import android.util.Log;
  * Created by luca on 08/10/17.
  */
 
-public class DatabaseHelper extends SQLiteOpenHelper{
+public class DatabaseCreator extends SQLiteOpenHelper{
 
     private static final String DB_NAME = "stradaalrisparmio";
     public static final String TBL_DISTRIBUTORI = "Anagrafica";
@@ -32,17 +32,19 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public static final String TBL_LATEST = "Latest";
     public static final String FIELD_DATA = "Dato";
 
-    static final String CMP_DISTIBUTORI = "distributori";
-    static final String CMP_POMPE = "pompe";
+    public static final String CMP_DISTIBUTORI = "distributori";
+    public static final String CMP_POMPE = "pompe";
 
-    public DatabaseHelper(Context context) {
+    public static final String TIPO_AUTOSTRADA = "Autostradale";
+
+    public DatabaseCreator(Context context) {
         super(context, DB_NAME, null, 8);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        String q="CREATE TABLE "+ DatabaseHelper.TBL_DISTRIBUTORI+" ( " +
+        String q="CREATE TABLE "+ DatabaseCreator.TBL_DISTRIBUTORI+" ( " +
                 FIELD_ID +" INTEGER PRIMARY KEY, " +
                 FIELD_GESTORE+" TEXT, " +
                 FIELD_BANDIERA+" TEXT, " +
@@ -55,7 +57,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
                 FIELD_LON+" REAL );";
         Log.d("USATE:", q);
         db.execSQL(q);
-        q="CREATE TABLE "+ DatabaseHelper.TBL_PREZZI+" ( " +
+        q="CREATE TABLE "+ DatabaseCreator.TBL_PREZZI+" ( " +
             FIELD_ID+" INTEGER," +
             FIELD_CARBURANTE+" TEXT," +
             FIELD_PREZZO+" REAL," +
@@ -66,7 +68,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         Log.d("USATE:", q);
         db.execSQL(q);
 
-        q="CREATE TABLE "+ DatabaseHelper.TBL_LATEST+" ( " +
+        q="CREATE TABLE "+ DatabaseCreator.TBL_LATEST+" ( " +
                 FIELD_DATA+" TEXT PRIMARY KEY," +
                 FIELD_LATEST_UPDATE+" TEXT );";
         Log.d("USATE:", q);

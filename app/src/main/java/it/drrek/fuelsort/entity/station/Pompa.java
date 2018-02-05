@@ -1,11 +1,16 @@
 package it.drrek.fuelsort.entity.station;
 
+import java.io.Serializable;
+
 /**
  * A 'Disitributore' is based on one or more 'Pompa' class
  * Created by luca on 08/10/17.
  */
 
-public class Pompa {
+public class Pompa implements Serializable{
+
+    private static final long serialVersionUID = 1L;
+
     private int id;
     private String carburante;
     private float prezzo;
