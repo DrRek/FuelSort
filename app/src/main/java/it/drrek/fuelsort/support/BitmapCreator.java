@@ -10,6 +10,8 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.util.TypedValue;
 
+import it.drrek.fuelsort.entity.station.Distributore;
+
 
 /**
  * This class will be used to modify bitmap.
@@ -31,6 +33,10 @@ public class BitmapCreator {
     private static int SIZE = 160;
     private static int SIZE_FOR_DP = 60;
     private static int BANDIERA_SIZE = 65;
+    private static String POMPA_BENZINA= "pompa_benzina";
+    private static String POMPA_DIESEL= "pompa_diesel";
+    private static String POMPA_GPL= "pompa_gpl";
+    private static String POMPA_METANO= "pompa_metano";
 
     public static Bitmap getBitmap(Context context, int color, Float value, String bandiera){
         Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
@@ -58,27 +64,7 @@ public class BitmapCreator {
         canvas.drawText(value+"", ((SIZE - bounds.width())/2)-2, SIZE/4, paint);
 
         if(bandiera!=null){
-            Bitmap bandieraBitmap;
-            String toCheck = bandiera.toLowerCase();
-            if(toCheck.contains("esso")){
-                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(ESSO_ICON, "drawable", context.getPackageName()));
-            } else if(toCheck.contains("q8")){
-                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(Q8_ICON, "drawable", context.getPackageName()));
-            } else if(toCheck.contains("bianche")){
-                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(BIANCHE_ICON, "drawable", context.getPackageName()));
-            } else if(toCheck.contains("total erg")){
-                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(TOTALERG_ICON, "drawable", context.getPackageName()));
-            } else if(toCheck.contains("energas")){
-                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(ENERGAS_ICON, "drawable", context.getPackageName()));
-            } else if(toCheck.contains("tamoil")){
-                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(TAMOIL_ICON, "drawable", context.getPackageName()));
-            } else if(toCheck.contains("repsol")){
-                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(REPSOL_ICON, "drawable", context.getPackageName()));
-            }   else if(toCheck.contains("ip")){
-                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(IP_ICON, "drawable", context.getPackageName()));
-            } else {
-                bandieraBitmap = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(OTHER_ICON, "drawable", context.getPackageName()));
-            }
+            Bitmap bandieraBitmap = getBitmapBandiera(context, bandiera);
             int x=bandieraBitmap.getWidth(), y=bandieraBitmap.getHeight();
             if(x>y){
                 y = BANDIERA_SIZE * y / x;
@@ -93,6 +79,48 @@ public class BitmapCreator {
         }
 
         return bitmap;
+    }
+
+    public static Bitmap getBitmapBandiera(Context context, String bandiera){
+        Bitmap bandieraBitmap;
+        String toCheck = bandiera.toLowerCase();
+        if(toCheck.contains("esso")){
+            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(ESSO_ICON, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("q8")){
+            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(Q8_ICON, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("bianche")){
+            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(BIANCHE_ICON, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("total erg")){
+            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(TOTALERG_ICON, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("energas")){
+            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(ENERGAS_ICON, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("tamoil")){
+            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(TAMOIL_ICON, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("repsol")){
+            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(REPSOL_ICON, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("ip")){
+            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(IP_ICON, "drawable", context.getPackageName()));
+        } else {
+            bandieraBitmap = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(OTHER_ICON, "drawable", context.getPackageName()));
+        }
+        return bandieraBitmap;
+    }
+
+    public static Bitmap getBitmapTipoCarburante(Context context, String carburante){
+        Bitmap caruranteBitmap;
+        String toCheck = carburante.toLowerCase();
+        if(toCheck.contains("benzina") || toCheck.contains("super")){
+            caruranteBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(POMPA_BENZINA, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("diesel") || toCheck.contains("gasolio")){
+            caruranteBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(POMPA_DIESEL, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("gpl")){
+            caruranteBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(POMPA_GPL, "drawable", context.getPackageName()));
+        } else if(toCheck.contains("metano")){
+            caruranteBitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(POMPA_METANO, "drawable", context.getPackageName()));
+        } else {
+            caruranteBitmap = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(OTHER_ICON, "drawable", context.getPackageName()));
+        }
+        return caruranteBitmap;
     }
 
     public static Bitmap getStartBitmap(Context context){
@@ -131,14 +159,6 @@ public class BitmapCreator {
         bitmap.setPixels(allpixels,0,SIZE,0, 0, SIZE,SIZE);
 
         return Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, false).copy(config, true);
-    }
-
-    public static Bitmap getTest(Context context, int sizeinpx){
-        Bitmap.Config config = android.graphics.Bitmap.Config.ARGB_8888;
-
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier("ip", "drawable", context.getPackageName()));
-
-        return Bitmap.createScaledBitmap(bitmap, sizeinpx, sizeinpx, false).copy(config, true);
     }
 
     public static Bitmap getDefaultPin(Context context) {

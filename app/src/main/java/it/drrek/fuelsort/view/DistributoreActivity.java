@@ -3,6 +3,7 @@ package it.drrek.fuelsort.view;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -71,13 +72,22 @@ public class DistributoreActivity extends AppCompatActivity {
             System.out.println(p.toString());
         }
 
+        ImageView bandieraIv = (ImageView) findViewById(R.id.bandiera_img);
+        bandieraIv.setImageBitmap(BitmapCreator.getBitmapBandiera(this, toUse.getBandiera()));
+
+        TextView bandieraTv = (TextView) findViewById(R.id.bandiera);
+        bandieraTv.setText(toUse.getBandiera());
+
+        TextView locationTv = (TextView) findViewById(R.id.location);
+        locationTv.setText(toUse.getComune()+" ("+toUse.getProvincia()+")");
+
         TableLayout tblPompe = (TableLayout) findViewById(R.id.table_pompe);
         for(Pompa p : toUse.getPompe()){
 
             TableRow toInflate = (TableRow) View.inflate(this, R.layout.pomp_layout, null);
 
             ImageView img = (ImageView) toInflate.findViewById(R.id.image);
-            img.setImageDrawable(getResources().getDrawable(R.drawable.ip));
+            img.setImageBitmap(BitmapCreator.getBitmapTipoCarburante(this, p.getCarburante()));
             TextView carburante = (TextView) toInflate.findViewById(R.id.carburante);
             carburante.setText(p.getCarburante().trim());
             TextView prezzo = (TextView) toInflate.findViewById(R.id.prezzo);
@@ -90,6 +100,12 @@ public class DistributoreActivity extends AppCompatActivity {
             }
             tblPompe.addView(toInflate);
         }
+
+        TextView proprietarioTv = (TextView) findViewById(R.id.proprietario);
+        proprietarioTv.setText("Nome: " + toUse.getNome());
+
+        TextView coordinateTv = (TextView) findViewById(R.id.coordinate);
+        coordinateTv.setText("Coordinate: " + toUse.getLat()+", "+toUse.getLon());
      }
 
     @Override
