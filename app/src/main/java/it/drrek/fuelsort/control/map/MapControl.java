@@ -128,7 +128,7 @@ public class MapControl implements OnMapReadyCallback {
         old=null; //Needed for new map position
         distManager = new DistributoriManager(activityContext);
         params = SearchParamsModel.getSearchParams(activityContext);
-        loadStationOnPosition = true;
+        setLoadStationOnPosition(true);
         removeAllStationFoundInScreen();
     }
 
@@ -145,7 +145,7 @@ public class MapControl implements OnMapReadyCallback {
                 }
             }, 350);
             removeAllStationFoundInScreen();
-            loadStationOnPosition = false;
+            setLoadStationOnPosition(false);
         } else {
             final Toast toast = Toast.makeText(activityContext, "Aggiungo i distributori nello schermo", Toast.LENGTH_SHORT);
             toast.show();
@@ -159,7 +159,7 @@ public class MapControl implements OnMapReadyCallback {
             }, 150); //Il delay in questo caso è più corto perché il sistema sarà già in buona parte rallentato dalla ricerca di distributori
 
             resetLastBounds();
-            loadStationOnPosition = true;
+            setLoadStationOnPosition(true);
             setMarkersBasedOnPosition();
         }
     }
@@ -317,6 +317,15 @@ public class MapControl implements OnMapReadyCallback {
     private Double lastMinLat, lastMaxLat, lastMinLng, lastMaxLng;
     private LoadStationInScreen old;
     private volatile HashMap<Distributore, Marker> distributoriMarker;
+
+    private void setLoadStationOnPosition(boolean loadStationOnPosition) {
+        this.loadStationOnPosition = loadStationOnPosition;
+        if(loadStationOnPosition) {
+            ((Activity) activityContext).findViewById(R.id.viewStation).setBackgroundResource(R.drawable.disable_disitributori);
+        } else{
+            ((Activity) activityContext).findViewById(R.id.viewStation).setBackgroundResource(R.drawable.enable_disitributori);
+        }
+    }
 
     private class LoadStationInScreen extends AsyncTask<Void, Integer, ArrayList<Distributore>> {
         private Double minLat, maxLat, minLng, maxLng;

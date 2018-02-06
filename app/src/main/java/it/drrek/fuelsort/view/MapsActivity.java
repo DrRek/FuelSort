@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -118,6 +119,15 @@ public class MapsActivity extends AppCompatActivity {
             }
         });
 
+        View.OnFocusChangeListener changeListener = new View.OnFocusChangeListener(){
+            @Override
+            public void onFocusChange(View view, boolean focus) {
+                onChangeEditTextFocus(view, focus);
+            }
+        };
+        findViewById(R.id.to).setOnFocusChangeListener(changeListener);
+        findViewById(R.id.from).setOnFocusChangeListener(changeListener);
+
         loaderManager.remove("Starting app...");
     }
 
@@ -165,8 +175,12 @@ public class MapsActivity extends AppCompatActivity {
         //Solo per chiudere la tastiera
         View et = getCurrentFocus();
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (et != null && imm != null) {
-            imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
+        if (et != null) {
+            //se è un edit text lo riporta alle dimensioni normali
+            et.clearFocus();
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
+            }
         }
 
         Toast.makeText(getApplicationContext(), "Inizio la ricerca!", Toast.LENGTH_SHORT).show();
@@ -219,6 +233,18 @@ public class MapsActivity extends AppCompatActivity {
             });
         }else {
             e.printStackTrace();
+        }
+    }
+
+    private void onChangeEditTextFocus(View view, boolean focus) {
+        if(focus) {
+            ((EditText) view).setTextSize(TypedValue.COMPLEX_UNIT_DIP, 25);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+            }
+        } else{
+            ((EditText) view).setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
         }
     }
 }

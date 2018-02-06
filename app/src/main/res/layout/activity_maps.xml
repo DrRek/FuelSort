@@ -32,7 +32,10 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_weight="1"
-                android:id="@+id/searchFieldLayout">
+                android:id="@+id/searchFieldLayout"
+                android:descendantFocusability="beforeDescendants"
+                android:focusableInTouchMode="true">
+                <!-- Le ultime due sopra evitono che il primo editText abbia il focus all'avvio dell'activity -->
 
                 <EditText
                     android:id="@+id/from"
@@ -51,7 +54,8 @@
                     android:paddingLeft="10dp"
                     android:paddingStart="10dp"
                     android:paddingTop="3dp"
-                    android:text="Torre del greco" />
+                    android:text="Torre del greco"
+                    android:textSize="20dp"/>
 
                 <EditText
                     android:layout_width="match_parent"
@@ -70,37 +74,40 @@
                     android:inputType="textCapSentences"
                     android:hint="@string/destinazione"
                     android:text="Fisciano"
-                    android:layout_marginStart="10dp" />
+                    android:textSize="20dp"
+                    android:layout_marginStart="10dp"/>
             </LinearLayout>
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+            <Button
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_margin="10dp"
+                android:layout_gravity="center_vertical"
                 android:id="@+id/startRouteSearch"
-                android:src="@drawable/search_ico"
+                android:background="@drawable/search_ico"
                 android:onClick="startRouteSearch"
                 android:contentDescription="@string/bottono_per_iniziare_la_ricerca" />
         </LinearLayout>
-        <Button
-            android:id="@+id/viewStation"
-            android:layout_marginBottom="5dp"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:background="@drawable/pomp_icon"/>
-        <Button
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:id="@+id/openOnGoogleMaps"
             android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@id/viewStation"
-            android:layout_toStartOf="@id/viewStation"
-            android:text="@string/open_in"
-            android:drawableRight="@drawable/google_maps_ico"
-            android:drawableEnd="@drawable/google_maps_ico"
-            android:drawablePadding="5dp"/>
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp" >
+            <Button
+                android:id="@+id/viewStation"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/disable_disitributori"/>
+            <Button
+                android:id="@+id/openOnGoogleMaps"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/gmap_ico"/>
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/LoadingLayout"
