@@ -130,6 +130,7 @@ public class MapControl implements OnMapReadyCallback {
         params = SearchParamsModel.getSearchParams(activityContext);
         setLoadStationOnPosition(true);
         removeAllStationFoundInScreen();
+        if(mMap!=null) setMarkersBasedOnPosition(); //Serve per reinizializzare i distributori all'interno della mappa quando si torna da un'activity
     }
 
     private void onChangeStationScreenLoad(){
@@ -286,7 +287,7 @@ public class MapControl implements OnMapReadyCallback {
                         }
                     }
                     activityContext.startActivity(intent);
-                    ((Activity)activityContext).overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    ((Activity)activityContext).overridePendingTransition(R.anim.explode_center, R.anim.explode_implode_no_anim);
                 } else {
                     return false;
                 }

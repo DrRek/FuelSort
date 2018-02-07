@@ -121,7 +121,7 @@ public class DistributoreActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        overridePendingTransition(R.anim.explode_implode_no_anim, R.anim.implode_center);
     }
 
     @Override
