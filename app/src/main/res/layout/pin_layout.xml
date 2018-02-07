@@ -7,7 +7,8 @@
     <LinearLayout
         android:id="@+id/add_start"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground">
         <RelativeLayout
             android:layout_width="50dp"
             android:layout_height="50dp">
@@ -36,8 +37,7 @@
         android:id="@+id/add_end"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:focusable="true"
-        android:clickable="true">
+        android:background="?android:attr/selectableItemBackground">
         <RelativeLayout
             android:layout_width="50dp"
             android:layout_height="50dp">
@@ -66,8 +66,7 @@
         android:id="@+id/remove_marker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:focusable="true"
-        android:clickable="true">
+        android:background="?android:attr/selectableItemBackground">
         <RelativeLayout
             android:layout_width="50dp"
             android:layout_height="50dp">

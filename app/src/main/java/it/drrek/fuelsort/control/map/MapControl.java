@@ -30,6 +30,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -190,6 +191,11 @@ public class MapControl implements OnMapReadyCallback {
         mMap = googleMap;
         mMap.getUiSettings().setMapToolbarEnabled(false); //disbale pointer button
 
+        googleMap.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                        activityContext, R.raw.default_map_style_json));
+
+
         SharedPreferences pref = activityContext.getSharedPreferences("it.unisa.luca.fuelsort.pref", MODE_PRIVATE);
 
         if(!pref.contains("zoom")) {
@@ -221,7 +227,7 @@ public class MapControl implements OnMapReadyCallback {
                     final LatLng markerPosition = marker.getPosition();
                     Point markerPoint = projection.toScreenLocation(markerPosition);
 
-                    Point targetPoint = new Point(markerPoint.x, markerPoint.y-(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, activityContext.getResources().getDisplayMetrics()));//(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, activityContext.getResources().getDisplayMetrics()));
+                    Point targetPoint = new Point(markerPoint.x, markerPoint.y-(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, activityContext.getResources().getDisplayMetrics()));
                     LatLng targetPosition = projection.fromScreenLocation(targetPoint);
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(targetPosition, mMap.getCameraPosition().zoom), 500, new GoogleMap.CancelableCallback() {
                         @Override
