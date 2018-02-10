@@ -22,6 +22,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.SupportMapFragment;
 
+import java.util.List;
+
 import it.drrek.fuelsort.control.update.DataUpdaterControl;
 import it.drrek.fuelsort.control.update.DataUpdaterControlListener;
 import it.drrek.fuelsort.entity.exception.NoDataForPathException;
@@ -187,8 +189,8 @@ public class MapsActivity extends AppCompatActivity {
         loaderManager.add("Ricercando un percorso...");
         routeControl.setListener(new RouteControlListener(){
             @Override
-            public void routeFound(Route r, Distributore d) {
-                mapControl.setRoute(r, d);
+            public void routeFound(Route r, List<Distributore> distributori) {
+                mapControl.setRoute(r, distributori);
                 loaderManager.remove("Ricercando un percorso...");
             }
 

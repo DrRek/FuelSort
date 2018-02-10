@@ -44,10 +44,10 @@ public class DirectionFinderAsync extends DirectionFinder {
         try {
             String urlOrigin = URLEncoder.encode(origin, "utf-8");
             String urlDestination = URLEncoder.encode(destination, "utf-8");
-            if (waypoint == null)
+            if (waypoints == null)
                 return "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY;
             else
-                return "origin=" + urlOrigin + "&destination=" + urlDestination + "&waypoints=" + waypoint + "&key=" + GOOGLE_API_KEY;
+                return "origin=" + urlOrigin + "&destination=" + urlDestination + "&waypoints=" + waypoints + "&key=" + GOOGLE_API_KEY;
         } catch (UnsupportedEncodingException e) {
             Log.e("ERROR", "Impossible to create url for path request");
             e.printStackTrace();
@@ -152,12 +152,13 @@ public class DirectionFinderAsync extends DirectionFinder {
      */
     private List<Region> calculateRegions(JSONArray steps) throws JSONException{
         List<Region> regions = new ArrayList<>();
+        int distanceFromStart = 0;
         for(int i = 0; i < steps.length(); i++) {
             boolean isToll = steps.getJSONObject(i).getString("html_instructions").toLowerCase().contains("toll");
             int distance = steps.getJSONObject(i).getJSONObject("distance").getInt("value");
             List<LatLng> currentStepPolilyne = decodePolyLine(steps.getJSONObject(i).getJSONObject("polyline").getString("points"));
 
-            Region currentRegion = new Region(currentStepPolilyne, distance, isToll);
+            Region currentRegion = new Region(currentStepPolilyne, distance, isToll, distanceFromStart);
             if(     !regions.isEmpty() &&
                     regions.get(regions.size()-1).isToll() == isToll &&
                     regions.get(regions.size()-1).getDistance() + distance <= Route.SUGGESTED_REGION_SIZE){
@@ -166,6 +167,8 @@ public class DirectionFinderAsync extends DirectionFinder {
             } else {
                 regions.add(currentRegion);
             }
+
+            distanceFromStart += distance;
         }
 
         for(Region s : regions){

@@ -23,55 +23,59 @@ import it.drrek.fuelsort.entity.route.Distance;
 import it.drrek.fuelsort.entity.route.Duration;
 import it.drrek.fuelsort.entity.route.Region;
 import it.drrek.fuelsort.entity.route.Route;
+import it.drrek.fuelsort.entity.station.Distributore;
 
 public class DirectionFinderSync extends DirectionFinder{
-        String url;
+    String url;
 
-        public DirectionFinderSync(String origin, String destination, LatLng waypoint) {
-            super(origin, destination, waypoint);
+    public DirectionFinderSync(String origin, String destination, LatLng waypoint) {
+        super(origin, destination, waypoint);
+    }
+
+    public DirectionFinderSync(String origin, String destination, List<Distributore> waypoints) {
+        super(origin, destination, waypoints);
+    }
+
+    public List<Route> execute() throws UnsupportedEncodingException, JSONException {
+        url = DIRECTION_URL_API + createUrl();
+
+        return parseJSon(downloadRawData());
+    }
+
+    private String createUrl() {
+        try {
+            String urlOrigin = URLEncoder.encode(origin, "utf-8");
+            String urlDestination = URLEncoder.encode(destination, "utf-8");
+            if (waypoints == null)
+                return "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY;
+            else
+                return "origin=" + urlOrigin + "&destination=" + urlDestination + "&waypoints=" + waypoints + "&key=" + GOOGLE_API_KEY;
+        } catch (UnsupportedEncodingException e) {
+            Log.e("ERROR", "Impossible to create url for path request");
+            e.printStackTrace();
+            return "";
         }
+    }
 
-        public List<Route> execute() throws UnsupportedEncodingException, JSONException {
-            url = DIRECTION_URL_API + createUrl();
-            return parseJSon(downloadRawData());
-        }
-
-        private String createUrl() {
-            try {
-                String urlOrigin = URLEncoder.encode(origin, "utf-8");
-                String urlDestination = URLEncoder.encode(destination, "utf-8");
-                if (waypoint == null)
-                    return "origin=" + urlOrigin + "&destination=" + urlDestination + "&key=" + GOOGLE_API_KEY;
-                else
-                    return "origin=" + urlOrigin + "&destination=" + urlDestination + "&waypoints=" + waypoint + "&key=" + GOOGLE_API_KEY;
-            } catch (UnsupportedEncodingException e) {
-                Log.e("ERROR", "Impossible to create url for path request");
-                e.printStackTrace();
-                return "";
+    private String downloadRawData(){
+        try {
+            System.out.println(url);
+            URL url1 = new URL(url);
+            InputStream is = url1.openConnection().getInputStream();
+            StringBuilder buffer = new StringBuilder();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line).append("\n");
             }
+            return buffer.toString();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        private String downloadRawData(){
-            try {
-                URL url1 = new URL(url);
-                System.out.println(url);
-                InputStream is = url1.openConnection().getInputStream();
-                StringBuilder buffer = new StringBuilder();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line).append("\n");
-                }
-                return buffer.toString();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
+        return null;
+    }
 
     private List<Route> parseJSon(String data) throws JSONException {
         if (data == null)
@@ -131,16 +135,14 @@ public class DirectionFinderSync extends DirectionFinder{
      */
     private List<Region> calculateRegions(JSONArray steps) throws JSONException{
         List<Region> regions = new ArrayList<>();
+        int distanceFromStart = 0;
         for(int i = 0; i < steps.length(); i++) {
             boolean isToll = steps.getJSONObject(i).getString("html_instructions").toLowerCase().contains("toll");
             int distance = steps.getJSONObject(i).getJSONObject("distance").getInt("value");
             List<LatLng> currentStepPolyline = decodePolyLine(steps.getJSONObject(i).getJSONObject("polyline").getString("points"));
 
-            Region currentRegion = new Region(currentStepPolyline, distance, isToll);
+            Region currentRegion = new Region(currentStepPolyline, distance, isToll, distanceFromStart);
 
-            System.out.println("Analizzando region n."+i+" Verrà eseguito il merge?");
-            if(!regions.isEmpty())
-                System.out.println((regions.get(regions.size()-1).isToll() == isToll)+" "+(regions.get(regions.size()-1).getDistance() + distance <= Route.SUGGESTED_REGION_SIZE));
             if(     !regions.isEmpty() &&
                     regions.get(regions.size()-1).isToll() == isToll &&
                     regions.get(regions.size()-1).getDistance() + distance <= Route.SUGGESTED_REGION_SIZE){
@@ -149,6 +151,8 @@ public class DirectionFinderSync extends DirectionFinder{
             } else {
                 regions.add(currentRegion);
             }
+
+            distanceFromStart += distance;
         }
 
         for(Region s : regions){

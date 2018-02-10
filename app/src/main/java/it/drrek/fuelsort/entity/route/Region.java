@@ -12,15 +12,17 @@ import java.util.List;
 public class Region {
     @SuppressWarnings("FieldCanBeLocal")
     private final int EARTH_RADIUS = 6378000;
+    private int distanceFromStart;
     private LatLng SOBound, NEBound;
     private int distance;
     private boolean isToll;
     private List<LatLng> points;
 
-    public Region(List<LatLng> points, int distance, boolean isToll){
+    public Region(List<LatLng> points, int distance, boolean isToll, int distanceFromStart){
         this.distance=distance;
         this.points = points;
         this.isToll = isToll;
+        this.distanceFromStart = distanceFromStart;
 
         double SOBoundLat = points.get(0).latitude;
         double SOBoundLng = points.get(0).longitude;
@@ -39,6 +41,7 @@ public class Region {
     public void merge(Region toMerge){
         this.points.addAll(toMerge.getPoints());
         this.distance += toMerge.getDistance();
+        this.distanceFromStart = Math.min(this.distanceFromStart, toMerge.getDistanceFromStart());
         SOBound = new LatLng(Math.min(SOBound.latitude, toMerge.getSOBound().latitude), Math.min(SOBound.longitude, toMerge.getSOBound().longitude));
         NEBound = new LatLng(Math.max(NEBound.latitude, toMerge.getNEBound().latitude), Math.max(NEBound.longitude, toMerge.getNEBound().longitude));
     }
@@ -73,5 +76,9 @@ public class Region {
 
     public List<LatLng> getPoints() {
         return points;
+    }
+
+    public int getDistanceFromStart() {
+        return distanceFromStart;
     }
 }
