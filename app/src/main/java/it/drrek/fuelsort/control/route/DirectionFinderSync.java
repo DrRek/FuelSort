@@ -136,17 +136,7 @@ public class DirectionFinderSync extends DirectionFinder{
             int distance = steps.getJSONObject(i).getJSONObject("distance").getInt("value");
             List<LatLng> currentStepPolyline = decodePolyLine(steps.getJSONObject(i).getJSONObject("polyline").getString("points"));
 
-            double SOBoundLat = currentStepPolyline.get(0).latitude;
-            double SOBoundLng = currentStepPolyline.get(0).longitude;
-            double NEBoundLat = currentStepPolyline.get(0).latitude;
-            double NEBoundLng = currentStepPolyline.get(0).longitude;
-            for (int y = 1; y < currentStepPolyline.size(); y++) {
-                SOBoundLat = Math.min(SOBoundLat, currentStepPolyline.get(y).latitude);
-                SOBoundLng = Math.min(SOBoundLng, currentStepPolyline.get(y).longitude);
-                NEBoundLat = Math.max(NEBoundLat, currentStepPolyline.get(y).latitude);
-                NEBoundLng = Math.max(NEBoundLng, currentStepPolyline.get(y).longitude);
-            }
-            Region currentRegion = new Region(new LatLng(SOBoundLat, SOBoundLng), new LatLng(NEBoundLat, NEBoundLng), distance, isToll);
+            Region currentRegion = new Region(currentStepPolyline, distance, isToll);
 
             System.out.println("Analizzando region n."+i+" Verrà eseguito il merge?");
             if(!regions.isEmpty())

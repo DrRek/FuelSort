@@ -2,6 +2,8 @@ package it.drrek.fuelsort.entity.route;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.List;
+
 /**
  * Region will contain path steps.
  * Created by luca on 22/10/17.
@@ -13,15 +15,29 @@ public class Region {
     private LatLng SOBound, NEBound;
     private int distance;
     private boolean isToll;
+    private List<LatLng> points;
 
-    public Region(LatLng start, LatLng end, int distance, boolean isToll){
+    public Region(List<LatLng> points, int distance, boolean isToll){
         this.distance=distance;
-        SOBound = start;
-        NEBound = end;
+        this.points = points;
         this.isToll = isToll;
+
+        double SOBoundLat = points.get(0).latitude;
+        double SOBoundLng = points.get(0).longitude;
+        double NEBoundLat = points.get(0).latitude;
+        double NEBoundLng = points.get(0).longitude;
+        for (int y = 1; y < points.size(); y++) {
+            SOBoundLat = Math.min(SOBoundLat, points.get(y).latitude);
+            SOBoundLng = Math.min(SOBoundLng, points.get(y).longitude);
+            NEBoundLat = Math.max(NEBoundLat, points.get(y).latitude);
+            NEBoundLng = Math.max(NEBoundLng, points.get(y).longitude);
+        }
+        SOBound = new LatLng(SOBoundLat, SOBoundLng);
+        NEBound = new LatLng(NEBoundLat, NEBoundLng);
     }
 
     public void merge(Region toMerge){
+        this.points.addAll(toMerge.getPoints());
         this.distance += toMerge.getDistance();
         SOBound = new LatLng(Math.min(SOBound.latitude, toMerge.getSOBound().latitude), Math.min(SOBound.longitude, toMerge.getSOBound().longitude));
         NEBound = new LatLng(Math.max(NEBound.latitude, toMerge.getNEBound().latitude), Math.max(NEBound.longitude, toMerge.getNEBound().longitude));
@@ -53,5 +69,9 @@ public class Region {
 
     public int getDistance(){
         return distance;
+    }
+
+    public List<LatLng> getPoints() {
+        return points;
     }
 }

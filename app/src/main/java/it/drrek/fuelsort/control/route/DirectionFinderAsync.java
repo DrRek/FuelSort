@@ -157,17 +157,7 @@ public class DirectionFinderAsync extends DirectionFinder {
             int distance = steps.getJSONObject(i).getJSONObject("distance").getInt("value");
             List<LatLng> currentStepPolilyne = decodePolyLine(steps.getJSONObject(i).getJSONObject("polyline").getString("points"));
 
-            double SOBoundLat = currentStepPolilyne.get(0).latitude;
-            double SOBoundLng = currentStepPolilyne.get(0).longitude;
-            double NEBoundLat = currentStepPolilyne.get(0).latitude;
-            double NEBoundLng = currentStepPolilyne.get(0).longitude;
-            for (int y = 1; y < currentStepPolilyne.size(); y++) {
-                SOBoundLat = Math.min(SOBoundLat, currentStepPolilyne.get(y).latitude);
-                SOBoundLng = Math.min(SOBoundLng, currentStepPolilyne.get(y).longitude);
-                NEBoundLat = Math.max(NEBoundLat, currentStepPolilyne.get(y).latitude);
-                NEBoundLng = Math.max(NEBoundLng, currentStepPolilyne.get(y).longitude);
-            }
-            Region currentRegion = new Region(new LatLng(SOBoundLat, SOBoundLng), new LatLng(NEBoundLat, NEBoundLng), distance, isToll);
+            Region currentRegion = new Region(currentStepPolilyne, distance, isToll);
             if(     !regions.isEmpty() &&
                     regions.get(regions.size()-1).isToll() == isToll &&
                     regions.get(regions.size()-1).getDistance() + distance <= Route.SUGGESTED_REGION_SIZE){

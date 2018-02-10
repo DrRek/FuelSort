@@ -75,10 +75,13 @@ public class Distributore implements Comparable, Serializable{
     }
 
     public float setPriceByParams(SearchParams params){
-        computedPrice = 9.999f;
+        computedPrice = Float.MAX_VALUE;
         for(Pompa p : pompe){
-            if(params.checkCarburante(p.getCarburante()) && (params.isSelf() || (!params.isSelf() && !p.isSelf())) && p.getPrezzo()<computedPrice) {
-                computedPrice = p.getPrezzo();
+            float prezzo = p.getPrezzo();
+            if(params.checkCarburante(p.getCarburante()) && (params.isSelf() || (!params.isSelf() && !p.isSelf())) && prezzo<computedPrice) {
+                if(p.getPrezzo()>=0.1) {
+                    computedPrice = prezzo;
+                }
             }
         }
         return computedPrice;

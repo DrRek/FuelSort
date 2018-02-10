@@ -94,12 +94,14 @@ public class PompeManager {
         try {
             while((line = br.readLine()) != null){
                 String[] str = line.split(";");
-                stmt.bindLong(1, Integer.parseInt(str[0]));
-                stmt.bindString(2, str[1]);
-                stmt.bindDouble(3, Float.parseFloat(str[2]));
-                stmt.bindLong(4, Integer.parseInt(str[3]));
-                stmt.bindString(5, str[4]);
-                stmt.executeInsert();
+                if(Float.parseFloat(str[2]) >= 0.1) { //Se il prezzo non è realistico non l'aggiungo
+                    stmt.bindLong(1, Integer.parseInt(str[0]));
+                    stmt.bindString(2, str[1]);
+                    stmt.bindDouble(3, Float.parseFloat(str[2]));
+                    stmt.bindLong(4, Integer.parseInt(str[3]));
+                    stmt.bindString(5, str[4]);
+                    stmt.executeInsert();
+                }
                 stmt.clearBindings();
             }
             wr.setTransactionSuccessful();
