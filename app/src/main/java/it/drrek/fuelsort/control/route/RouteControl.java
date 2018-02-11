@@ -128,49 +128,48 @@ public class RouteControl {
                         int lunghezzaPerOra = s.getDistanceFromStart();
                         for (int i = 0; i < puntiInRegion.size() - 1; i++) {
 
-                            final int R = 6371; // Radius of the earth
+                            final int R = 6371000; // Radius of the earth
                             double lat1 = puntiInRegion.get(i).latitude;
                             double lon1 = puntiInRegion.get(i).longitude;
                             double lat2 = puntiInRegion.get(i + 1).latitude;
                             double lon2 = puntiInRegion.get(i + 1).longitude;
+                            lat1=Math.toRadians(lat1); lat2=Math.toRadians(lat2);
+                            lon1=Math.toRadians(lon1); lon2=Math.toRadians(lon2);
 
-                            double latDistance = Math.toRadians(lat2 - lat1);
-                            double lonDistance = Math.toRadians(lon2 - lon1);
-                            double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                                        + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                                        * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-                            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                            double distance = R * c * 1000; // convert to meters
+                            double distanza12 = Math.acos( Math.sin(lat1)*Math.sin(lat2) + Math.cos(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1) ) * R;
 
-                            lunghezzaPerOra += distance;
+                            lunghezzaPerOra += distanza12;
 
                             for (Distributore distributoreCorrente : trovatiInRegion) {
+
+                                double risultato;
+
                                 double lat3 = distributoreCorrente.getLat();
                                 double lon3 = distributoreCorrente.getLon();
-                                double EARTH_RADIUS_KM = 6371;
 
-                                double y = Math.sin(lon3 - lon1) * Math.cos(lat3);
-                                double x = Math.cos(lat1) * Math.sin(lat3) - Math.sin(lat1) * Math.cos(lat3) * Math.cos(lat3 - lat1);
-                                double bearing1 = Math.toDegrees(Math.atan2(y, x));
-                                bearing1 = 360 - (bearing1 + 360 % 360);
+                                lat3=Math.toRadians(lat3);
+                                lon3=Math.toRadians(lon3);
 
-                                double y2 = Math.sin(lon2 - lon1) * Math.cos(lat2);
-                                double x2 = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lat2 - lat1);
-                                double bearing2 = Math.toDegrees(Math.atan2(y2, x2));
-                                bearing2 = 360 - (bearing2 + 360 % 360);
+                                double bear12 = Math.atan2( Math.sin(lon2-lon1)*Math.cos(lat2), Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1));
+                                double bear13 = Math.atan2( Math.sin(lon3-lon1)*Math.cos(lat3), Math.cos(lat1)*Math.sin(lat3) - Math.sin(lat1)*Math.cos(lat3)*Math.cos(lon3-lon1));
 
-                                double lat1Rads = Math.toRadians(lat1);
-                                double lat3Rads = Math.toRadians(lat3);
-                                double dLon = Math.toRadians(lon3 - lon1);
+                                double dis13 = Math.acos( Math.sin(lat1)*Math.sin(lat3) + Math.cos(lat1)*Math.cos(lat3)*Math.cos(lon3-lon1) ) * R;
 
-                                double distanceAC = Math.acos(Math.sin(lat1Rads) * Math.sin(lat3Rads) + Math.cos(lat1Rads) * Math.cos(lat3Rads) * Math.cos(dLon)) * EARTH_RADIUS_KM;
-                                double risultato = Math.abs(Math.asin(Math.sin(distanceAC / EARTH_RADIUS_KM) * Math.sin(Math.toRadians(bearing1) - Math.toRadians(bearing2))) * EARTH_RADIUS_KM) * 1000;
+                                if (Math.abs(bear13-bear12)>(Math.PI/2)){
+                                    risultato=dis13;
+                                } else {
+                                    double dxt = Math.asin( Math.sin(dis13/R)* Math.sin(bear13 - bear12) ) * R;
 
-                                if (risultato < 50) {
-                                    if(distributoreCorrente.getId()==35430){
-                                        System.out.println(lat1 +", "+lon1 +"  "+lat2 +", "+lon2 +"  "+lat3 +", "+lon3);
-                                        System.out.println("Risultato per ora:"+ risultato);
+                                    double dis14 = Math.acos( Math.cos(dis13/R) / Math.cos(dxt/R));
+
+                                    if(dis14>distanza12){
+                                        risultato = Math.acos( Math.sin(lat2)*Math.sin(lat3) + Math.cos(lat2)*Math.cos(lat3)*Math.cos(lon3-lon2) ) * R;
+                                    } else{
+                                        risultato = Math.abs(dxt);
                                     }
+                                }
+
+                                if (risultato < 25) { //TODO:RENDILA UNA VARIABILE STAICA E TROVA IL VALORE PERFECT
                                     int distanzaDistributoreDaStart = (int) (lunghezzaPerOra + risultato);
                                     if (risultati.containsKey(distributoreCorrente)) {
                                         if (risultati.get(distributoreCorrente) > distanzaDistributoreDaStart) {
@@ -204,14 +203,18 @@ public class RouteControl {
             findSetOfStation();
             searchRouteBasedOnStationSet();
             System.out.println("NUMERO DI DISTRIBUTORI TROVATI:"+distributoriTrovatiAllaFine.size());
-            System.out.println(distributoriTrovati.get(47));
-            System.out.println(distributoriTrovati.get(48));
             List<Distributore> verissimi = new ArrayList<>();
-            verissimi.add(distributoriTrovati.get(47));
-            verissimi.add(distributoriTrovati.get(48));
-            verissimi.add(new Distributore(1, null, null, null, null, null, null, null, 42.65978, 12.22339));
-            verissimi.add(new Distributore(1, null, null, null, null, null, null, null, 42.65986, 12.22333));
-            return new Result(bestRouteTillNow, verissimi);
+            /*for(LatLng ll : defaultRoute.getPoints()){
+                verissimi.add(new Distributore(1, null, null, null, null, null, null, null, ll.latitude, ll.longitude));
+            }*/
+            /*int i = 1;
+            for(Region regiona : defaultRoute.getRegions()){
+                if(i++ == 2) break;
+                for(LatLng ll : regiona.getPoints()){
+                    verissimi.add(new Distributore(1, null, null, null, null, null, null, null, ll.latitude, ll.longitude));
+                }
+            }*/
+            return new Result(bestRouteTillNow, distributoriTrovatiAllaFine);
 
 
             /* CODICE VECCHIO
@@ -360,7 +363,7 @@ public class RouteControl {
                 return memoized[indice];
             }
 
-            int indiceToDebug = 47;
+            int indiceToDebug = 35;
             if(indice == indiceToDebug){
                 System.out.println(indice+" sezione 0  startOffset:"+startOffset+"  distributoriMancanti:"+distributoriMancanti);
             }
@@ -369,8 +372,8 @@ public class RouteControl {
                 Distributore d = distributoriTrovati.get(indice);
 
                 int distanzaDiD;
-                if(startOffset == 0){
-                    distanzaDiD = 0;
+                if(distributoriNecessari == distributoriMancanti){
+                    distanzaDiD = 0; //Il primo distributore si prende l'incarico di pagare anche la benzina per arrivarci.
                 }else {
                     distanzaDiD = distributoriTrovatiConDistanza.get(d);
                 }
@@ -401,7 +404,7 @@ public class RouteControl {
 
 
                 if(indice==indiceToDebug){
-                    System.out.println(indice+" sezione pre2  y:"+y+"  distanzaDistributoreAFine:"+(defaultRoute.getDistance().getValue() - distributoriTrovatiConDistanza.get(d))+"  autonomia:"+autonomiaInMetri);
+                    System.out.println(indice+" sezione pre2  y:"+y+"  distanzaDistributoreAFine:"+(defaultRoute.getDistance().getValue() - distanzaDiD)+"  autonomia:"+autonomiaInMetri);
                 }
                 if(y==distributoriTrovati.size() && Math.abs(distanzaPercorso - distributoriTrovatiConDistanza.get(d)) <= autonomiaInMetri ){
                     double temp = (Math.abs(defaultRoute.getDistance().getValue() - distanzaDiD) * d.getBestPriceUsingSearchParams() / (1000 * kmxl)) + opt(y, distanzaDiD, distributoriMancanti-1);

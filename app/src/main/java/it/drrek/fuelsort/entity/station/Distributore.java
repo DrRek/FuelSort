@@ -40,8 +40,14 @@ public class Distributore implements Comparable, Serializable{
         this.indirizzo = indirizzo;
         this.comune = comune;
         this.provincia = provincia;
-        this.lat = lat;
-        this.lon = lon;
+        if(lat<=1 && lat>=-1 && lon<=1 && lon>=-1){
+            this.lat = Math.toDegrees(lat);
+            this.lon = Math.toDegrees(lon);
+        }else {
+            this.lat = lat;
+            this.lon = lon;
+        }
+
         this.pompe = null;
     }
 
