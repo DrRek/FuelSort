@@ -111,11 +111,6 @@ public class MapControl implements OnMapReadyCallback {
         }
         mMap.addPolyline(plo);
 
-        int i =0;
-        for(Region re : r.getRegions()){
-            System.out.println("n."+i+"\n\tis toll: "+re.isToll()+"\n\tdistance: "+re.getDistance()+"\n");
-        }
-
         Button openOnGoogleMaps = ((Activity)activityContext).findViewById(R.id.openOnGoogleMaps);
         openOnGoogleMaps.setVisibility(View.VISIBLE);
         openOnGoogleMaps.setOnClickListener(new View.OnClickListener() {

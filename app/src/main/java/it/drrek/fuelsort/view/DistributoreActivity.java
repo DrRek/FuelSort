@@ -102,7 +102,7 @@ public class DistributoreActivity extends AppCompatActivity {
         }
 
         TextView proprietarioTv = (TextView) findViewById(R.id.proprietario);
-        proprietarioTv.setText("Nome: " + toUse.getNome());
+        proprietarioTv.setText("ID:"+toUse.getId()+" Nome: " + toUse.getNome());
 
         TextView coordinateTv = (TextView) findViewById(R.id.coordinate);
         coordinateTv.setText("Coordinate: " + toUse.getLat()+", "+toUse.getLon());
