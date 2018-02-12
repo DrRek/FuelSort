@@ -345,9 +345,13 @@ public class RouteControl {
             gruppi[distributoriNecessari] = new DistributoriBounds(distributoriTrovati.size(), distributoriTrovati.size());
 
             memoized = new double[distributoriTrovati.size()][distributoriNecessari];
+            for(int y = 0; y<distributoriNecessari; y++) {
+                for (int i = 0; i < distributoriTrovati.size(); i++) {
+                    memoized[i][y] = 99;
+                }
+            }
 
             opt(0, distributoriNecessari);
-
             distributoriTrovatiAllaFine = new ArrayList<>();
             findSolution(0, distributoriNecessari);
         }
@@ -387,7 +391,7 @@ public class RouteControl {
                     memoized[indice][distributoriMancanti - 1] = Math.min(memoized[indice][distributoriMancanti - 1], temp);
                 }
             }
-
+            
             if(indice+1<=gruppi[distributoriNecessari-(distributoriMancanti)].end){
                 opt(indice+1, distributoriMancanti);
             }
