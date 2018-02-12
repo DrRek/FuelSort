@@ -12,9 +12,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/icona_definitiva"
+        android:icon="@mipmap/icona_definitiva_nuova_round"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/icona_definitiva_round"
+        android:roundIcon="@mipmap/icona_definitiva_nuova_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 

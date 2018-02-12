@@ -269,7 +269,7 @@ public class MapControl implements OnMapReadyCallback {
                                     });
                                     pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
                                 }else{
-                                    Log.e("ERROR", "L'inflater del layout è null, impossibile creare il popup (MapControl)");
+                                    Log.e("MapControl", "L'inflater del layout è null, impossibile creare il popup.");
                                 }
                                 //To add listener
                             } catch (Exception e) {
@@ -338,7 +338,6 @@ public class MapControl implements OnMapReadyCallback {
 
         @Override
         protected void onPreExecute() {
-            Log.d("Ricerca distributori", "Inizio a cercare distributori.");
             LatLngBounds view = mMap.getProjection().getVisibleRegion().latLngBounds;
             minLat = view.southwest.latitude;
             minLng = view.southwest.longitude;
@@ -421,8 +420,6 @@ public class MapControl implements OnMapReadyCallback {
                     }
                 }
                 if (minLng < lastMinLng) {
-                    //Double neededMinLat = Math.max(minLat, lastMinLat);
-                    // Double neededMaxLat = Math.min(maxLat, lastMaxLat);
                     nuovi.addAll(distManager.getStationsInBound(minLatC, maxLatC, minLng, lastMinLng, params, false));
                     if (isCancelled()) {
                         lastMinLng = minLng;
@@ -431,8 +428,6 @@ public class MapControl implements OnMapReadyCallback {
                     }
                 }
                 if (maxLng > lastMaxLng) {
-                    //Double neededMinLat = Math.max(minLat, lastMinLat);
-                    //Double neededMaxLat = Math.min(maxLat, lastMaxLat);
                     nuovi.addAll(distManager.getStationsInBound(minLatC, maxLatC, lastMaxLng, maxLng, params, false));
                     if (isCancelled()) {
                         lastMaxLng = maxLng;
@@ -505,7 +500,6 @@ public class MapControl implements OnMapReadyCallback {
         }
 
         protected void onCancelled(ArrayList<Distributore> nuovi) {
-            Log.d("Ricerca distributori", "Ricerca cancellata.");
         }
     }
 }
