@@ -11,7 +11,6 @@ import com.google.android.gms.maps.model.LatLng;
 import org.json.JSONException;
 
 import java.io.UnsupportedEncodingException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,7 +18,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.DoubleUnaryOperator;
 
 import it.drrek.fuelsort.entity.settings.SearchParams;
 import it.drrek.fuelsort.entity.station.Distributore;
@@ -87,13 +85,30 @@ public class RouteControl {
 
     private class LoadStationForRoute extends AsyncTask<Route, Integer, LoadStationForRoute.Result> {
         private Route defaultRoute;
-        class Result
-        {
+        int capienzaSerbatoio = 15;
+        int kmxl = 20;
+        int autonomiaInMetri = capienzaSerbatoio * kmxl * 1000;
+        int distributoriNecessari = -1;
+        int distanzaPercorso;
+        List<Distributore> distributoriTrovati;
+        final Map<Distributore, Integer> distributoriTrovatiConDistanza = new HashMap<>();
+        List<Distributore> distributoriTrovatiAllaFine;
+        Route bestRouteTillNow = null;
+        DistributoriBounds[] gruppi;
+        double[][] memoized;
+        class Result {
             Route strada;
             List<Distributore> distributori;
 
             Result(Route s, List<Distributore> d){strada=s; distributori=d;}
-        };
+        }
+        class DistributoriBounds{
+            private int start, end;
+            private DistributoriBounds(int start, int end){
+                this.start = start;
+                this.end = end;
+            }
+        }
 
         @Override
         protected Result doInBackground(final Route... r) {
@@ -203,17 +218,6 @@ public class RouteControl {
             findSetOfStation();
             searchRouteBasedOnStationSet();
             System.out.println("NUMERO DI DISTRIBUTORI TROVATI:"+distributoriTrovatiAllaFine.size());
-            List<Distributore> verissimi = new ArrayList<>();
-            /*for(LatLng ll : defaultRoute.getPoints()){
-                verissimi.add(new Distributore(1, null, null, null, null, null, null, null, ll.latitude, ll.longitude));
-            }*/
-            /*int i = 1;
-            for(Region regiona : defaultRoute.getRegions()){
-                if(i++ == 2) break;
-                for(LatLng ll : regiona.getPoints()){
-                    verissimi.add(new Distributore(1, null, null, null, null, null, null, null, ll.latitude, ll.longitude));
-                }
-            }*/
             return new Result(bestRouteTillNow, distributoriTrovatiAllaFine);
 
 
@@ -274,7 +278,6 @@ public class RouteControl {
                 */
         }
 
-        Route bestRouteTillNow = null;
         private void searchRouteBasedOnStationSet() {
             try {
                 List<Route> resultList = new DirectionFinderSync(from, to, distributoriTrovatiAllaFine).execute();
@@ -315,157 +318,96 @@ public class RouteControl {
                 }
             }
 
-            System.out.println("Distanza percorso: " + defaultRoute.getDistance().getValue());
-            System.out.println("Massima autonomia: " + autonomiaInMetri);
-            System.out.println("Divisione: " + (int) Math.ceil(defaultRoute.getDistance().getValue() / (double) autonomiaInMetri));
-            System.out.println("Distributori presenti: " + distributoriTrovati.size());
-            memoized = new double[distributoriTrovati.size()];
-
-            for (int y = 0; y < memoized.length; y++) {
-                memoized[y] = Double.MAX_VALUE;
-            }
+            Log.d("RouteControl", "Distanza percorso: " + defaultRoute.getDistance().getValue());
+            Log.d("RouteControl", "Massima autonomia: " + autonomiaInMetri);
+            Log.d("RouteControl", "Distributori necessari: " + (int) Math.ceil(defaultRoute.getDistance().getValue() / (double) autonomiaInMetri));
+            Log.d("RouteControl", "Distributori presenti: " + distributoriTrovati.size());
 
             distributoriNecessari = (int) Math.ceil(defaultRoute.getDistance().getValue() / (double) autonomiaInMetri);
-
             distanzaPercorso = Math.max(defaultRoute.getDistance().getValue(), distributoriTrovatiConDistanza.get(distributoriTrovati.get(distributoriTrovati.size()-1)));
-            opt(0, 0, distributoriNecessari);
 
-            DecimalFormat df = new DecimalFormat("#.####");
-            System.out.print("\t");
-            int i = 0;
-            for (double d : memoized) {
-                System.out.print((i++)+":"+df.format(d) + " ");
+            gruppi = new DistributoriBounds[distributoriNecessari+1];
+            for(int i = 0; i<distributoriTrovati.size(); i++){
+                int lunghezza = distributoriTrovatiConDistanza.get(distributoriTrovati.get(i));
+
+                int gruppoCorrente = 0;
+                while (gruppoCorrente < distributoriNecessari) {
+                    if(lunghezza > (distanzaPercorso - (autonomiaInMetri * (distributoriNecessari-gruppoCorrente))) && lunghezza < autonomiaInMetri*(gruppoCorrente+1)){
+                        if(gruppi[gruppoCorrente] == null){
+                            gruppi[gruppoCorrente] = new DistributoriBounds(i, i);
+                        } else {
+                            gruppi[gruppoCorrente].end = i;
+                        }
+                    }
+                    gruppoCorrente++;
+                }
             }
-            System.out.println();
+            gruppi[distributoriNecessari] = new DistributoriBounds(distributoriTrovati.size(), distributoriTrovati.size());
+
+            memoized = new double[distributoriTrovati.size()][distributoriNecessari];
+
+            opt(0, distributoriNecessari);
 
             distributoriTrovatiAllaFine = new ArrayList<>();
-            findSolution(distributoriTrovati.size() - 1, (int) Math.ceil(defaultRoute.getDistance().getValue() / (double) autonomiaInMetri));
+            findSolution(0, distributoriNecessari);
         }
 
-        int capienzaSerbatoio = 15;
-        int kmxl = 20;
-        int autonomiaInMetri = capienzaSerbatoio * kmxl * 1000;
-        int distributoriNecessari = -1;
-        int distanzaPercorso;
-        List<Distributore> distributoriTrovati;
-        final Map<Distributore, Integer> distributoriTrovatiConDistanza = new HashMap<>();
-        double memoized[];
-        private double opt(int indice, int startOffset, int distributoriMancanti) {
-
-            if (indice == distributoriTrovati.size() && startOffset >= defaultRoute.getDistance().getValue() - autonomiaInMetri && distributoriMancanti == 0) {
-                System.out.println("Se vengo mostrato in console stai facendo progressi! ora guarda il codice.");
-                return 0;
-            } else if(indice>=distributoriTrovati.size() && (startOffset < defaultRoute.getDistance().getValue() - autonomiaInMetri || distributoriMancanti <= 0)){
-                return 400;//Double.MAX_VALUE / 10;
+        private double opt(int indice, int distributoriMancanti){
+            if(indice == distributoriTrovati.size()){
+                if(distributoriMancanti == 0){
+                    return 0;
+                }else{
+                    return 99;
+                }
             }
 
-            if (memoized[indice] != Double.MAX_VALUE) {
-                return memoized[indice];
+            if(memoized[indice][distributoriMancanti-1] != 99)
+                return memoized[indice][distributoriMancanti-1];
+
+            Distributore d = distributoriTrovati.get(indice);
+
+            if (gruppi[distributoriNecessari-(distributoriMancanti)].start > indice || indice > gruppi[distributoriNecessari-(distributoriMancanti)].end) {
+                memoized[indice][distributoriMancanti-1] = 400;
+                return memoized[indice][distributoriMancanti-1];
             }
 
-            int indiceToDebug = 35;
-            if(indice == indiceToDebug){
-                System.out.println(indice+" sezione 0  startOffset:"+startOffset+"  distributoriMancanti:"+distributoriMancanti);
+            memoized[indice][distributoriMancanti-1] = 400;
+            int distanzaIndiceDaStart = distributoriTrovatiConDistanza.get(d);
+            for(int i=gruppi[distributoriNecessari-(distributoriMancanti-1)].start; i<=gruppi[distributoriNecessari-(distributoriMancanti-1)].end; i++){
+                int distanzaTraIDue;
+                if(i==distributoriTrovati.size())   distanzaTraIDue = distanzaPercorso - distanzaIndiceDaStart;
+                else                                distanzaTraIDue = Math.abs(distributoriTrovatiConDistanza.get(distributoriTrovati.get(i)) - distanzaIndiceDaStart);
+                if(distanzaTraIDue <= autonomiaInMetri ) {
+                    int distanzaDaPagare;
+                    if(distributoriMancanti == distributoriNecessari && i<distributoriTrovati.size())   distanzaDaPagare = distributoriTrovatiConDistanza.get(distributoriTrovati.get(i));
+                    else if(distributoriMancanti == distributoriNecessari)                              distanzaDaPagare = distanzaPercorso;
+                    else                                                                                distanzaDaPagare = distanzaTraIDue;
+
+                    double temp = ((distanzaDaPagare*d.getBestPriceUsingSearchParams())/(1000*kmxl)) + opt(i, distributoriMancanti - 1);
+                    memoized[indice][distributoriMancanti - 1] = Math.min(memoized[indice][distributoriMancanti - 1], temp);
+                }
             }
 
-            if(indice < distributoriTrovati.size()){
-                Distributore d = distributoriTrovati.get(indice);
-
-                int distanzaDiD;
-                if(distributoriNecessari == distributoriMancanti){
-                    distanzaDiD = 0; //Il primo distributore si prende l'incarico di pagare anche la benzina per arrivarci.
-                }else {
-                    distanzaDiD = distributoriTrovatiConDistanza.get(d);
-                }
-
-                if(!(distanzaPercorso - (autonomiaInMetri*(distributoriNecessari-distributoriMancanti)) >= distanzaDiD && distanzaDiD <= autonomiaInMetri*(distributoriNecessari-distributoriMancanti))){
-                    if(indice == indiceToDebug){
-                        System.out.println(indice+" sezione 0.5  Il distributore non si trova nella sezione adatta per essere scelto dati i distributori mancanti");
-                        System.out.println(indice+" sezione 0.5  Downboundary:"+(distanzaPercorso - (autonomiaInMetri*(distributoriNecessari-distributoriMancanti)))+"" +
-                                "  upperBoundary:"+autonomiaInMetri*(distributoriNecessari-distributoriMancanti)+"" +
-                                "  PosizioneEfettiva:"+ distanzaDiD);
-                    }
-                    return 400;
-                }
-
-
-                memoized[indice] = Double.MAX_VALUE;
-                int y = indice +1;
-                if(indice==indiceToDebug){
-                    System.out.println(indice+" sezione pre1 y:"+y+" sottrazione:"+(distributoriTrovatiConDistanza.get(distributoriTrovati.get(y)) - distanzaDiD)+"  autonomia:"+autonomiaInMetri);
-                }
-                for (; y < distributoriTrovati.size() &&  Math.abs(distributoriTrovatiConDistanza.get(distributoriTrovati.get(y)) - distanzaDiD) <= autonomiaInMetri; y++) {
-                    double temp = (Math.abs(distributoriTrovatiConDistanza.get(distributoriTrovati.get(y)) - distanzaDiD) * d.getBestPriceUsingSearchParams() / (1000 * kmxl)) + opt(y, distanzaDiD, distributoriMancanti-1);
-                    if(indice == indiceToDebug){
-                        System.out.println(indice+" sezione 1 memoizedProposto:"+temp+" memoizedCorente:"+memoized[indice]);
-                    }
-                    memoized[indice] = Math.min(memoized[indice], temp);
-                }
-
-
-                if(indice==indiceToDebug){
-                    System.out.println(indice+" sezione pre2  y:"+y+"  distanzaDistributoreAFine:"+(defaultRoute.getDistance().getValue() - distanzaDiD)+"  autonomia:"+autonomiaInMetri);
-                }
-                if(y==distributoriTrovati.size() && Math.abs(distanzaPercorso - distributoriTrovatiConDistanza.get(d)) <= autonomiaInMetri ){
-                    double temp = (Math.abs(defaultRoute.getDistance().getValue() - distanzaDiD) * d.getBestPriceUsingSearchParams() / (1000 * kmxl)) + opt(y, distanzaDiD, distributoriMancanti-1);
-                    if(indice == indiceToDebug){
-                        System.out.println(indice+" sezione 2 memoizedProposto:"+temp+" memoizedCorente:"+memoized[indice]);
-                    }
-                    memoized[indice] = Math.min(memoized[indice], temp);
-                }
-
-                //RICORDA CHE QUESTO NON DEVE MAI ESSERE CHIAMATO SU distributoriTrovati.size(), restituirebbe 0 fottendo tutto
-                if(indice==indiceToDebug){
-                    System.out.println(indice+" sezione pre3  indice+1:"+(indice+1)+"  distanzaDistributoreDaStart:"+distributoriTrovatiConDistanza.get(distributoriTrovati.get(indice+1))+"  startOffset:"+startOffset);
-                    System.out.println(indice+" sezione pre3  indice+1:"+(indice+1)+"  sottrazione:"+(distributoriTrovatiConDistanza.get(distributoriTrovati.get(indice+1)) - startOffset)+"  autonomia:"+autonomiaInMetri);
-                }
-                if(indice+1 < distributoriTrovati.size() && distributoriTrovatiConDistanza.get(distributoriTrovati.get(indice+1)) - startOffset <= autonomiaInMetri){ //Controllare la distanza con l'ultimo scelto
-                    double temp = opt(indice + 1, startOffset, distributoriMancanti);
-                    if (indice == indiceToDebug) {
-                        System.out.println(indice + " sezione 3 memoizedProposto:" + temp + " memoizedCorente:" + memoized[indice]);
-                    }
-                    memoized[indice] = Math.min(memoized[indice], temp);
-                }
-
-                if(indice == indiceToDebug){
-                    System.out.println(indice + " sezione 4 valoreDefinitivo:"+memoized[indiceToDebug]);
-                }
-                return memoized[indice];
+            if(indice+1<=gruppi[distributoriNecessari-(distributoriMancanti)].end){
+                opt(indice+1, distributoriMancanti);
             }
-
-            System.out.println("wodafack");
-
-            return 400;//Double.MAX_VALUE / 10;
+            return memoized[indice][distributoriMancanti - 1];
         }
 
-        List<Distributore> distributoriTrovatiAllaFine;
-        private void findSolution(int indice, int quantiDistributoriMancano){
-
-            if(quantiDistributoriMancano <= 0) return;
-
-            if(memoized[indice] > memoized[indice]+1){
-                findSolution(indice+1, quantiDistributoriMancano);
-            } else {
-                Distributore d = distributoriTrovati.get(indice);
-                int minimoIndiceTrovato = indice;
-                int distanzaDiD;
-                if(quantiDistributoriMancano == distributoriNecessari){
-                    distanzaDiD = 0;
-                }else {
-                    distanzaDiD = distributoriTrovatiConDistanza.get(distributoriTrovati.get(indice));
-                }
-                for(int y = indice-1; y>=0 && Math.abs(distributoriTrovatiConDistanza.get(distributoriTrovati.get(y)) - distanzaDiD) <= autonomiaInMetri; y--){
-                    if(memoized[minimoIndiceTrovato] > memoized[y]){
-                        minimoIndiceTrovato = y;
+        private void findSolution(int lastChoosenDistance, int distributoriMancanti) {
+            int nextGroupBestIndex = gruppi[distributoriNecessari - (distributoriMancanti)].start;
+            for (int i = gruppi[distributoriNecessari - (distributoriMancanti)].start; i <= gruppi[distributoriNecessari - (distributoriMancanti)].end; i++) {
+                if (distributoriTrovatiConDistanza.get(distributoriTrovati.get(i)) - lastChoosenDistance <= autonomiaInMetri) {
+                    if (memoized[nextGroupBestIndex][distributoriMancanti - 1] > memoized[i][distributoriMancanti - 1]) {
+                        nextGroupBestIndex = i;
                     }
                 }
-                if(minimoIndiceTrovato!=indice){
-                    findSolution(minimoIndiceTrovato, quantiDistributoriMancano-1);
-                }
-                distributoriTrovatiAllaFine.add(distributoriTrovati.get(minimoIndiceTrovato));
+            }
+            distributoriTrovatiAllaFine.add(distributoriTrovati.get(nextGroupBestIndex));
+            if (distributoriMancanti > 1) {
+                findSolution(distributoriTrovatiConDistanza.get(distributoriTrovati.get(nextGroupBestIndex)), distributoriMancanti - 1);
             }
         }
-
 
         @Override
         protected void onPostExecute(Result r) {
