@@ -443,6 +443,15 @@ public class MapControl implements OnMapReadyCallback {
             return nuovi;
         }
 
+        /**
+         * Questa funzione viene eseguita sul main thread quando vengono trovati i distributori da aggiungenere nello schermo.
+         * Qui vengono scelti i colori dei distributori da aggiungere sullo schermo, la tonalità si calcula in base al prezzo del distributore nell'insieme
+         * la luminosità è in funzione della tonalità. f(x) = -0.00660982219578x^2 + 0.813008130081x + 75
+         * @param nuovi
+         */
+        private static final double FUNZIONE_LUMINOSITA_A = -0.00660982219578;
+        private static final double FUNZIONE_LUMINOSITA_B = 0.813008130081;
+        private static final double FUNZIONE_LUMINOSITA_C = 75;
         protected void onPostExecute(ArrayList<Distributore> nuovi) {
             synchronized (LoadStationInScreen.class) {
                 for(Distributore nuovo : nuovi){
@@ -451,6 +460,7 @@ public class MapControl implements OnMapReadyCallback {
                     );
                     distributoriMarker.put(nuovo, tempMark);
                 }
+                nuovi.clear();
                 nuovi.addAll(distributoriMarker.keySet());
                 Collections.sort(nuovi, new Comparator<Distributore>() {
                     @Override
@@ -464,9 +474,9 @@ public class MapControl implements OnMapReadyCallback {
                 if(distributoriSize==1){
                     Marker tempMarker = distributoriMarker.get(nuovi.get(0));
                     float[] hsv = new float[3];
-                    hsv[0]=120;
+                    hsv[0]=123;
                     hsv[1]=1;
-                    hsv[2]=1;
+                    hsv[2]=0.75f;
                     Bitmap tempBitmap = BitmapCreator.getBitmap(activityContext, Color.HSVToColor(hsv), nuovi.get(0).setPriceByParams(params), nuovi.get(0).getBandiera());
                     tempMarker.setIcon(BitmapDescriptorFactory.fromBitmap(tempBitmap));
 
@@ -474,12 +484,13 @@ public class MapControl implements OnMapReadyCallback {
                     float min = nuovi.get(0).getBestPriceUsingSearchParams(), max = nuovi.get(distributoriSize - 1).getBestPriceUsingSearchParams();
                     float diff = max - min;
                     float[] hsv = new float[3];
-                    hsv[1] = 1;
-                    hsv[2] = 1;
+                    hsv[1]=1;
                     for (int i = 0; i < distributoriSize; i++) {
                         Distributore tempDist = nuovi.get(i);
                         Marker tempMark = distributoriMarker.get(tempDist);
-                        hsv[0] = (tempDist.getBestPriceUsingSearchParams() - min) * 120 / diff;
+                        hsv[0] = (tempDist.getBestPriceUsingSearchParams() - min) * 123 / diff;
+                        hsv[2] = (float)((FUNZIONE_LUMINOSITA_A*Math.pow(hsv[0], 2) + FUNZIONE_LUMINOSITA_B*hsv[0] + FUNZIONE_LUMINOSITA_C)/100);
+
                         Bitmap tempBitmap = BitmapCreator.getBitmap(activityContext, Color.HSVToColor(hsv), tempDist.setPriceByParams(params), tempDist.getBandiera());
                         tempMark.setIcon(BitmapDescriptorFactory.fromBitmap(tempBitmap));
                     }
