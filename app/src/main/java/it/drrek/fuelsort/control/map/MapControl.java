@@ -96,18 +96,26 @@ public class MapControl implements OnMapReadyCallback {
     public void setRoute(final Route r, final List<Distributore> distributori){
         removeAllStationFoundInScreen();
         mMap.clear();
-        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getStartBitmap(activityContext))).title("Start").position(r.getStartLocation()));
-        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getFinishBitmap(activityContext))).title("End").position(r.getEndLocation()));
         for(Distributore d : distributori) {
-            mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, Color.BLUE, d.getBestPriceUsingSearchParams(), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
+            mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, Color.MAGENTA, d.getBestPriceUsingSearchParams(), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
         }
+        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getDefaultPin(activityContext))).title("Start").position(r.getStartLocation()));
+        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getDefaultPin(activityContext))).title("End").position(r.getEndLocation()));
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(r.getLatLngBounds(), 100)); //100 is just some padding
         PolylineOptions plo = new PolylineOptions();
         plo.geodesic(true);
-        plo.color(Color.BLUE);
+        plo.color(Color.CYAN);
         plo.width(10);
-        for (int i = 0; i < r.getPoints().size(); i++) {
-            plo.add(r.getPoints().get(i));
+        if(r.getRegions() == null) {
+            for (Region re : r.getRegions()) {
+                for (LatLng p : re.getPoints()) {
+                    plo.add(p);
+                }
+            }
+        } else {
+            for (int i = 0; i < r.getPoints().size(); i++) {
+               plo.add(r.getPoints().get(i));
+            }
         }
         mMap.addPolyline(plo);
 

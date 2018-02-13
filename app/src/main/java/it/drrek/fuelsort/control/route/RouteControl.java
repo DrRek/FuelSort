@@ -227,63 +227,6 @@ public class RouteControl {
             searchRouteBasedOnStationSet();
             System.out.println("NUMERO DI DISTRIBUTORI TROVATI:"+distributoriTrovatiAllaFine.size());
             return new Result(bestRouteTillNow, distributoriTrovatiAllaFine);
-
-
-            /* CODICE VECCHIO
-
-            Collections.sort(distributoriTrovati, new Comparator<Distributore>() {
-                    @Override
-                    public int compare(Distributore fruit2, Distributore fruit1) {
-                        double f1Price = fruit1.getBestPriceUsingSearchParams(), f2Price = fruit2.getBestPriceUsingSearchParams();
-                        if (f1Price < f2Price) return 1;
-                        else if (f1Price == f2Price) return 0;
-                        return -1;
-                    }
-             });
-
-                Distributore bestDistrTillNow = null;
-                float bestPrezzoTillNow = 9999.99f;
-                Route bestRouteTillNow = null;
-                for (Distributore d : distributoriTrovati) {
-
-                    //Condizione d'uscita principale
-                    if (bestPrezzoTillNow < d.getBestPriceUsingSearchParams()) {
-                        distributoriTrovatiAllaFine = new ArrayList<>();
-                        distributoriTrovatiAllaFine.add(bestDistrTillNow);
-                        return new Result(bestRouteTillNow, distributoriTrovatiAllaFine);
-                    }
-
-                    try {
-                        List<Route> resultList = new DirectionFinderSync(from, to, d.getPosizione()).execute();
-                        Route result = resultList.get(0);
-                        Log.d("RouteControl", "Analizzo il primo risultato: ");
-                        Log.d("RouteControl", "Lat:" + d.getLat() + "  Lng:" + d.getLon());
-                        Log.d("RouteControl", "Lunghezza nuovo: " + result.getDistance().getValue() + "m Lunghezza vecchio:" + defaultRoute.getDistance().getValue() + "m");
-                        Log.d("RouteControl", "Autostrade nuovo: " + result.getNumeroDiPagamenti() + "  Autostrade vecchio:" + defaultRoute.getNumeroDiPagamenti() + " ");
-                        Log.d("RouteControl", "Durata nuovo: " + result.getDuration().getValue() + "m Durata vecchio:" + defaultRoute.getDuration().getValue() + "m");
-                        if (
-                                result.getDistance().getValue() - defaultRoute.getDistance().getValue() <= Route.DISTANZA_MASSIMA_AGGIUNTA_AL_PERCORSO &&
-                                        result.getNumeroDiPagamenti() <= defaultRoute.getNumeroDiPagamenti() &&
-                                        result.getDuration().getValue() - defaultRoute.getDuration().getValue() <= Route.TEMPO_MASSIMO_AGGIUNTO_AL_PERCORSO) {
-
-                            //Questo controllo serve per controllare tutti i distributori con lo stesso prezzo.
-                            float tempPrezzo = d.getBestPriceUsingSearchParams();
-                            if ((bestPrezzoTillNow == tempPrezzo && (bestRouteTillNow == null || bestRouteTillNow.getDuration().getValue() > result.getDuration().getValue())) || (tempPrezzo < bestPrezzoTillNow)) {
-                                bestRouteTillNow = result;
-                                bestDistrTillNow = d;
-                                bestPrezzoTillNow = tempPrezzo;
-                            }
-                        } else {
-                            Log.d("RouteControl", "Risultato NON accettabile, passo al prossimo. \n");
-                        }
-                    } catch (UnsupportedEncodingException | JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                //In questo caso non sono stati trovati risultati.
-                return null;
-                */
         }
 
         private void searchRouteBasedOnStationSet() {
