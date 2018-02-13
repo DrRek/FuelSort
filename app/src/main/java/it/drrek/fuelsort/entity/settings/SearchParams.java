@@ -7,15 +7,12 @@ package it.drrek.fuelsort.entity.settings;
 public class SearchParams {
     private String carburante;
     private boolean isSelf;
-    private int kmxl;
-    public SearchParams(String carburante, boolean isSelf, int kmxl){
+    public SearchParams(String carburante, boolean isSelf){
         this.carburante = carburante;
         this.isSelf = isSelf;
-        this.kmxl = kmxl;
     }
     public String getCarburante(){return carburante;}
     public boolean isSelf(){return isSelf;}
-    public int getKmxl(){return kmxl;}
 
     public boolean checkCarburante(String toCheck){
         toCheck = toCheck.toLowerCase();

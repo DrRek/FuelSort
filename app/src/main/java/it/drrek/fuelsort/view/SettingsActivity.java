@@ -14,9 +14,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
@@ -68,7 +73,9 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         SharedPreferences pref = getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
         String prefCarburante = pref.getString("carburante", "diesel");
         boolean prefSelf = pref.getBoolean("self", true);
-        int prefKmxl = pref.getInt("kmxl", 20);
+        int capienzaSerbatoio = pref.getInt("capienzaSerbatoio", 20);
+        int kmxl = pref.getInt("kmxl", 20);
+        final int l100km = 100/kmxl;
 
         Spinner spinner = (Spinner) findViewById(R.id.tipiCarburantiSpinner);
         //Set spinner color
@@ -147,16 +154,54 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
             }
         });
 
-        EditText et = ((EditText)findViewById(R.id.kmxl));
-        //Set spinner color
+        EditText et = ((EditText)findViewById(R.id.capacita_serbatoio));
         et.getBackground().setColorFilter(ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null), PorterDuff.Mode.SRC_ATOP);
-        et.setText(String.valueOf(prefKmxl), EditText.BufferType.EDITABLE);
+        et.setText(String.valueOf(capienzaSerbatoio), EditText.BufferType.EDITABLE);
+        et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    textView.clearFocus();
+                    closeKeyboard();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        final EditText et1 = ((EditText)findViewById(R.id.kmxl));
+        et1.getBackground().setColorFilter(ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null), PorterDuff.Mode.SRC_ATOP);
+        et1.setText(String.valueOf(kmxl), EditText.BufferType.EDITABLE);
+
+        final EditText et2 = ((EditText)findViewById(R.id.l100km));
+        et2.getBackground().setColorFilter(ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null), PorterDuff.Mode.SRC_ATOP);
+        et2.setText(String.valueOf(l100km), EditText.BufferType.EDITABLE);
+
+        et1.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView view, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    et2.setText(String.valueOf(100/Integer.parseInt(((EditText)view).getText().toString())), EditText.BufferType.EDITABLE);
+                    closeKeyboard();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        et2.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView view, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    et1.setText(String.valueOf(100/Integer.parseInt(((EditText)view).getText().toString())), EditText.BufferType.EDITABLE);
+                    closeKeyboard();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
-    /**
-     * Futuro Luca mi dispiace ma ero troppo pigro per scrivere questa funzione idiota in maniera più leggibile.
-     * Tanto lo so che ti piacciono le parentesi.
-     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -167,6 +212,7 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         } else{
             edit.putBoolean("self", false);
         }
+        edit.putInt("capienzaSerbatoio", Integer.parseInt(((EditText)findViewById(R.id.capacita_serbatoio)).getText()+""));
         edit.putInt("kmxl", Integer.parseInt(((EditText)findViewById(R.id.kmxl)).getText()+""));
         edit.apply();
     }
@@ -229,6 +275,19 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
             });
         }else {
             e.printStackTrace();
+        }
+    }
+
+    public void closeKeyboard(){
+        //Solo per chiudere la tastiera
+        View et3 = getCurrentFocus();
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (et3 != null) {
+            //se è un edit text lo riporta alle dimensioni normali
+            et3.clearFocus();
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(et3.getWindowToken(), 0);
+            }
         }
     }
 }

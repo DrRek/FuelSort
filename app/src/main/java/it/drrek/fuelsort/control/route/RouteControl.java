@@ -2,6 +2,7 @@ package it.drrek.fuelsort.control.route;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.EditText;
@@ -26,6 +27,8 @@ import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.R;
 import it.drrek.fuelsort.model.DistributoriManager;
 import it.drrek.fuelsort.model.SearchParamsModel;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Route manager is the class delegated to search for the best path.
@@ -85,10 +88,10 @@ public class RouteControl {
 
     private class LoadStationForRoute extends AsyncTask<Route, Integer, LoadStationForRoute.Result> {
         private Route defaultRoute;
-        int capienzaSerbatoio = 15;
-        int kmxl = 20;
-        int autonomiaInMetri = capienzaSerbatoio * kmxl * 1000;
-        int distributoriNecessari = -1;
+        int capienzaSerbatoio;
+        int kmxl;
+        int autonomiaInMetri;
+        int distributoriNecessari;
         int distanzaPercorso;
         List<Distributore> distributoriTrovati;
         final Map<Distributore, Integer> distributoriTrovatiConDistanza = new HashMap<>();
@@ -215,6 +218,11 @@ public class RouteControl {
 
             distributoriTrovati = new ArrayList<>(distributoriTrovatiConDistanza.keySet());
 
+            SharedPreferences pref = activityContext.getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
+            capienzaSerbatoio = pref.getInt("capienzaSerbatoio", 20);
+            kmxl = pref.getInt("kmxl", 20);
+            autonomiaInMetri = capienzaSerbatoio*kmxl*1000;
+
             findSetOfStation();
             searchRouteBasedOnStationSet();
             System.out.println("NUMERO DI DISTRIBUTORI TROVATI:"+distributoriTrovatiAllaFine.size());
@@ -323,8 +331,8 @@ public class RouteControl {
             Log.d("RouteControl", "Distributori necessari: " + (int) Math.ceil(defaultRoute.getDistance().getValue() / (double) autonomiaInMetri));
             Log.d("RouteControl", "Distributori presenti: " + distributoriTrovati.size());
 
-            distributoriNecessari = (int) Math.ceil(defaultRoute.getDistance().getValue() / (double) autonomiaInMetri);
             distanzaPercorso = Math.max(defaultRoute.getDistance().getValue(), distributoriTrovatiConDistanza.get(distributoriTrovati.get(distributoriTrovati.size()-1)));
+            distributoriNecessari = (int) Math.ceil(distanzaPercorso / (double) autonomiaInMetri);
 
             gruppi = new DistributoriBounds[distributoriNecessari+1];
             for(int i = 0; i<distributoriTrovati.size(); i++){
@@ -391,7 +399,7 @@ public class RouteControl {
                     memoized[indice][distributoriMancanti - 1] = Math.min(memoized[indice][distributoriMancanti - 1], temp);
                 }
             }
-            
+
             if(indice+1<=gruppi[distributoriNecessari-(distributoriMancanti)].end){
                 opt(indice+1, distributoriMancanti);
             }

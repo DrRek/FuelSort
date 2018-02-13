@@ -18,8 +18,7 @@ public class SearchParamsModel {
         SharedPreferences pref = activityContext.getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE);
         String prefCarburante = pref.getString("carburante", "diesel");
         boolean prefSelf = pref.getBoolean("self", true);
-        int prefKmxl = pref.getInt("kmxl", 20);
-        return new SearchParams(prefCarburante, prefSelf, prefKmxl);
+        return new SearchParams(prefCarburante, prefSelf);
     }
 
 }

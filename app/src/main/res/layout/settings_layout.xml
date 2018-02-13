@@ -5,7 +5,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true">
+    <!-- Le ultime due sopra evitono che il primo editText abbia il focus all'avvio dell'activity -->
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/my_toolbar"
@@ -15,7 +18,7 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:titleTextColor="@color/white"
-        android:title="Impostazioni"/>
+        android:title="@string/impostazioni"/>
 
     <ImageView
         android:background="@color/colorPrimary"
@@ -24,188 +27,457 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@drawable/settings_immage"
-        android:adjustViewBounds="true" /><!-- Se omesso lascia dei spazi bianchi sopra e sotto l'immagine-->
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/background_image" /><!-- Se omesso lascia dei spazi bianchi sopra e sotto l'immagine-->
 
     <!-- Codice sotto per mostrare le opzioni delle impostazioni -->
-    <LinearLayout
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+    <!-- SEZIONE STAZIONI DI SERVIZIO-->
+
         <!--Ricorda che l'ordine all'interno del relative layout serve per prevenire overflow-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="1dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="5dp"
+                android:background="@color/gray" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/impostazioni_stazioni_servizio"
+                android:textColor="@color/darkerGray"
+                android:textSize="20sp" />
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="1dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="5dp"
+                android:background="@color/gray" />
+        </LinearLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="60dp"
+            android:minHeight="50dp"
             android:orientation="horizontal">
+
             <Spinner
-                android:layout_centerVertical="true"
                 android:id="@+id/tipiCarburantiSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:theme="@style/AppTheme">
-            </Spinner>
-            <TextView
-                android:id="@+id/carburante_text_view"
-                android:layout_marginLeft="20dp"
-                android:layout_marginStart="20dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:theme="@style/AppTheme" />
+
+            <LinearLayout
+                android:id="@+id/carburante_linear_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:text="@string/carburante"
-                android:textSize="20sp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
                 android:layout_toLeftOf="@id/tipiCarburantiSpinner"
                 android:layout_toStartOf="@id/tipiCarburantiSpinner"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"/>
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/carburante"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/carburante_info"
+                    android:textSize="14sp" />
+            </LinearLayout>
         </RelativeLayout>
+
         <View
-            android:background="@color/gray"
-            android:layout_width = "match_parent"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"/>
+            android:background="@color/gray" />
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="60dp"
             android:orientation="horizontal">
+
             <android.support.v7.widget.AppCompatCheckBox
-                android:layout_centerVertical="true"
                 android:id="@+id/self"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginRight="30dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:layout_marginEnd="30dp"
-                android:theme="@style/CheckBoxTheme"/>
+                android:layout_marginRight="30dp"
+                android:theme="@style/CheckBoxTheme" />
+
             <LinearLayout
                 android:id="@+id/self_linear_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
                 android:layout_marginLeft="20dp"
                 android:layout_marginStart="20dp"
-                android:layout_centerVertical="true"
                 android:layout_toLeftOf="@id/self"
                 android:layout_toStartOf="@id/self"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true">
+                android:orientation="vertical">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/self_service"
-                    android:textSize="20sp"/>
+                    android:textSize="20sp" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
-                    android:text="@string/self_service_info" />
+                    android:text="@string/self_service_info"
+                    android:textSize="14sp" />
             </LinearLayout>
         </RelativeLayout>
-        <View
-            android:background="@color/gray"
-            android:layout_width = "match_parent"
-            android:layout_height="1dp"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="40dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"/>
+
+        <!-- SEZIONE AUTOMOBILE-->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="1dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="5dp"
+                android:background="@color/gray" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dati_automobile"
+                android:textColor="@color/darkerGray"
+                android:textSize="20sp" />
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="1dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="5dp"
+                android:background="@color/gray" />
+        </LinearLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="60dp"
             android:orientation="horizontal">
+
             <EditText
-                android:layout_centerVertical="true"
+                android:id="@+id/capacita_serbatoio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:inputType="number"
-                android:id="@+id/kmxl"
-                android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginRight="30dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:layout_marginEnd="30dp"
-                android:paddingLeft="20dp"
-                android:paddingStart="20dp"
-                android:paddingRight="5dp"
+                android:layout_marginRight="30dp"
+                android:inputType="number"
                 android:paddingEnd="5dp"
-                android:textCursorDrawable="@drawable/colored_cursor"/>
-            <TextView
-                android:id="@+id/kmxl_text_view"
+                android:paddingLeft="20dp"
+                android:paddingRight="5dp"
+                android:paddingStart="20dp"
+                android:textCursorDrawable="@drawable/colored_cursor"
+                android:imeOptions="actionDone"/>
+
+            <LinearLayout
+                android:id="@+id/capacita_serbatoio_linear_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
                 android:layout_marginLeft="20dp"
                 android:layout_marginStart="20dp"
-                android:layout_centerVertical="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/kmxl"
-                android:textSize="20sp"
-                android:layout_toLeftOf="@id/kmxl"
-                android:layout_toStartOf="@id/kmxl"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"/>
+                android:layout_toLeftOf="@id/capacita_serbatoio"
+                android:layout_toStartOf="@id/capacita_serbatoio"
+                android:orientation="vertical"
+                android:imeOptions="actionDone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/capacit_del_serbatoio"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/capacit_del_serbatoio_info"
+                    android:textSize="14sp" />
+            </LinearLayout>
         </RelativeLayout>
+
         <View
-            android:background="@color/gray"
-            android:layout_width = "match_parent"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"/>
+            android:background="@color/gray" />
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="60dp"
-            android:orientation="horizontal"
-            android:id="@+id/force_update_layout">
-            <ProgressBar
-                android:id="@+id/force_update_progress"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/kmxl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@android:style/Widget.ProgressBar.Small"
-                android:layout_centerVertical="true"
-                android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginRight="40dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="30dp"
+                android:layout_marginRight="30dp"
+                android:inputType="number"
+                android:paddingEnd="5dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="5dp"
+                android:paddingStart="20dp"
+                android:textCursorDrawable="@drawable/colored_cursor"
+                android:imeOptions="actionDone"/>
+
+            <LinearLayout
+                android:id="@+id/kmxl_linear_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_toLeftOf="@id/kmxl"
+                android:layout_toStartOf="@id/kmxl"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/kmxl"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/kmxl_info"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp">
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="1dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="5dp"
+                android:layout_centerVertical="true"
+                android:background="@color/gray"
+                android:layout_toStartOf="@id/text_oppure"
+                android:layout_toLeftOf="@id/text_oppure" />
+
+            <TextView
+                android:id="@+id/text_oppure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/or"
+                android:textSize="13sp" />
+
+            <View
+                android:layout_toEndOf="@id/text_oppure"
+                android:layout_toRightOf="@id/text_oppure"
+                android:layout_width="wrap_content"
+                android:layout_height="1dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="5dp"
+                android:layout_centerVertical="true"
+                android:background="@color/gray" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="60dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/l100km"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="30dp"
+                android:layout_marginRight="30dp"
+                android:inputType="number"
+                android:paddingEnd="5dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="5dp"
+                android:paddingStart="20dp"
+                android:textCursorDrawable="@drawable/colored_cursor"
+                android:imeOptions="actionDone"/>
+
+            <LinearLayout
+                android:id="@+id/l100km_linear_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_toLeftOf="@id/l100km"
+                android:layout_toStartOf="@id/l100km"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/l100km"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/l100km_info"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <!-- SEZIONE DEBUG-->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="1dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="5dp"
+                android:background="@color/gray" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/debug"
+                android:textColor="@color/darkerGray"
+                android:textSize="20sp" />
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="1dp"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="5dp"
+                android:background="@color/gray" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/force_update_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="60dp"
+            android:orientation="horizontal">
+
+            <ProgressBar
+                android:id="@+id/force_update_progress"
+                style="@android:style/Widget.ProgressBar.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:layout_marginEnd="40dp"
-                android:visibility="invisible"/>
+                android:layout_marginRight="40dp"
+                android:visibility="invisible" />
 
             <LinearLayout
                 android:id="@+id/force_update"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
                 android:layout_marginLeft="20dp"
                 android:layout_marginStart="20dp"
-                android:layout_centerVertical="true"
                 android:layout_toLeftOf="@id/force_update_progress"
                 android:layout_toStartOf="@id/force_update_progress"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true">
+                android:orientation="vertical">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/force_update_title"
-                    android:textSize="20sp"/>
+                    android:textSize="20sp" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
-                    android:text="@string/force_update" />
+                    android:text="@string/force_update"
+                    android:textSize="14sp" />
             </LinearLayout>
         </RelativeLayout>
+
         <View
-            android:background="@color/gray"
-            android:layout_width = "match_parent"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"/>
+            android:background="@color/gray" />
     </LinearLayout>
+    </ScrollView>
 </LinearLayout>
