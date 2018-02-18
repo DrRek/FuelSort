@@ -312,7 +312,7 @@ public class MapControl implements OnMapReadyCallback {
                     }
                     openDistributoreActivity(risultato);
                 } else if(distributoreFoundAfterSerch!=null && distributoreFoundAfterSerch.containsKey(marker)){
-                    openDistributoreAsResultFragment(distributoreFoundAfterSerch.get(marker));
+                    openDistributoreAsResultFragment(distributoreFoundAfterSerch.get(marker), true);
                 } else {
                     return false;
                 }
@@ -531,16 +531,16 @@ public class MapControl implements OnMapReadyCallback {
         ((Activity)activityContext).overridePendingTransition(R.anim.explode_center, R.anim.explode_implode_no_anim);
     }
 
-    private void openDistributoreAsResultFragment(final Distributore distributore) {
+    private void openDistributoreAsResultFragment(final Distributore distributore, boolean isFirstFragment) {
         if (distributore != null) {
-            FragmentManager fm = ((Activity) activityContext).getFragmentManager();
-            FragmentTransaction ft = fm.beginTransaction();
+            final FragmentManager fm = ((Activity) activityContext).getFragmentManager();
+            final FragmentTransaction ft = fm.beginTransaction();
             final DistributoreAsResultFragment fragment = new DistributoreAsResultFragment();
             fragment.setDistributore(distributore);
             fragment.setListener(new DistributoreAsResultFragmentListener() {
                 @Override
                 public void close() {
-                    ((Activity) activityContext).getFragmentManager().popBackStack();
+                    fm.popBackStack();
                 }
 
                 @Override
@@ -550,19 +550,20 @@ public class MapControl implements OnMapReadyCallback {
 
                 @Override
                 public void next() {
-                    ((Activity) activityContext).getFragmentManager().popBackStack();
-                    openDistributoreAsResultFragment(((DistributoreAsResult)distributore).getNext());
+                    openDistributoreAsResultFragment(((DistributoreAsResult)distributore).getNext(), false);
                 }
 
                 @Override
                 public void prev() {
-                    ((Activity) activityContext).getFragmentManager().popBackStack();
-                    openDistributoreAsResultFragment(((DistributoreAsResult)distributore).getPrev());
+                    openDistributoreAsResultFragment(((DistributoreAsResult)distributore).getPrev(), false);
                 }
             });
-            ft.setCustomAnimations(R.animator.slide_in_bottom, R.animator.slide_out_bottom);
-            ft.add(R.id.fragment_distributore_as_result, fragment);
-            ft.addToBackStack(null);
+            if(!isFirstFragment) {
+                fm.popBackStack();
+            }
+            ft.setCustomAnimations(R.animator.slide_in_bottom, R.animator.slide_out_bottom, R.animator.slide_in_bottom, R.animator.slide_out_bottom);
+            ft.replace(R.id.fragment_distributore_as_result, fragment);
+            ft.addToBackStack("distributore");
             ft.commit();
         } else {
             Log.e("MapControl", "Tentato di aprire la pagina di un distributore passando null");

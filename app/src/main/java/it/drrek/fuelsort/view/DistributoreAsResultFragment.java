@@ -130,11 +130,11 @@ public class DistributoreAsResultFragment extends Fragment {
         TextView next = v.findViewById(R.id.right_arrow);
         if(distributore.getNext() != null){
             next.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            listener.next();
-                                        }
-                                    });
+                @Override
+                public void onClick(View view) {
+                    listener.next();
+                }
+            });
         }else{
             next.setVisibility(TextView.GONE);
         }
