@@ -31,6 +31,8 @@
     <string name="l100km">Litri spesi per 100km:</string>
     <string name="l100km_info">Inserisci il numero di litri consumati in 100km di viaggio.</string>
     <string name="debug">Debug:</string>
+    <string name="left_arrow"><![CDATA[<]]></string>
+    <string name="right_arrow"><![CDATA[>]]></string>
     <string-array name="tipi_benzina_array">
         <item>Benzina</item>
         <item>Diesel</item>

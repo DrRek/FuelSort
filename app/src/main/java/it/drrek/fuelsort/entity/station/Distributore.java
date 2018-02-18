@@ -93,6 +93,10 @@ public class Distributore implements Comparable, Serializable{
         return computedPrice;
     }
 
+    void setPrice(float price){
+        this.computedPrice = price;
+    }
+
     public float getBestPriceUsingSearchParams(){
         return computedPrice;
     }

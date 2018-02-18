@@ -79,18 +79,31 @@ public class DataUpdaterControl extends Thread{
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
                 SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd hh:mm", Locale.US);
                 thisMorning = sdf1.parse(sdf.format(new Date()) + " 08:00");
-                distributoriDate = thisMorning;
-                pompeDate = thisMorning;
                 Matcher m = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})").matcher(distManager.getDistributoriCurrentVersion());
-                while (m.find()) {
+                if (m.find()) {
                     distributoriDate = sdf.parse(m.group(1));
+                }else{
+                    /*in questo caso molto probabilmente non esiste il database, forziamo l'update*/
+                    Log.d("DataUpdaterControl", "C'è qualche problema nel retrieve della versione delle stazioni, provo a forzare un update.");
+                    forceUpdate = true;
+                    updateData();
+                    return;
                 }
                 m = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})").matcher(pompManager.getPompeCurrentVersion());
-                while (m.find()) {
+                if (m.find()) {
                     pompeDate = sdf.parse(m.group(1));
+                }else{
+                    /*in questo caso molto probabilmente non esiste il database, forziamo l'update*/
+                    Log.d("DataUpdaterControl", "C'è qualche problema nel retrieve della versione delle pompe, provo a forzare un update.");
+                    forceUpdate = true;
+                    updateData();
+                    return;
                 }
             } catch (ParseException e) {
-                Log.e("DataUpdaterControl", "Errore cercando di controllare la necessità di aggiornamenti con la data odierna");
+                Log.e("DataUpdaterControl", "Errore cercando di controllare la necessità di aggiornamenti con la data odierna. Provo a forzare un aggiornamento");
+                forceUpdate = true;
+                updateData();
+                return;
             }
 
             if (thisMorning == null || distributoriDate == null || thisMorning.after(distributoriDate)) {
@@ -114,6 +127,7 @@ public class DataUpdaterControl extends Thread{
                 }
             }
         } catch (IOException e){
+            Log.d("DataUpdaterControl", "Errore durante l'aggiornamento dei dati, le informazioni potrebbero essere scorrete");
             dataUpdaterControlListener.exceptionUpdatingData(new UnableToUpdateException("Errore durante l'aggiornamento dei dati, le informazioni mostrate potrebbero non essere corrette. Assicurati di avere una connessione ad internet."));
         }
     }

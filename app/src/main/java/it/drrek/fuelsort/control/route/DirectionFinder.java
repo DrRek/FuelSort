@@ -122,9 +122,11 @@ abstract class DirectionFinder {
                 JSONObject jsO = (JSONObject) jsonLegs.get(y);
                 JSONObject jsODuration = jsO.getJSONObject("duration");
                 JSONObject jsODistance = jsO.getJSONObject("distance");
+                int distanceLeg = jsODistance.getInt("value");
                 duration.setValue(duration.getValue() + jsODuration.getInt("value"));
-                distance.setValue(distance.getValue() + jsODistance.getInt("value"));
+                distance.setValue(distance.getValue() + distanceLeg);
                 route.addRegions(calculateRegions(jsO.getJSONArray("steps")));
+                route.addLegDistance(distanceLeg);
             }
             route.setDistance(distance);
             route.setDuration(duration);

@@ -6,6 +6,6 @@ package it.drrek.fuelsort.entity.exception;
 
 public class NoDataForPathException extends Exception {
     public NoDataForPathException(String s) {
-        super(s);
-    }
+            super(s);
+        }
 }

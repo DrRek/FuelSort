@@ -2,6 +2,7 @@ package it.drrek.fuelsort.view;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,13 +28,14 @@ import java.util.List;
 import it.drrek.fuelsort.control.update.DataUpdaterControl;
 import it.drrek.fuelsort.control.update.DataUpdaterControlListener;
 import it.drrek.fuelsort.entity.exception.NoDataForPathException;
+import it.drrek.fuelsort.entity.exception.NoPathFoundException;
 import it.drrek.fuelsort.entity.exception.UnableToUpdateException;
-import it.drrek.fuelsort.entity.station.Distributore;
 import it.drrek.fuelsort.control.map.MapControl;
 import it.drrek.fuelsort.control.map.MapControlListener;
 import it.drrek.fuelsort.control.route.RouteControl;
 import it.drrek.fuelsort.control.route.RouteControlListener;
 import it.drrek.fuelsort.entity.route.Route;
+import it.drrek.fuelsort.entity.station.DistributoreAsResult;
 import it.drrek.fuelsort.support.LoadingManager;
 import it.drrek.fuelsort.R;
 
@@ -185,18 +187,48 @@ public class MapsActivity extends AppCompatActivity {
             }
         }
 
-        Toast.makeText(getApplicationContext(), "Inizio la ricerca!", Toast.LENGTH_SHORT).show();
-        loaderManager.add("Ricercando un percorso...");
         routeControl.setListener(new RouteControlListener(){
+            ProgressDialog dialog;
             @Override
-            public void routeFound(Route r, List<Distributore> distributori) {
+            public void startRouteSearch() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog = ProgressDialog.show(MapsActivity.this, "Ricerca stazioni","Inizio la ricerca di un percorso ottimale.", true);
+                        dialog.show();
+                    }
+                });
+            }
+
+            @Override
+            public void sendMessage(final String message) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.setMessage(message);
+                    }
+                });
+            }
+
+            @Override
+            public void routeFound(Route r, List<DistributoreAsResult> distributori) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                    }
+                });
                 mapControl.setRoute(r, distributori);
-                loaderManager.remove("Ricercando un percorso...");
             }
 
             @Override
             public void exceptionSearchingForRoute(Exception e) {
-                loaderManager.remove("Ricercando un percorso...");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                    }
+                });
                 HandleExceptionAsListener(e);
             }
         });
@@ -217,7 +249,7 @@ public class MapsActivity extends AppCompatActivity {
             Dialog d = builder.create();
             d.show();
         } else if(e instanceof UnableToUpdateException){
-            Log.e("MapsActivity", "impossibile aggiornare.");
+            Log.e("MapsActivity", "Impossibile aggiornare.");
             final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
             builder.setMessage(e.getMessage())
                     .setPositiveButton("ok", new DialogInterface.OnClickListener() {
@@ -233,7 +265,24 @@ public class MapsActivity extends AppCompatActivity {
                     d.show();
                 }
             });
-        }else {
+        }else if(e instanceof NoPathFoundException){
+            Log.e("MapsActivity", "Impossibile trovare un perrcorso.");
+            final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
+            builder.setMessage(e.getMessage())
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Dialog d = builder.create();
+                    d.show();
+                }
+            });
+        }else{
             e.printStackTrace();
         }
     }

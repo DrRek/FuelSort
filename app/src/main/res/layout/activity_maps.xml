@@ -133,5 +133,12 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"/>
         </LinearLayout>
+
+        <FrameLayout
+            android:layout_centerInParent="true"
+            android:id="@+id/fragment_distributore_as_result"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </FrameLayout>
     </RelativeLayout>
 </LinearLayout>

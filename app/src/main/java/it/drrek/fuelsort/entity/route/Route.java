@@ -22,17 +22,10 @@ public class Route {
     private LatLng startLocation, northeast, southwest;
     private String parameters;
     private int numeroDiPagamenti;
+    private List<Integer> legsDistance;
 
     private List<LatLng> points;
     private List<Region> regions;
-
-    public LatLng getCenter(){
-        double  minLat=Math.min(southwest.latitude, northeast.latitude),
-                minLng=Math.min(southwest.longitude, northeast.longitude),
-                maxLat=Math.max(southwest.latitude, northeast.latitude),
-                maxLng=Math.max(southwest.longitude, northeast.longitude);
-        return new LatLng((maxLat-minLat)/2+minLat, (maxLng-minLng)/2+minLng);
-    }
 
     public int getNumeroDiPagamenti(){
         if(numeroDiPagamenti < 0 && regions!= null && !regions.isEmpty()) {
@@ -152,5 +145,14 @@ public class Route {
 
     public void setDistance(Distance distance) {
         this.distance = distance;
+    }
+
+    public void addLegDistance(int legsDistance) {
+        if(this.legsDistance == null) this.legsDistance = new ArrayList<>();
+        this.legsDistance.add(legsDistance);
+    }
+
+    public List<Integer> getLegsDistance(){
+        return legsDistance;
     }
 }

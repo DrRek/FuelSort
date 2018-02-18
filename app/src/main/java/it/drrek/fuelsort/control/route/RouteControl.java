@@ -20,11 +20,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.drrek.fuelsort.entity.exception.NoPathFoundException;
 import it.drrek.fuelsort.entity.settings.SearchParams;
 import it.drrek.fuelsort.entity.station.Distributore;
 import it.drrek.fuelsort.entity.route.Region;
 import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.R;
+import it.drrek.fuelsort.entity.station.DistributoreAsResult;
 import it.drrek.fuelsort.model.DistributoriManager;
 import it.drrek.fuelsort.model.SearchParamsModel;
 
@@ -49,6 +51,9 @@ public class RouteControl {
      * Questo metodo viene eseguito quando si deve iniziare la ricerca di un percorso
      */
     public void findRoute() {
+        if(routeControlListener!=null){
+            routeControlListener.startRouteSearch();
+        }
         EditText toET = ((Activity)activityContext).findViewById(R.id.to);
         EditText fromET = ((Activity)activityContext).findViewById(R.id.from);
         from = fromET.getText().toString();
@@ -59,16 +64,23 @@ public class RouteControl {
         try {
             new DirectionFinderAsync(from, to, null, new DirectionFinderListener() {
                 @Override
-                public void onDirectionFinderStart() {}
+                public void onDirectionFinderStart() {
+                    if(routeControlListener!=null){
+                        routeControlListener.sendMessage("Inizio a cercare il percorso di base.");
+                    }
+                }
 
                 /* Trovato il percorso normale cerco i distributori
                  */
                 @Override
                 public void onDirectionFinderSuccess(List<Route> routes) {
-                    Log.d("DirectionFinderSuccess", "Success");
                     if (!routes.isEmpty()) {
                         Route r = routes.get(0);
                         new LoadStationForRoute().execute(r);
+                        return;
+                    }
+                    if(routeControlListener!=null){
+                        routeControlListener.exceptionSearchingForRoute(new NoPathFoundException("Errore nella ricerca del percorso di base. Prova a scegliere un punto di partenza e di destinazione migliori."));
                     }
                 }
 
@@ -101,9 +113,9 @@ public class RouteControl {
         double[][] memoized;
         class Result {
             Route strada;
-            List<Distributore> distributori;
+            List<DistributoreAsResult> distributori;
 
-            Result(Route s, List<Distributore> d){strada=s; distributori=d;}
+            Result(Route s, List<DistributoreAsResult> d){strada=s; distributori=d;}
         }
         class DistributoriBounds{
             private int start, end;
@@ -115,6 +127,11 @@ public class RouteControl {
 
         @Override
         protected Result doInBackground(final Route... r) {
+
+            if(routeControlListener!=null){
+                routeControlListener.sendMessage("Ricerca di tutti i possibili distibutori in zona.");
+            }
+
             abstract class ComputeSearchOnSingleRegion implements Runnable{
                 private Map<Distributore, Integer> risultati;
                 private Region s;
@@ -223,13 +240,50 @@ public class RouteControl {
             kmxl = pref.getInt("kmxl", 20);
             autonomiaInMetri = capienzaSerbatoio*kmxl*1000;
 
-            findSetOfStation();
-            searchRouteBasedOnStationSet();
-            System.out.println("NUMERO DI DISTRIBUTORI TROVATI:"+distributoriTrovatiAllaFine.size());
-            return new Result(bestRouteTillNow, distributoriTrovatiAllaFine);
+            distanzaPercorso = Math.max(defaultRoute.getDistance().getValue(), distributoriTrovatiConDistanza.get(distributoriTrovati.get(distributoriTrovati.size()-1)));
+            distributoriNecessari = (int) Math.ceil(distanzaPercorso / (double) autonomiaInMetri);
+
+            if(routeControlListener!=null) {
+                if (distributoriNecessari == 1){
+                    routeControlListener.sendMessage("Ricerca del miglior distributore nel percorso.");
+                } else{
+                    routeControlListener.sendMessage("Ricerca dei migliori "+distributoriNecessari+" distributori per poter raggiungere la destinazione.");
+                }
+            }
+
+            boolean routeOk, stationStatus;
+            do {
+                stationStatus = findSetOfStation();
+                routeOk  = false;
+                if(stationStatus) {
+                    routeOk = searchRouteBasedOnStationSet();
+                }
+                if(!routeOk){
+                    if(routeControlListener!=null) {
+                        routeControlListener.sendMessage("Uno dei distributori selezionati non era adatto, continuo la ricerca.");
+                    }
+                }
+            } while(!routeOk);
+
+            List<DistributoreAsResult> risultatiConInformazioni = new ArrayList<>();
+            List<Integer> distanzePezziDiPercorso = bestRouteTillNow.getLegsDistance();
+            for(int i=0; i<distanzePezziDiPercorso.size()-1; i++){
+                int distanza = distanzePezziDiPercorso.get(i+1);
+                Distributore di = distributoriTrovatiAllaFine.get(i);
+                DistributoreAsResult oneResult = new DistributoreAsResult(di);
+
+                oneResult.setKmPerProssimoDistributore(distanza/1000.0);
+                oneResult.setLitriPerProssimoDistributore(distanza/(1000.0*kmxl));
+                oneResult.setCostoBenzinaNecessaria((int)Math.ceil((distanza*di.getBestPriceUsingSearchParams())/(1000.0*kmxl)));
+                if(i!=0)
+                    oneResult.setPrev(risultatiConInformazioni.get(i-1));
+                risultatiConInformazioni.add(oneResult);
+            }
+
+            return new Result(bestRouteTillNow, risultatiConInformazioni);
         }
 
-        private void searchRouteBasedOnStationSet() {
+        private boolean searchRouteBasedOnStationSet() {
             try {
                 List<Route> resultList = new DirectionFinderSync(from, to, distributoriTrovatiAllaFine).execute();
                 Route result = resultList.get(0);
@@ -241,17 +295,38 @@ public class RouteControl {
 
                 bestRouteTillNow = resultList.get(0);//TODO: CONTROLLA CHE LA STRADA VADA BENE ALTRIMENTI CAMBIA
 
-                if (
-                        result.getDistance().getValue() - defaultRoute.getDistance().getValue() <= Route.DISTANZA_MASSIMA_AGGIUNTA_AL_PERCORSO*distributoriNecessari &&
-                                result.getNumeroDiPagamenti() <= defaultRoute.getNumeroDiPagamenti() &&
-                                result.getDuration().getValue() - defaultRoute.getDuration().getValue() <= Route.TEMPO_MASSIMO_AGGIUNTO_AL_PERCORSO*distributoriNecessari) {
+                int distanzaTotale = 0;
+                List<Integer> newLegsDistance = bestRouteTillNow.getLegsDistance();
+                for(int indice = 0; indice<newLegsDistance.size(); indice++){
+                    distanzaTotale += newLegsDistance.get(indice);
+                    if(distributoriTrovatiConDistanza.get(distributoriTrovati.get(indice)) >= distanzaTotale + Route.DISTANZA_MASSIMA_AGGIUNTA_AL_PERCORSO){
+                        Distributore d = distributoriTrovati.get(indice);
+                        Log.d("RouteControl", "La strada non va bene per la distanza aggiunta al percorso. Rimuovo il distributore "+ d.getId() +" dai risultati e rieffettuo la ricerca");
+                        distributoriTrovatiConDistanza.remove(d);
+                        distributoriTrovati.remove(indice);
+                        return false;
+                    }
+                }
+
+                if (    result.getNumeroDiPagamenti() <= defaultRoute.getNumeroDiPagamenti() &&
+                        result.getDuration().getValue() - defaultRoute.getDuration().getValue() <= Route.TEMPO_MASSIMO_AGGIUNTO_AL_PERCORSO*distributoriNecessari) {
+                }{
+                    Log.d("RouteControl", "La strada non va bene per il numero di autostrade o per la durata");
+                    //TODO: Bisogna fare qualcosa in questo caso
+                    return true;
                 }
             } catch (UnsupportedEncodingException | JSONException e) {
                 e.printStackTrace();
             }
+            return true;
         }
 
-        private void findSetOfStation() {
+        private boolean findSetOfStation() {
+            if(distributoriTrovati == null || distributoriTrovati.size()==0){
+                //TODO: Avvisa qualcuno
+                return false;
+            }
+
             Collections.sort(distributoriTrovati, new Comparator<Distributore>() {
                 @Override
                 public int compare(Distributore fruit1, Distributore fruit2)
@@ -263,20 +338,16 @@ public class RouteControl {
                 }
             });
 
-            for(int i=0; i<distributoriTrovati.size(); i++){
-                if(distributoriTrovati.get(i).getId() == 31659){
-                    System.out.println("Distributore con id 31659 a posizione:" + i);
-                }
-            }
 
-            Log.d("RouteControl", "Distanza percorso: " + defaultRoute.getDistance().getValue());
+
+            Log.d("RouteControl", "Distanza percorso: " + distanzaPercorso);
             Log.d("RouteControl", "Massima autonomia: " + autonomiaInMetri);
-            Log.d("RouteControl", "Distributori necessari: " + (int) Math.ceil(defaultRoute.getDistance().getValue() / (double) autonomiaInMetri));
+            Log.d("RouteControl", "Distributori necessari: " + distributoriNecessari);
             Log.d("RouteControl", "Distributori presenti: " + distributoriTrovati.size());
 
-            distanzaPercorso = Math.max(defaultRoute.getDistance().getValue(), distributoriTrovatiConDistanza.get(distributoriTrovati.get(distributoriTrovati.size()-1)));
-            distributoriNecessari = (int) Math.ceil(distanzaPercorso / (double) autonomiaInMetri);
-
+            /**
+             * Definisco i gruppi, la soluzione finale conterà un distributore da ogni gruppo, se un distributore fa parte di più gruppi potrà partecipare una sola volta al risultato finale
+             */
             gruppi = new DistributoriBounds[distributoriNecessari+1];
             for(int i = 0; i<distributoriTrovati.size(); i++){
                 int lunghezza = distributoriTrovatiConDistanza.get(distributoriTrovati.get(i));
@@ -295,6 +366,7 @@ public class RouteControl {
             }
             gruppi[distributoriNecessari] = new DistributoriBounds(distributoriTrovati.size(), distributoriTrovati.size());
 
+            /** Inizializzo array multidimensionale per contenere i risultati.*/
             memoized = new double[distributoriTrovati.size()][distributoriNecessari];
             for(int y = 0; y<distributoriNecessari; y++) {
                 for (int i = 0; i < distributoriTrovati.size(); i++) {
@@ -305,6 +377,12 @@ public class RouteControl {
             opt(0, distributoriNecessari);
             distributoriTrovatiAllaFine = new ArrayList<>();
             findSolution(0, distributoriNecessari);
+
+            if(distributoriTrovatiAllaFine == null || distributoriTrovatiAllaFine.size()==0){
+                //TODO: Avvisa qualcuno
+                return false;
+            }
+            return true;
         }
 
         private double opt(int indice, int distributoriMancanti){
@@ -366,7 +444,13 @@ public class RouteControl {
 
         @Override
         protected void onPostExecute(Result r) {
-            routeControlListener.routeFound(r.strada, r.distributori);
+            if(routeControlListener != null) {
+                if(r.strada != null && r.distributori != null && r.distributori.size() > 0) {
+                    routeControlListener.routeFound(r.strada, r.distributori);
+                } else{
+                    routeControlListener.exceptionSearchingForRoute(new NoPathFoundException("La ricerca di una strada con i distributori trovati non ha avuto successo"));
+                }
+            }
         }
     }
 }

@@ -1,6 +1,9 @@
 package it.drrek.fuelsort.control.map;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +13,7 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -47,12 +51,16 @@ import java.util.Map;
 import it.drrek.fuelsort.entity.route.Region;
 import it.drrek.fuelsort.entity.settings.SearchParams;
 import it.drrek.fuelsort.entity.station.Distributore;
+import it.drrek.fuelsort.entity.station.DistributoreAsResult;
 import it.drrek.fuelsort.model.DistributoriManager;
 import it.drrek.fuelsort.model.SearchParamsModel;
 import it.drrek.fuelsort.support.BitmapCreator;
 import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.R;
 import it.drrek.fuelsort.view.DistributoreActivity;
+import it.drrek.fuelsort.view.DistributoreAsResultFragment;
+import it.drrek.fuelsort.view.DistributoreAsResultFragmentListener;
+import it.drrek.fuelsort.view.MapsActivity;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -75,6 +83,7 @@ public class MapControl implements OnMapReadyCallback {
 
     private MapControlListener listener;
     private HashMap<LatLng, Marker> droppedPinHashMap;
+    private HashMap<Marker, Distributore> distributoreFoundAfterSerch;
 
     public MapControl(SupportMapFragment fragment, Context ctx) {
         fragment.getMapAsync(this);
@@ -93,18 +102,21 @@ public class MapControl implements OnMapReadyCallback {
         this.listener=listener;
     }
 
-    public void setRoute(final Route r, final List<Distributore> distributori){
+    public void setRoute(final Route r, final List<DistributoreAsResult> distributori){
         removeAllStationFoundInScreen();
         mMap.clear();
+        int coloreDistributori = ContextCompat.getColor(activityContext.getApplicationContext(), R.color.azzurro);
+        distributoreFoundAfterSerch = new HashMap<>();
         for(Distributore d : distributori) {
-            mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, Color.MAGENTA, d.getBestPriceUsingSearchParams(), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
+            Marker m = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, coloreDistributori, d.getBestPriceUsingSearchParams(), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
+            distributoreFoundAfterSerch.put(m, d);
         }
         mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getDefaultPin(activityContext))).title("Start").position(r.getStartLocation()));
         mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getDefaultPin(activityContext))).title("End").position(r.getEndLocation()));
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(r.getLatLngBounds(), 100)); //100 is just some padding
         PolylineOptions plo = new PolylineOptions();
         plo.geodesic(true);
-        plo.color(Color.CYAN);
+        plo.color(ContextCompat.getColor(activityContext, R.color.colorPrimary));
         plo.width(10);
         if(r.getRegions() == null) {
             for (Region re : r.getRegions()) {
@@ -205,7 +217,7 @@ public class MapControl implements OnMapReadyCallback {
         SharedPreferences pref = activityContext.getSharedPreferences("it.unisa.luca.fuelsort.pref", MODE_PRIVATE);
 
         if(!pref.contains("zoom")) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 15.0f));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 10.0f));
         }else{
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.longBitsToDouble(pref.getLong("lat", Double.doubleToRawLongBits(40.769817))),Double.longBitsToDouble(pref.getLong("lng", Double.doubleToRawLongBits(14.7900013)))), pref.getFloat("zoom", 15.0f)));
         }
@@ -291,15 +303,16 @@ public class MapControl implements OnMapReadyCallback {
                         }
                     });
                 }else if(distributoriMarker.containsValue(marker)){
-                    Intent intent = new Intent(activityContext, DistributoreActivity.class);
+                    Distributore risultato = null;
                     for(Distributore d : distributoriMarker.keySet()){
                         if(distributoriMarker.get(d).equals(marker)){
-                            intent.putExtra("distributore", d);
+                            risultato = d;
                             break;
                         }
                     }
-                    activityContext.startActivity(intent);
-                    ((Activity)activityContext).overridePendingTransition(R.anim.explode_center, R.anim.explode_implode_no_anim);
+                    openDistributoreActivity(risultato);
+                } else if(distributoreFoundAfterSerch!=null && distributoreFoundAfterSerch.containsKey(marker)){
+                    openDistributoreAsResultFragment(distributoreFoundAfterSerch.get(marker));
                 } else {
                     return false;
                 }
@@ -508,6 +521,51 @@ public class MapControl implements OnMapReadyCallback {
         }
 
         protected void onCancelled(ArrayList<Distributore> nuovi) {
+        }
+    }
+
+    private void openDistributoreActivity(Distributore toOpen){
+        Intent intent = new Intent(activityContext, DistributoreActivity.class);
+        intent.putExtra("distributore", toOpen);
+        activityContext.startActivity(intent);
+        ((Activity)activityContext).overridePendingTransition(R.anim.explode_center, R.anim.explode_implode_no_anim);
+    }
+
+    private void openDistributoreAsResultFragment(final Distributore distributore) {
+        if (distributore != null) {
+            FragmentManager fm = ((Activity) activityContext).getFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+            final DistributoreAsResultFragment fragment = new DistributoreAsResultFragment();
+            fragment.setDistributore(distributore);
+            fragment.setListener(new DistributoreAsResultFragmentListener() {
+                @Override
+                public void close() {
+                    ((Activity) activityContext).getFragmentManager().popBackStack();
+                }
+
+                @Override
+                public void info() {
+                    openDistributoreActivity(fragment.getDistributore());
+                }
+
+                @Override
+                public void next() {
+                    ((Activity) activityContext).getFragmentManager().popBackStack();
+                    openDistributoreAsResultFragment(((DistributoreAsResult)distributore).getNext());
+                }
+
+                @Override
+                public void prev() {
+                    ((Activity) activityContext).getFragmentManager().popBackStack();
+                    openDistributoreAsResultFragment(((DistributoreAsResult)distributore).getPrev());
+                }
+            });
+            ft.setCustomAnimations(R.animator.slide_in_bottom, R.animator.slide_out_bottom);
+            ft.add(R.id.fragment_distributore_as_result, fragment);
+            ft.addToBackStack(null);
+            ft.commit();
+        } else {
+            Log.e("MapControl", "Tentato di aprire la pagina di un distributore passando null");
         }
     }
 }
