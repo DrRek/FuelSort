@@ -65,24 +65,58 @@ import it.drrek.fuelsort.view.MapsActivity;
 import static android.content.Context.MODE_PRIVATE;
 
 /**
- * Thsi class manage the map.
+ * Questa classe gestisce tutte le varie operazioni eseguibili sulla mappa.
  * Created by Luca on 08/12/2017.
  */
 
 public class MapControl implements OnMapReadyCallback {
 
-    @SuppressWarnings("FieldCanBeLocal")
-    private static float SCREEN_ZOOM_FOR_DATA = 13.5f;
+    /*
+    Parte iniziale dell'url utilizzato per trovare un percorso dati partenza e arrivo.
+     */
     private static String GMAPS_DEFAULT_DIRECTION_URL = "https://www.google.com/maps/dir/?api=1&travelmode=driving&";
 
-    private GoogleMap mMap;
+    /*
+    Activity che mostra la mappa in un fragment.
+     */
     private Context activityContext;
+    /*
+    Mappa presente sullo schermo.
+     */
+    private GoogleMap mMap;
+
+    /*
+    Questa variabile statica definisce il minimo zoom della mappa che deve consentire
+    la visualizzazione dei distributori trovati all'interno dello schermo.
+     */
+    @SuppressWarnings("FieldCanBeLocal")
+    private static float SCREEN_ZOOM_FOR_DATA = 13.5f;
+    /*
+    Varibile che definisce se si devono caricare i distributori nello schermo (se zoom>=SCreen_ZOOM_FOR_DATA)
+     */
     private boolean loadStationOnPosition;
+
+    /*
+    Utilizzato per ottenere distributori.
+     */
     private DistributoriManager distManager;
+    /*
+    Parametri personali dell'utente da utilizzare per le varie ricerche.
+     */
     private SearchParams params;
 
+    /*
+    Listener collegato alle operazione effettuate da questa classe.
+     */
     private MapControlListener listener;
+
+    /*
+    Contiene tutti i pin inseriti dall'utente.
+     */
     private HashMap<LatLng, Marker> droppedPinHashMap;
+    /*
+    Continere tutti i distributori trovati da una ricerca;
+     */
     private HashMap<Marker, Distributore> distributoreFoundAfterSerch;
 
     public MapControl(SupportMapFragment fragment, Context ctx) {
@@ -102,6 +136,9 @@ public class MapControl implements OnMapReadyCallback {
         this.listener=listener;
     }
 
+    /*
+    Una volta trovata una strada qusto metodo si occupa di mostrarla all'utente.
+     */
     public void setRoute(final Route r, final List<DistributoreAsResult> distributori){
         removeAllStationFoundInScreen();
         mMap.clear();
@@ -152,6 +189,9 @@ public class MapControl implements OnMapReadyCallback {
         if(mMap!=null) setMarkersBasedOnPosition(); //Serve per reinizializzare i distributori all'interno della mappa quando si torna da un'activity
     }
 
+    /*
+    Metodo chiamato ogni bolta che ci si muove nella mappa.
+     */
     private void onChangeStationScreenLoad(){
         if(loadStationOnPosition){
             final Toast toast = Toast.makeText(activityContext, "Rimuovo i distributori nello schermo", Toast.LENGTH_SHORT);
@@ -184,6 +224,10 @@ public class MapControl implements OnMapReadyCallback {
         }
     }
 
+    /*
+    Rimuove tutte le stazioni di servizio trovate dalla ricerca nello schermo.
+    Il marker di una stazione di servizio inserito come risultato di un percorso non viene rimosso.
+     */
     private void removeAllStationFoundInScreen(){
         if (distributoriMarker != null) {
             Collection<Marker> markers = distributoriMarker.values();
@@ -204,6 +248,9 @@ public class MapControl implements OnMapReadyCallback {
         edit.apply();
     }
 
+    /*
+    Inizializzazione della mappa.
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -321,6 +368,9 @@ public class MapControl implements OnMapReadyCallback {
         });
     }
 
+    /*
+    Metodo chiamato per iniziare la ricerca dei distributori nello schermo
+     */
     private void setMarkersBasedOnPosition() {
         if(loadStationOnPosition) {
             if (old != null) {
@@ -332,6 +382,9 @@ public class MapControl implements OnMapReadyCallback {
         }
     }
 
+    /*
+    Metodo utilizzato per gestire i casi limite (mappa appena aperta).
+     */
     private void resetLastBounds(){
         this.lastMinLat = null;
         this.lastMaxLat = null;
@@ -339,9 +392,17 @@ public class MapControl implements OnMapReadyCallback {
         this.lastMaxLng = null;
     }
 
-
+    /*
+    Contiene la posizione dello schermo nella mappa prima del movimento.
+     */
     private Double lastMinLat, lastMaxLat, lastMinLng, lastMaxLng;
+    /*
+    Ultimo thread che sta eseguendo la ricerca. Se sto eseguendo una ricerca ma l'utente continua a muoversi la interrompo.
+     */
     private LoadStationInScreen old;
+    /*
+    Contiene tutti i distributori trovati nello schermo.
+     */
     private volatile HashMap<Distributore, Marker> distributoriMarker;
 
     private void setLoadStationOnPosition(boolean loadStationOnPosition) {
@@ -353,6 +414,9 @@ public class MapControl implements OnMapReadyCallback {
         }
     }
 
+    /**
+     * Classe utilizzata per la ricerca dei distributori nello schermo in un thread separato.
+     */
     private class LoadStationInScreen extends AsyncTask<Void, Integer, ArrayList<Distributore>> {
         private Double minLat, maxLat, minLng, maxLng;
         private Double minLatC, maxLatC, minLngC, maxLngC;

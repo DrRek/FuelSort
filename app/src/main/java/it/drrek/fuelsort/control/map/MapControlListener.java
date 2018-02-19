@@ -5,7 +5,10 @@ package it.drrek.fuelsort.control.map;
  */
 
 public interface MapControlListener {
+    /*Chiamata quando si inizia a cercare le stazioni nello schermo*/
     void startSearchingStationInScreen();
-    void lowZoomWhileSearchingStationInScreen();
+    /*Chiamata quando si termina di cercare le stazioni nello schermo*/
     void endSearchingStationInScreen();
+    /*Chiamata quando lo stato dello zoom non consente la ricerca nello schermo*/
+    void lowZoomWhileSearchingStationInScreen();
 }
