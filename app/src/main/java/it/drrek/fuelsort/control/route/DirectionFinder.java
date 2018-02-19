@@ -30,11 +30,20 @@ import it.drrek.fuelsort.entity.station.Distributore;
  */
 
 abstract class DirectionFinder {
+    /*
+    Parte iniziale dell'url per la ricerca di un percorso.
+     */
     static final String DIRECTION_URL_API = "https://maps.googleapis.com/maps/api/directions/json?";
-    static final String GOOGLE_API_KEY = "AIzaSyD9FDqZVMF6hPeAO-Hk7YV0Slmx00yPojg";
-    String origin;
-    String destination;
-    String waypoints;
+    /*
+    Api per la ricerca di un percorso
+     */
+    private static final String GOOGLE_API_KEY = "AIzaSyD9FDqZVMF6hPeAO-Hk7YV0Slmx00yPojg";
+    /*Indirizzo id o coordinate dell'origine*/
+    private String origin;
+    /*Indirizzo id o coordinate della destinazione*/
+    private String destination;
+    /*Indirizzo coordinate dei waypoints*/
+    private String waypoints;
 
     DirectionFinder(String origin, String destination, LatLng waypoint) {
         this.origin = origin;
@@ -59,6 +68,9 @@ abstract class DirectionFinder {
         }
     }
 
+    /*
+    Crea l'url prima di effettuare la ricerca.
+     */
     String createUrl() {
         try {
             String urlOrigin = URLEncoder.encode(origin, "utf-8");
@@ -74,6 +86,9 @@ abstract class DirectionFinder {
         }
     }
 
+    /*
+    Scarica dati i dati.
+     */
     String downloadRawData(String url){
         try {
             Log.d("DirectionFinder", url);
@@ -94,6 +109,9 @@ abstract class DirectionFinder {
         return null;
     }
 
+    /*
+    Trasforma i dati grezzi in una lista di percorsi.
+     */
     List<Route> parseJSon(String data) throws JSONException {
         if (data == null)
             return null;
@@ -185,6 +203,9 @@ abstract class DirectionFinder {
         return regions;
     }
 
+    /*
+    Dato un insieme di punti codificati come stringa vengono trasformati in una lista di LatLng.
+     */
     private List<LatLng> decodePolyLine(final String poly) {
         int len = poly.length();
         int index = 0;

@@ -8,6 +8,9 @@ import java.util.List;
 import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.entity.station.Distributore;
 
+/**
+ * Utilizzata per una ricerca sincrona di un percorso.
+ */
 public class DirectionFinderSync extends DirectionFinder{
     String url;
 

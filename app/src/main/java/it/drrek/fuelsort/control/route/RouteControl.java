@@ -204,7 +204,7 @@ public class RouteControl {
                                     }
                                 }
 
-                                if (risultato < 25) { //TODO:RENDILA UNA VARIABILE STAICA E TROVA IL VALORE PERFECT
+                                if (risultato < 25) { //TODO:RENDILA UNA VARIABILE STAICA E TROVA IL VALORE GIUSTO
                                     int distanzaDistributoreDaStart = (int) (lunghezzaPerOra + risultato);
                                     if (risultati.containsKey(distributoreCorrente)) {
                                         if (risultati.get(distributoreCorrente) > distanzaDistributoreDaStart) {
@@ -312,7 +312,7 @@ public class RouteControl {
                         result.getDuration().getValue() - defaultRoute.getDuration().getValue() <= Route.TEMPO_MASSIMO_AGGIUNTO_AL_PERCORSO*distributoriNecessari) {
                 }{
                     Log.d("RouteControl", "La strada non va bene per il numero di autostrade o per la durata");
-                    //TODO: Bisogna fare qualcosa in questo caso
+                    //TODO: Gestire meglio questo caso
                     return true;
                 }
             } catch (UnsupportedEncodingException | JSONException e) {

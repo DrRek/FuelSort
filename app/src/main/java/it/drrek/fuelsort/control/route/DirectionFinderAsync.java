@@ -12,6 +12,9 @@ import java.util.List;
 import it.drrek.fuelsort.entity.exception.NoDataForPathException;
 import it.drrek.fuelsort.entity.route.Route;
 
+/**
+ * Utilizzata per una ricerca asincrona di un percorso.
+ */
 public class DirectionFinderAsync extends DirectionFinder {
     private DirectionFinderListener listener;
 
