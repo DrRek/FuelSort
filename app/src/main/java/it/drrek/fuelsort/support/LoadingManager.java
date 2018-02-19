@@ -38,21 +38,19 @@ public class LoadingManager {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(acts.isEmpty()){
-                    activity.findViewById(R.id.LoadingLayout).setVisibility(LinearLayout.VISIBLE);
-                }
+                activity.findViewById(R.id.LoadingLayout).setVisibility(LinearLayout.VISIBLE);
                 ((TextView) activity.findViewById(R.id.LoadingTextView)).setText(act);
             }
         });
         acts.add(0, act);
     }
 
-    public synchronized void remove(String act){
+    public synchronized void remove(final String act){
         Log.d("Rimuovo", act);
-        acts.remove(act);
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                acts.remove(act);
                 if(acts.isEmpty()){
                     activity.findViewById(R.id.LoadingLayout).setVisibility(LinearLayout.INVISIBLE);
                 } else{
@@ -60,7 +58,6 @@ public class LoadingManager {
                 }
             }
         });
-
     }
 
     private Activity activity;

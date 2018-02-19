@@ -116,7 +116,7 @@
             android:layout_alignParentBottom="true"
             android:background="#d9b638"
             android:orientation="horizontal"
-            android:visibility="invisible">
+            android:visibility="visible">
 
             <ProgressBar
                 android:layout_width="wrap_content"
