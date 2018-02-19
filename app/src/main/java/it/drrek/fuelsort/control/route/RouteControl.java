@@ -33,10 +33,9 @@ import it.drrek.fuelsort.model.SearchParamsModel;
 import static android.content.Context.MODE_PRIVATE;
 
 /**
- * Route manager is the class delegated to search for the best path.
+ * Classe che si occupa della ricerca dei percorsi
  * Created by Luca on 09/12/2017.
  */
-
 public class RouteControl {
 
     private Context activityContext;
