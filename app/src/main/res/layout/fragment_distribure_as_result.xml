@@ -53,6 +53,7 @@
             android:layout_below="@id/tv_info_contatore"
             android:layout_alignParentRight="true"
             android:id="@+id/right_arrow"
+
             android:layout_width="30dp"
             android:layout_height="match_parent"
             android:text="@string/right_arrow"
@@ -60,6 +61,7 @@
             android:layout_alignParentEnd="true" />
 
         <RelativeLayout
+            android:layout_margin="5dp"
             android:layout_below="@id/tv_info_contatore"
             android:layout_toRightOf="@id/left_arrow"
             android:layout_toLeftOf="@id/right_arrow"
@@ -126,16 +128,19 @@
 
             <LinearLayout
                 android:id="@+id/layout_button"
+                android:layout_centerHorizontal="true"
                 android:layout_alignParentBottom="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
                 <Button
+                    android:layout_weight="1"
                     android:id="@+id/chiudi"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Chiudi"/>
                 <Button
+                    android:layout_weight="1"
                     android:id="@+id/more_info_distributore"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
