@@ -129,6 +129,11 @@ public class DataUpdaterControl extends Thread{
         } catch (IOException e){
             Log.d("DataUpdaterControl", "Errore durante l'aggiornamento dei dati, le informazioni potrebbero essere scorrete");
             dataUpdaterControlListener.exceptionUpdatingData(new UnableToUpdateException("Errore durante l'aggiornamento dei dati, le informazioni mostrate potrebbero non essere corrette. Assicurati di avere una connessione ad internet."));
+        } finally {
+            if(dataUpdaterControlListener != null){
+                dataUpdaterControlListener.onEndStationUpdate();
+                dataUpdaterControlListener.onEndPriceUpdate();
+            }
         }
     }
 

@@ -61,6 +61,7 @@ public class PompeManager {
             );
         }
         c.close();
+
         if(!multi_thread)
             rd.close();
         if(!rightPomp || (!params.isSelf() && !forNewbie))

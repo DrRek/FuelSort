@@ -3,6 +3,7 @@ package it.drrek.fuelsort.control.route;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.EditText;
@@ -21,12 +22,14 @@ import java.util.List;
 import java.util.Map;
 
 import it.drrek.fuelsort.entity.exception.NoPathFoundException;
+import it.drrek.fuelsort.entity.exception.NoStationForPathException;
 import it.drrek.fuelsort.entity.settings.SearchParams;
 import it.drrek.fuelsort.entity.station.Distributore;
 import it.drrek.fuelsort.entity.route.Region;
 import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.R;
 import it.drrek.fuelsort.entity.station.DistributoreAsResult;
+import it.drrek.fuelsort.model.DatabaseCreator;
 import it.drrek.fuelsort.model.DistributoriManager;
 import it.drrek.fuelsort.model.SearchParamsModel;
 
@@ -230,6 +233,10 @@ public class RouteControl {
                 } catch (Exception e){
                     Log.d("Severe warning", "Compute search on a region did something wrong\n"+ Arrays.toString(e.getStackTrace()));
                 }
+            }
+
+            if(distributoriTrovatiConDistanza.isEmpty()){
+                return null;
             }
 
             distributoriTrovati = new ArrayList<>(distributoriTrovatiConDistanza.keySet());
@@ -444,7 +451,9 @@ public class RouteControl {
         @Override
         protected void onPostExecute(Result r) {
             if(routeControlListener != null) {
-                if(r.strada != null && r.distributori != null && r.distributori.size() > 0) {
+                if(r==null) {
+                    routeControlListener.exceptionSearchingForRoute(new NoStationForPathException("Nessun distributore trovato nel percorso."));
+                } else if(r.strada != null && r.distributori != null && r.distributori.size() > 0) {
                     routeControlListener.routeFound(r.strada, r.distributori);
                 } else{
                     routeControlListener.exceptionSearchingForRoute(new NoPathFoundException("La ricerca di una strada con i distributori trovati non ha avuto successo"));

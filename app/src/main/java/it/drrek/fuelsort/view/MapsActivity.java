@@ -29,6 +29,7 @@ import it.drrek.fuelsort.control.update.DataUpdaterControl;
 import it.drrek.fuelsort.control.update.DataUpdaterControlListener;
 import it.drrek.fuelsort.entity.exception.NoDataForPathException;
 import it.drrek.fuelsort.entity.exception.NoPathFoundException;
+import it.drrek.fuelsort.entity.exception.NoStationForPathException;
 import it.drrek.fuelsort.entity.exception.UnableToUpdateException;
 import it.drrek.fuelsort.control.map.MapControl;
 import it.drrek.fuelsort.control.map.MapControlListener;
@@ -72,18 +73,21 @@ public class MapsActivity extends AppCompatActivity {
             @Override
             public void onEndPriceUpdate() {
                 loaderManager.remove("Updating price data...");
+                loaderManager.remove("Starting app...");
             }
 
             @Override
             public void exceptionUpdatingData(Exception e) {
                 loaderManager.remove("Updating price data...");
                 loaderManager.remove("Updating station data...");
+                loaderManager.remove("Starting app...");
                 HandleExceptionAsListener(e);
             }
 
             @Override
             public void onEndStationUpdate() {
                 loaderManager.remove("Updating station data...");
+                loaderManager.remove("Starting app...");
             }
         });
         dataUpdaterControl.start();
@@ -131,10 +135,7 @@ public class MapsActivity extends AppCompatActivity {
         };
         findViewById(R.id.to).setOnFocusChangeListener(changeListener);
         findViewById(R.id.from).setOnFocusChangeListener(changeListener);
-
-        loaderManager.remove("Starting app...");
     }
-
 
     @Override
     protected void onResume() {
@@ -240,6 +241,18 @@ public class MapsActivity extends AppCompatActivity {
             Log.e("MapsActivity", "Nessun percorso ritrovato.");
             final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
             builder.setMessage(e.getMessage())
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            Dialog d = builder.create();
+            d.show();
+        } else if(e instanceof NoStationForPathException){
+            Log.e("MapsActivity", e.getMessage());
+            final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
+            builder.setMessage("Nessun distributore ritrovato. Se il problema persiste prova a forzare un aggiornamento dei dati nelle impostazioni.")
                     .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();

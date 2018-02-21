@@ -72,6 +72,7 @@ public class DistributoriManager {
             }
         }
         c.close();
+
         return res;
     }
 
@@ -117,6 +118,7 @@ public class DistributoriManager {
             }
         }
         c.close();
+
         return res;
     }
 
