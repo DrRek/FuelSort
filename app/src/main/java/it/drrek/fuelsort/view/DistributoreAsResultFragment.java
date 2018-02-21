@@ -61,7 +61,7 @@ public class DistributoreAsResultFragment extends Fragment {
                 ImageView contatore = v.findViewById(R.id.contatore_img);
                 ImageView lancetta = v.findViewById(R.id.lancetta);
 
-                lancetta.setX((contatore.getX() + contatore.getRight()-contatore.getLeft())- lancetta.getWidth()*2);
+                lancetta.setX(contatore.getRight()-(contatore.getWidth()/2) - lancetta.getWidth());
                 lancetta.setY(contatore.getY()-20+contatore.getBottom()-lancetta.getHeight()/2);
                 lancetta.invalidate();
 
