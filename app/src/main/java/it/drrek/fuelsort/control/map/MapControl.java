@@ -430,6 +430,7 @@ public class MapControl implements OnMapReadyCallback {
             maxLng = view.northeast.longitude;
             if (mMap.getCameraPosition().zoom<=SCREEN_ZOOM_FOR_DATA) {
                 cancel(false);
+                removeAllStationFoundInScreen();
                 listener.lowZoomWhileSearchingStationInScreen();
                 return;
             }

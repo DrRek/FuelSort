@@ -247,7 +247,8 @@ public class RouteControl {
             autonomiaInMetri = capienzaSerbatoio*kmxl*1000;
 
             distanzaPercorso = Math.max(defaultRoute.getDistance().getValue(), distributoriTrovatiConDistanza.get(distributoriTrovati.get(distributoriTrovati.size()-1)));
-            distributoriNecessari = (int) Math.ceil(distanzaPercorso / (double) autonomiaInMetri);
+            distributoriNecessari = (int) Math.floor(distanzaPercorso / (double) autonomiaInMetri);
+            if(distributoriNecessari==0) distributoriNecessari=1;
 
             if(routeControlListener!=null) {
                 if (distributoriNecessari == 1){

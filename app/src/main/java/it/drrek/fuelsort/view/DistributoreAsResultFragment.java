@@ -82,6 +82,7 @@ public class DistributoreAsResultFragment extends Fragment {
                 int capienzaSerbatoio = getActivity().getSharedPreferences("it.unisa.luca.stradaalrisparmio.pref", MODE_PRIVATE).getInt("capienzaSerbatoio", 20);
 
                 float angolo = (float) distributore.getLitriPerProssimoDistributore() * 180f / capienzaSerbatoio;
+                if(angolo>179) angolo = 179; //TODO: Sistema questo calcolo
 
                 RotateAnimation anim = new RotateAnimation(0f, angolo, lancetta.getX()+lancetta.getWidth(), lancetta.getY()+(lancetta.getHeight()/2));
                 anim.setInterpolator(new LinearInterpolator());

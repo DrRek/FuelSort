@@ -39,7 +39,6 @@
             android:layout_below="@id/contatore"
             android:text="Assicurati che la lancetta del carburante sia almeno a questo livello prima di lasciare la stazione di servizio."
             android:textSize="10sp"/>
-
         <TextView
             android:layout_below="@id/tv_info_contatore"
             android:layout_alignParentLeft="true"
@@ -53,99 +52,103 @@
             android:layout_below="@id/tv_info_contatore"
             android:layout_alignParentRight="true"
             android:id="@+id/right_arrow"
-
             android:layout_width="30dp"
             android:layout_height="match_parent"
             android:text="@string/right_arrow"
             android:gravity="center"
             android:layout_alignParentEnd="true" />
 
-        <RelativeLayout
-            android:layout_margin="5dp"
+        <ScrollView
             android:layout_below="@id/tv_info_contatore"
-            android:layout_toRightOf="@id/left_arrow"
-            android:layout_toLeftOf="@id/right_arrow"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_toRightOf="@id/left_arrow"
+            android:layout_toLeftOf="@id/right_arrow"
             android:layout_toEndOf="@id/left_arrow"
             android:layout_toStartOf="@id/right_arrow">
-
-            <TableLayout
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:id="@+id/tabella_general_info">
-                <TableRow>
-                    <TextView
-                        android:textSize="15sp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Km rimanenti per il prossimo distributore:"
-                        android:gravity="start"
-                        android:layout_weight="1" />
-                    <TextView
-                        android:id="@+id/km_per_prossimo_distributore"
-                        android:textSize="20sp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="xxKm"
-                        android:gravity="end"
-                        android:layout_weight="0" />
-                </TableRow>
-                <TableRow>
-                    <TextView
-                        android:textSize="15sp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Litri necessari per il prossimo distributore:"
-                        android:gravity="start"
-                        android:layout_weight="1" />
-                    <TextView
-                        android:id="@+id/lt_per_prossimo_distributore"
-                        android:textSize="15sp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="yyL"
-                        android:gravity="end"
-                        android:layout_weight="0" />
-                </TableRow>
-            </TableLayout>
-
-            <TextView
-                android:layout_below="@id/tabella_general_info"
-                android:id="@+id/tv_denaro_necessario"
+            <RelativeLayout
+                android:layout_margin="5dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="25sp"
-                android:text="Assicurati di fare almeno zz€ di rifornimento."
-                android:layout_marginBottom="20dp"/>
+                android:layout_height="wrap_content">
 
-            <LinearLayout
-                android:id="@+id/layout_button"
-                android:layout_centerHorizontal="true"
-                android:layout_alignParentBottom="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <Button
-                    android:layout_weight="1"
-                    android:id="@+id/chiudi"
+                <TableLayout
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:id="@+id/tabella_general_info">
+                    <TableRow>
+                        <TextView
+                            android:textSize="15sp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Km rimanenti per il prossimo distributore:"
+                            android:gravity="start"
+                            android:layout_weight="1" />
+                        <TextView
+                            android:id="@+id/km_per_prossimo_distributore"
+                            android:textSize="20sp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="xxKm"
+                            android:gravity="end"
+                            android:layout_weight="0" />
+                    </TableRow>
+                    <TableRow>
+                        <TextView
+                            android:textSize="15sp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Litri necessari per il prossimo distributore:"
+                            android:gravity="start"
+                            android:layout_weight="1" />
+                        <TextView
+                            android:id="@+id/lt_per_prossimo_distributore"
+                            android:textSize="15sp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="yyL"
+                            android:gravity="end"
+                            android:layout_weight="0" />
+                    </TableRow>
+                </TableLayout>
+
+                <TextView
+                    android:layout_below="@id/tabella_general_info"
+                    android:id="@+id/tv_denaro_necessario"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chiudi"/>
-                <Button
-                    android:layout_weight="1"
-                    android:id="@+id/more_info_distributore"
+                    android:textSize="25sp"
+                    android:text="Assicurati di fare almeno zz€ di rifornimento."
+                    android:layout_marginBottom="20dp"/>
+
+                <LinearLayout
+                    android:id="@+id/layout_button"
+                    android:layout_below="@id/tv_denaro_necessario"
+                    android:layout_centerHorizontal="true"
+                    android:layout_alignParentBottom="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Info Distributore"/>
-            </LinearLayout>
-        </RelativeLayout>
+                    android:orientation="horizontal">
+                    <Button
+                        android:layout_weight="1"
+                        android:id="@+id/chiudi"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chiudi"/>
+                    <Button
+                        android:layout_weight="1"
+                        android:id="@+id/more_info_distributore"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Info Distributore"/>
+                </LinearLayout>
+            </RelativeLayout>
+        </ScrollView>
     </RelativeLayout>
 </FrameLayout>
