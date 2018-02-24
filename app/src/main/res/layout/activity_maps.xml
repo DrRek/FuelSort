@@ -96,6 +96,11 @@
             android:layout_marginRight="10dp"
             android:layout_marginEnd="10dp" >
             <Button
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:text="posizione"
+                android:onClick="setMapOnGpsPosition"/>
+            <Button
                 android:id="@+id/viewStation"
                 android:layout_width="60dp"
                 android:layout_height="60dp"

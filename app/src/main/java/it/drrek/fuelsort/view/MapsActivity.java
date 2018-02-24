@@ -1,13 +1,20 @@
 package it.drrek.fuelsort.view;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -39,6 +46,7 @@ import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.entity.station.DistributoreAsResult;
 import it.drrek.fuelsort.support.LoadingManager;
 import it.drrek.fuelsort.R;
+import it.drrek.fuelsort.support.SingleShotLocationProvider;
 
 public class MapsActivity extends AppCompatActivity {
 
@@ -61,15 +69,17 @@ public class MapsActivity extends AppCompatActivity {
 
         //This will be executed to retrieve updated data relative to gas station and their price.
         DataUpdaterControl dataUpdaterControl = new DataUpdaterControl(this);
-        dataUpdaterControl.setDataUpdaterControlListener(new DataUpdaterControlListener(){
+        dataUpdaterControl.setDataUpdaterControlListener(new DataUpdaterControlListener() {
             @Override
             public void onStartPriceUpdate() {
                 loaderManager.add("Updating price data...");
             }
+
             @Override
             public void onStartStationUpdate() {
                 loaderManager.add("Updating station data...");
             }
+
             @Override
             public void onEndPriceUpdate() {
                 loaderManager.remove("Updating price data...");
@@ -99,6 +109,7 @@ public class MapsActivity extends AppCompatActivity {
             public void startSearchingStationInScreen() {
                 loaderManager.add("Cerco distributori...");
             }
+
             @Override
             public void lowZoomWhileSearchingStationInScreen() {
                 final Toast toast = Toast.makeText(getApplicationContext(), "Zooma di più per cercare distributori manualmente.", Toast.LENGTH_SHORT);
@@ -111,6 +122,7 @@ public class MapsActivity extends AppCompatActivity {
                     }
                 }, 450);
             }
+
             @Override
             public void endSearchingStationInScreen() {
                 loaderManager.remove("Cerco distributori...");
@@ -127,7 +139,7 @@ public class MapsActivity extends AppCompatActivity {
             }
         });
 
-        View.OnFocusChangeListener changeListener = new View.OnFocusChangeListener(){
+        View.OnFocusChangeListener changeListener = new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean focus) {
                 onChangeEditTextFocus(view, focus);
@@ -175,11 +187,11 @@ public class MapsActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_in_right, android.R.anim.fade_out);
     }
 
-    public void startRouteSearch(View v){
+    public void startRouteSearch(View v) {
 
         //Solo per chiudere la tastiera
         View et = getCurrentFocus();
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (et != null) {
             //se è un edit text lo riporta alle dimensioni normali
             et.clearFocus();
@@ -188,14 +200,15 @@ public class MapsActivity extends AppCompatActivity {
             }
         }
 
-        routeControl.setListener(new RouteControlListener(){
+        routeControl.setListener(new RouteControlListener() {
             ProgressDialog dialog;
+
             @Override
             public void startRouteSearch() {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        dialog = ProgressDialog.show(MapsActivity.this, "Ricerca stazioni","Inizio la ricerca di un percorso ottimale.", true);
+                        dialog = ProgressDialog.show(MapsActivity.this, "Ricerca stazioni", "Inizio la ricerca di un percorso ottimale.", true);
                         dialog.show();
                     }
                 });
@@ -236,8 +249,8 @@ public class MapsActivity extends AppCompatActivity {
         routeControl.findRoute();
     }
 
-    public void HandleExceptionAsListener(Exception e){
-        if(e instanceof NoDataForPathException){
+    public void HandleExceptionAsListener(Exception e) {
+        if (e instanceof NoDataForPathException) {
             Log.e("MapsActivity", "Nessun percorso ritrovato.");
             final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
             builder.setMessage(e.getMessage())
@@ -249,7 +262,7 @@ public class MapsActivity extends AppCompatActivity {
             // Create the AlertDialog object and return it
             Dialog d = builder.create();
             d.show();
-        } else if(e instanceof NoStationForPathException){
+        } else if (e instanceof NoStationForPathException) {
             Log.e("MapsActivity", e.getMessage());
             final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
             builder.setMessage("Nessun distributore ritrovato. Se il problema persiste prova a forzare un aggiornamento dei dati nelle impostazioni.")
@@ -261,7 +274,7 @@ public class MapsActivity extends AppCompatActivity {
             // Create the AlertDialog object and return it
             Dialog d = builder.create();
             d.show();
-        } else if(e instanceof UnableToUpdateException){
+        } else if (e instanceof UnableToUpdateException) {
             Log.e("MapsActivity", "Impossibile aggiornare.");
             final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
             builder.setMessage(e.getMessage())
@@ -278,7 +291,7 @@ public class MapsActivity extends AppCompatActivity {
                     d.show();
                 }
             });
-        }else if(e instanceof NoPathFoundException){
+        } else if (e instanceof NoPathFoundException) {
             Log.e("MapsActivity", "Impossibile trovare un perrcorso.");
             final AlertDialog.Builder builder = new AlertDialog.Builder((Context) this);
             builder.setMessage(e.getMessage())
@@ -295,20 +308,30 @@ public class MapsActivity extends AppCompatActivity {
                     d.show();
                 }
             });
-        }else{
+        } else {
             e.printStackTrace();
         }
     }
 
     private void onChangeEditTextFocus(View view, boolean focus) {
-        if(focus) {
+        if (focus) {
             ((EditText) view).setTextSize(TypedValue.COMPLEX_UNIT_DIP, 25);
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             if (imm != null) {
                 imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
             }
-        } else{
+        } else {
             ((EditText) view).setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
         }
+    }
+
+    public void setMapOnGpsPosition(View v) {
+        SingleShotLocationProvider.requestSingleUpdate(this,
+                new SingleShotLocationProvider.LocationCallback() {
+                    @Override public void onNewLocationAvailable(Location location) {
+                        mapControl.setMyPosition(location.getLatitude(), location.getLongitude());
+                    }
+                });
+
     }
 }

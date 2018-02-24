@@ -1,5 +1,6 @@
 package it.drrek.fuelsort.control.map;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -7,12 +8,17 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.TypedValue;
@@ -26,12 +32,14 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -118,33 +126,39 @@ public class MapControl implements OnMapReadyCallback {
     Continere tutti i distributori trovati da una ricerca;
      */
     private HashMap<Marker, Distributore> distributoreFoundAfterSerch;
+    /*
+    Se !=null corrisponde al marker della mia posizione.
+     */
+    private Marker myMarker;
 
     public MapControl(SupportMapFragment fragment, Context ctx) {
         fragment.getMapAsync(this);
         activityContext = ctx;
 
-        ((Activity)ctx).findViewById(R.id.openOnGoogleMaps).setVisibility(View.GONE);
-        ((Activity)ctx).findViewById(R.id.viewStation).setOnClickListener(new View.OnClickListener() {
+        ((Activity) ctx).findViewById(R.id.openOnGoogleMaps).setVisibility(View.GONE);
+        ((Activity) ctx).findViewById(R.id.viewStation).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onChangeStationScreenLoad();
             }
         });
+
+        myMarker=null;
     }
 
-    public void setListener(MapControlListener listener){
-        this.listener=listener;
+    public void setListener(MapControlListener listener) {
+        this.listener = listener;
     }
 
     /*
     Una volta trovata una strada qusto metodo si occupa di mostrarla all'utente.
      */
-    public void setRoute(final Route r, final List<DistributoreAsResult> distributori){
+    public void setRoute(final Route r, final List<DistributoreAsResult> distributori) {
         removeAllStationFoundInScreen();
         mMap.clear();
         int coloreDistributori = ContextCompat.getColor(activityContext.getApplicationContext(), R.color.azzurro);
         distributoreFoundAfterSerch = new HashMap<>();
-        for(Distributore d : distributori) {
+        for (Distributore d : distributori) {
             Marker m = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getBitmap(activityContext, coloreDistributori, d.getBestPriceUsingSearchParams(), d.getBandiera()))).title(d.getId() + "").draggable(false).visible(true).alpha(0.95f).position(d.getPosizione()));
             distributoreFoundAfterSerch.put(m, d);
         }
@@ -155,7 +169,7 @@ public class MapControl implements OnMapReadyCallback {
         plo.geodesic(true);
         plo.color(ContextCompat.getColor(activityContext, R.color.colorPrimary));
         plo.width(10);
-        if(r.getRegions() == null) {
+        if (r.getRegions() == null) {
             for (Region re : r.getRegions()) {
                 for (LatLng p : re.getPoints()) {
                     plo.add(p);
@@ -163,37 +177,38 @@ public class MapControl implements OnMapReadyCallback {
             }
         } else {
             for (int i = 0; i < r.getPoints().size(); i++) {
-               plo.add(r.getPoints().get(i));
+                plo.add(r.getPoints().get(i));
             }
         }
         mMap.addPolyline(plo);
 
-        Button openOnGoogleMaps = ((Activity)activityContext).findViewById(R.id.openOnGoogleMaps);
+        Button openOnGoogleMaps = ((Activity) activityContext).findViewById(R.id.openOnGoogleMaps);
         openOnGoogleMaps.setVisibility(View.VISIBLE);
         openOnGoogleMaps.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String url = GMAPS_DEFAULT_DIRECTION_URL+r.getParameters();
+                String url = GMAPS_DEFAULT_DIRECTION_URL + r.getParameters();
                 Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(url));
                 activityContext.startActivity(intent);
             }
         });
     }
 
-    public void onResume(){
-        old=null; //Needed for new map position
+    public void onResume() {
+        old = null; //Needed for new map position
         distManager = new DistributoriManager(activityContext);
         params = SearchParamsModel.getSearchParams(activityContext);
         setLoadStationOnPosition(true);
         removeAllStationFoundInScreen();
-        if(mMap!=null) setMarkersBasedOnPosition(); //Serve per reinizializzare i distributori all'interno della mappa quando si torna da un'activity
+        if (mMap != null)
+            setMarkersBasedOnPosition(); //Serve per reinizializzare i distributori all'interno della mappa quando si torna da un'activity
     }
 
     /*
     Metodo chiamato ogni bolta che ci si muove nella mappa.
      */
-    private void onChangeStationScreenLoad(){
-        if(loadStationOnPosition){
+    private void onChangeStationScreenLoad() {
+        if (loadStationOnPosition) {
             final Toast toast = Toast.makeText(activityContext, "Rimuovo i distributori nello schermo", Toast.LENGTH_SHORT);
             toast.show();
 
@@ -228,7 +243,7 @@ public class MapControl implements OnMapReadyCallback {
     Rimuove tutte le stazioni di servizio trovate dalla ricerca nello schermo.
     Il marker di una stazione di servizio inserito come risultato di un percorso non viene rimosso.
      */
-    private void removeAllStationFoundInScreen(){
+    private void removeAllStationFoundInScreen() {
         if (distributoriMarker != null) {
             Collection<Marker> markers = distributoriMarker.values();
             for (Marker m : markers) {
@@ -239,7 +254,7 @@ public class MapControl implements OnMapReadyCallback {
         distributoriMarker = new HashMap<>();
     }
 
-    public void onDestroy(){
+    public void onDestroy() {
         SharedPreferences pref = activityContext.getSharedPreferences("it.unisa.luca.fuelsort.pref", MODE_PRIVATE);
         SharedPreferences.Editor edit = pref.edit();
         edit.putLong("lat", Double.doubleToRawLongBits(mMap.getCameraPosition().target.latitude));
@@ -263,10 +278,10 @@ public class MapControl implements OnMapReadyCallback {
 
         SharedPreferences pref = activityContext.getSharedPreferences("it.unisa.luca.fuelsort.pref", MODE_PRIVATE);
 
-        if(!pref.contains("zoom")) {
+        if (!pref.contains("zoom")) {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(40.769817, 14.7900013), 10.0f));
-        }else{
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.longBitsToDouble(pref.getLong("lat", Double.doubleToRawLongBits(40.769817))),Double.longBitsToDouble(pref.getLong("lng", Double.doubleToRawLongBits(14.7900013)))), pref.getFloat("zoom", 15.0f)));
+        } else {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.longBitsToDouble(pref.getLong("lat", Double.doubleToRawLongBits(40.769817))), Double.longBitsToDouble(pref.getLong("lng", Double.doubleToRawLongBits(14.7900013)))), pref.getFloat("zoom", 15.0f)));
         }
         old = null;
         mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
@@ -287,12 +302,12 @@ public class MapControl implements OnMapReadyCallback {
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(final Marker marker) {
-                if(droppedPinHashMap.containsValue(marker)) {
+                if (droppedPinHashMap.containsValue(marker)) {
                     Projection projection = mMap.getProjection();
                     final LatLng markerPosition = marker.getPosition();
                     Point markerPoint = projection.toScreenLocation(markerPosition);
 
-                    Point targetPoint = new Point(markerPoint.x, markerPoint.y-(int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, activityContext.getResources().getDisplayMetrics()));
+                    Point targetPoint = new Point(markerPoint.x, markerPoint.y - (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 110, activityContext.getResources().getDisplayMetrics()));
                     LatLng targetPosition = projection.fromScreenLocation(targetPoint);
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(targetPosition, mMap.getCameraPosition().zoom), 500, new GoogleMap.CancelableCallback() {
                         @Override
@@ -300,10 +315,10 @@ public class MapControl implements OnMapReadyCallback {
                             try {
                                 LayoutInflater inflater = (LayoutInflater) activityContext
                                         .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                                if(inflater != null) {
+                                if (inflater != null) {
                                     View layout = inflater.inflate(R.layout.pin_layout,
                                             (ViewGroup) ((Activity) activityContext).findViewById(R.id.popup_element));
-                                    final PopupWindow pw = new PopupWindow(layout, (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 210, activityContext.getResources().getDisplayMetrics()), (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 175, activityContext.getResources().getDisplayMetrics()), true);
+                                    final PopupWindow pw = new PopupWindow(layout, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 210, activityContext.getResources().getDisplayMetrics()), (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 175, activityContext.getResources().getDisplayMetrics()), true);
 
                                     LinearLayout ll = layout.findViewById(R.id.add_start);
                                     ll.setOnClickListener(new View.OnClickListener() {
@@ -311,7 +326,7 @@ public class MapControl implements OnMapReadyCallback {
                                         public void onClick(View view) {
                                             Log.d("DEBUG", "Adding LatLng to Start field on user request");
                                             TextView tv = ((Activity) activityContext).findViewById(R.id.from);
-                                            tv.setText(markerPosition.latitude+","+markerPosition.longitude);
+                                            tv.setText(markerPosition.latitude + "," + markerPosition.longitude);
                                             pw.dismiss();
                                         }
                                     });
@@ -321,7 +336,7 @@ public class MapControl implements OnMapReadyCallback {
                                         public void onClick(View view) {
                                             Log.d("DEBUG", "Adding LatLng to End field on user request");
                                             TextView tv = ((Activity) activityContext).findViewById(R.id.to);
-                                            tv.setText(markerPosition.latitude+","+markerPosition.longitude);
+                                            tv.setText(markerPosition.latitude + "," + markerPosition.longitude);
                                             pw.dismiss();
                                         }
                                     });
@@ -335,7 +350,7 @@ public class MapControl implements OnMapReadyCallback {
                                         }
                                     });
                                     pw.showAtLocation(layout, Gravity.CENTER, 0, 0);
-                                }else{
+                                } else {
                                     Log.e("MapControl", "L'inflater del layout è null, impossibile creare il popup.");
                                 }
                                 //To add listener
@@ -349,16 +364,16 @@ public class MapControl implements OnMapReadyCallback {
 
                         }
                     });
-                }else if(distributoriMarker.containsValue(marker)){
+                } else if (distributoriMarker.containsValue(marker)) {
                     Distributore risultato = null;
-                    for(Distributore d : distributoriMarker.keySet()){
-                        if(distributoriMarker.get(d).equals(marker)){
+                    for (Distributore d : distributoriMarker.keySet()) {
+                        if (distributoriMarker.get(d).equals(marker)) {
                             risultato = d;
                             break;
                         }
                     }
                     openDistributoreActivity(risultato);
-                } else if(distributoreFoundAfterSerch!=null && distributoreFoundAfterSerch.containsKey(marker)){
+                } else if (distributoreFoundAfterSerch != null && distributoreFoundAfterSerch.containsKey(marker)) {
                     openDistributoreAsResultFragment(distributoreFoundAfterSerch.get(marker), true);
                 } else {
                     return false;
@@ -633,5 +648,15 @@ public class MapControl implements OnMapReadyCallback {
         } else {
             Log.e("MapControl", "Tentato di aprire la pagina di un distributore passando null");
         }
+    }
+
+    public void setMyPosition(double latitude, double longitude){
+        if(myMarker == null){
+            myMarker = mMap.addMarker(new MarkerOptions().draggable(false).visible(true).alpha(0.95f).position(new LatLng(latitude, longitude)).icon(BitmapDescriptorFactory.fromBitmap(BitmapCreator.getPositionPin(activityContext))));
+        }else{
+            myMarker.setPosition(new LatLng(latitude, longitude));
+        }
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), mMap.getCameraPosition().zoom), 500, null);
     }
 }
