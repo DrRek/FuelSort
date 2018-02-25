@@ -1,20 +1,14 @@
 package it.drrek.fuelsort.view;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -32,20 +26,20 @@ import com.google.android.gms.maps.SupportMapFragment;
 
 import java.util.List;
 
+import it.drrek.fuelsort.R;
+import it.drrek.fuelsort.control.map.MapControl;
+import it.drrek.fuelsort.control.map.MapControlListener;
+import it.drrek.fuelsort.control.route.RouteControl;
+import it.drrek.fuelsort.control.route.RouteControlListener;
 import it.drrek.fuelsort.control.update.DataUpdaterControl;
 import it.drrek.fuelsort.control.update.DataUpdaterControlListener;
 import it.drrek.fuelsort.entity.exception.NoDataForPathException;
 import it.drrek.fuelsort.entity.exception.NoPathFoundException;
 import it.drrek.fuelsort.entity.exception.NoStationForPathException;
 import it.drrek.fuelsort.entity.exception.UnableToUpdateException;
-import it.drrek.fuelsort.control.map.MapControl;
-import it.drrek.fuelsort.control.map.MapControlListener;
-import it.drrek.fuelsort.control.route.RouteControl;
-import it.drrek.fuelsort.control.route.RouteControlListener;
 import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.entity.station.DistributoreAsResult;
 import it.drrek.fuelsort.support.LoadingManager;
-import it.drrek.fuelsort.R;
 import it.drrek.fuelsort.support.SingleShotLocationProvider;
 
 public class MapsActivity extends AppCompatActivity {
