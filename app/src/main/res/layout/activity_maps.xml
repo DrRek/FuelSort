@@ -85,7 +85,9 @@
                 android:onClick="startRouteSearch"
                 android:contentDescription="@string/bottono_per_iniziare_la_ricerca" />
         </LinearLayout>
-        <LinearLayout
+
+
+        <!-- THIS WILL BE DONE SOME DAY LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -151,7 +153,11 @@
                         android:text="4"/>
                 </LinearLayout>
             </RelativeLayout>
-        </LinearLayout>
+        </LinearLayout -->
+
+
+
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
