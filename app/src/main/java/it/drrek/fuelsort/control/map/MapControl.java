@@ -1,24 +1,17 @@
 package it.drrek.fuelsort.control.map;
 
-import android.Manifest;
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.TypedValue;
@@ -32,14 +25,12 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -56,19 +47,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import it.drrek.fuelsort.R;
 import it.drrek.fuelsort.entity.route.Region;
+import it.drrek.fuelsort.entity.route.Route;
 import it.drrek.fuelsort.entity.settings.SearchParams;
 import it.drrek.fuelsort.entity.station.Distributore;
 import it.drrek.fuelsort.entity.station.DistributoreAsResult;
 import it.drrek.fuelsort.model.DistributoriManager;
 import it.drrek.fuelsort.model.SearchParamsModel;
 import it.drrek.fuelsort.support.BitmapCreator;
-import it.drrek.fuelsort.entity.route.Route;
-import it.drrek.fuelsort.R;
 import it.drrek.fuelsort.view.DistributoreActivity;
 import it.drrek.fuelsort.view.DistributoreAsResultFragment;
 import it.drrek.fuelsort.view.DistributoreAsResultFragmentListener;
-import it.drrek.fuelsort.view.MapsActivity;
 
 import static android.content.Context.MODE_PRIVATE;
 

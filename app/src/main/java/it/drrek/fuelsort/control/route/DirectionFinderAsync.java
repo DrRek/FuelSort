@@ -1,6 +1,7 @@
 package it.drrek.fuelsort.control.route;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -41,6 +42,7 @@ public class DirectionFinderAsync extends DirectionFinder {
         protected void onPostExecute(String res) {
             try {
                 List<Route> result = parseJSon(res);
+                Log.d("DirectionFinderAsync", res);
                 if (result == null) {
                     if(listener != null) {
                         listener.directionFinderException(new NoDataForPathException("Errore cercando un percorso, controlla di avere una connessione ad internet disponibile!"));

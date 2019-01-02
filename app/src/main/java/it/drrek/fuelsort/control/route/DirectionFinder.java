@@ -1,5 +1,6 @@
 package it.drrek.fuelsort.control.route;
 
+import android.content.res.Resources;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -19,6 +20,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.drrek.fuelsort.BuildConfig;
+import it.drrek.fuelsort.R;
 import it.drrek.fuelsort.entity.route.Distance;
 import it.drrek.fuelsort.entity.route.Duration;
 import it.drrek.fuelsort.entity.route.Region;
@@ -37,7 +40,8 @@ abstract class DirectionFinder {
     /*
     Api per la ricerca di un percorso
      */
-    private static final String GOOGLE_API_KEY = "AIzaSyD9FDqZVMF6hPeAO-Hk7YV0Slmx00yPojg";
+    private static final String GOOGLE_API_KEY = "AIzaSyDws0xIktoQgh2IRGqzpLC_QAqZIAyTi9o";
+
     /*Indirizzo id o coordinate dell'origine*/
     private String origin;
     /*Indirizzo id o coordinate della destinazione*/

@@ -1,5 +1,7 @@
 package it.drrek.fuelsort.control.route;
 
+import android.util.Log;
+
 import org.json.JSONException;
 
 import java.io.UnsupportedEncodingException;
@@ -20,7 +22,8 @@ public class DirectionFinderSync extends DirectionFinder{
 
     public List<Route> execute() throws UnsupportedEncodingException, JSONException {
         url = DIRECTION_URL_API + createUrl();
-
-        return parseJSon(downloadRawData(url));
+        String res = downloadRawData(url);
+        Log.d("DirectionFinderSync", res);
+        return parseJSon(res);
     }
 }

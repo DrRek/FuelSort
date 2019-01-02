@@ -1,6 +1,20 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        debug {
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+            storeFile file('/Users/luca/Desktop/file/da ricordare/fuelsort key/debug.keystore')
+            storePassword 'android'
+        }
+        release {
+            keyAlias 'key0'
+            keyPassword 'nonloso3'
+            storeFile file('/Users/luca/Desktop/file/da ricordare/fuelsort key/fuelsort_key.jks')
+            storePassword 'fuelsortpass1'
+        }
+    }
     compileSdkVersion 26
     defaultConfig {
         applicationId "it.unisa.luca.fuelsort"
@@ -14,12 +28,17 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
+    buildToolsVersion '26.0.2'
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
